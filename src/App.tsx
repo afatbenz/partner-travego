@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { GeneralContentProvider } from '@/contexts/GeneralContentContext';
 import { Toaster } from '@/components/ui/toaster';
 
 // Layouts
@@ -74,9 +75,10 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <ScrollToTop />
-        <Routes>
+      <GeneralContentProvider>
+        <Router>
+          <ScrollToTop />
+          <Routes>
           {/* Public Routes */}
           <Route path="/" element={
             <PublicLayout>
@@ -266,8 +268,9 @@ function App() {
           {/* Redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        <Toaster />
-      </Router>
+          <Toaster />
+        </Router>
+      </GeneralContentProvider>
     </ThemeProvider>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Search, Filter, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, Search, Filter, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,8 +20,8 @@ export const ServicesArmada: React.FC = () => {
       name: 'Toyota Hiace Premio',
       type: 'Minibus',
       capacity: '15 pax',
-      price: 200000,
-      originalPrice: 250000,
+      body: 'Minibus',
+      engine: '2.8L Diesel',
       rating: 4.8,
       reviews: 24,
       status: 'active',
@@ -34,8 +34,8 @@ export const ServicesArmada: React.FC = () => {
       name: 'Innova Reborn',
       type: 'MPV',
       capacity: '7 pax',
-      price: 150000,
-      originalPrice: 180000,
+      body: 'MPV',
+      engine: '2.0L Gasoline',
       rating: 4.9,
       reviews: 156,
       status: 'active',
@@ -48,8 +48,8 @@ export const ServicesArmada: React.FC = () => {
       name: 'Avanza Veloz',
       type: 'MPV',
       capacity: '7 pax',
-      price: 120000,
-      originalPrice: 150000,
+      body: 'MPV',
+      engine: '1.5L Gasoline',
       rating: 4.7,
       reviews: 89,
       status: 'inactive',
@@ -62,8 +62,8 @@ export const ServicesArmada: React.FC = () => {
       name: 'Fortuner 4x4',
       type: 'SUV',
       capacity: '7 pax',
-      price: 300000,
-      originalPrice: 350000,
+      body: 'SUV',
+      engine: '2.8L Diesel 4x4',
       rating: 4.6,
       reviews: 45,
       status: 'active',
@@ -76,8 +76,8 @@ export const ServicesArmada: React.FC = () => {
       name: 'Elf Long',
       type: 'Bus Kecil',
       capacity: '20 pax',
-      price: 250000,
-      originalPrice: 300000,
+      body: 'Bus Kecil',
+      engine: '3.0L Diesel',
       rating: 4.5,
       reviews: 67,
       status: 'active',
@@ -90,8 +90,8 @@ export const ServicesArmada: React.FC = () => {
       name: 'Grand Max',
       type: 'Pickup',
       capacity: '4 pax',
-      price: 100000,
-      originalPrice: 120000,
+      body: 'Pickup',
+      engine: '1.5L Gasoline',
       rating: 4.4,
       reviews: 34,
       status: 'inactive',
@@ -197,8 +197,7 @@ export const ServicesArmada: React.FC = () => {
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Nama</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Tipe</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Kapasitas</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Harga</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Rating</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Spesifikasi</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Aksi</th>
                 </tr>
@@ -214,7 +213,7 @@ export const ServicesArmada: React.FC = () => {
                           className="w-12 h-12 object-cover rounded-lg"
                         />
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{item.name}</p>
+                          <p className="font-bold text-gray-900 dark:text-white">{item.name}</p>
                           <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">{item.description}</p>
                         </div>
                       </div>
@@ -226,17 +225,7 @@ export const ServicesArmada: React.FC = () => {
                       <span className="text-sm text-gray-900 dark:text-white">{item.capacity}</span>
                     </td>
                     <td className="py-3 px-4">
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        Rp {item.price.toLocaleString()}/hari
-                      </p>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          {item.rating}
-                        </span>
-                      </div>
+                      <span className="text-sm text-gray-900 dark:text-white">{item.body} - {item.engine}</span>
                     </td>
                     <td className="py-3 px-4">
                       {getStatusBadge(item.status)}
@@ -250,8 +239,8 @@ export const ServicesArmada: React.FC = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <Trash2 className="h-4 w-4" />
+                        <Button size="sm" variant="outline" onClick={() => navigate(`/dashboard/partner/services/fleet/detail/${item.id}`)}>
+                          <Eye className="h-4 w-4" />
                         </Button>
                       </div>
                     </td>

@@ -3,11 +3,13 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, MapPin, User, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { useGeneralContent } from '@/contexts/GeneralContentContext';
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<{ id: number; name: string; role: string } | null>(null);
   const location = useLocation();
+  const { getContentIn } = useGeneralContent();
 
   useEffect(() => {
     // Check if user is logged in
@@ -37,7 +39,7 @@ export const Navbar: React.FC = () => {
           <Link to="/" className="flex items-center space-x-2">
             <MapPin className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             <span className="text-xl font-bold text-gray-900 dark:text-white">
-              TravelPro
+              {getContentIn('general-config', 'brand-name') || 'TraveGO'}
             </span>
           </Link>
 

@@ -6,9 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { useGeneralContent } from '@/contexts/GeneralContentContext';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { getContentByTag, getContentIn, getListIn } = useGeneralContent();
+  const heroTitle = getContentIn('landing-page', 'hero-section') || getContentByTag('hero-section') || 'Lorem Ipsum Dolor Sit Amet';
+  const heroSubTitle = getContentIn('landing-page', 'sub-hero-section') || getContentByTag('sub-hero-section') || 'Lorem Ipsum Dolor Sit Amet';
+
   const [searchCity, setSearchCity] = useState('');
   const [cityInput, setCityInput] = useState('');
   const [serviceType, setServiceType] = useState('');
@@ -121,28 +126,28 @@ export const Home: React.FC = () => {
     }
   ];
 
-  const whyChooseUs = [
-    {
-      icon: Shield,
-      title: 'Amanah & Professional',
-      description: 'Komitmen profesional dengan integritas tinggi dalam setiap layanan yang kami berikan.'
-    },
-    {
-      icon: Clock,
-      title: 'Pelayanan 24/7',
-      description: 'Tim customer service yang dibantu dengan teknologi AI siap melayani Anda kapan saja.'
-    },
-    {
-      icon: Star,
-      title: 'Membership Relation',
-      description: 'Program keanggotaan eksklusif dengan benefit dan layanan prioritas untuk member setia.'
-    },
-    {
-      icon: Headphones,
-      title: 'Support Lengkap',
-      description: 'Dukungan penuh dari booking hingga perjalanan selesai dengan teknologi AI.'
-    }
-  ];
+  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    shield: Shield,
+    clock: Clock,
+    star: Star,
+    headphones: Headphones,
+    users: Users,
+    phone: Phone,
+    'map-pin': MapPin,
+    search: Search,
+    'arrow-right': ArrowRight,
+  };
+  const whyChooseUsList = getListIn('choose-use', 'why-choose-us-points') as { icon?: string; label?: string; sub_label?: string }[] | null;
+  console.log("---> whyChooseUsList", {whyChooseUsList})
+  const whyChooseUs = (whyChooseUsList && whyChooseUsList.length
+    ? whyChooseUsList.map((item) => ({
+        icon: iconMap[(item.icon || '').toLowerCase()] || Shield,
+        title: item.label || '',
+        description: item.sub_label || '',
+      }))
+    : []
+  );
+  console.log("x---- ", {whyChooseUs})
 
   return (
     <div className="min-h-screen">
@@ -162,11 +167,10 @@ export const Home: React.FC = () => {
           {/* Title and Subtitle - Top Section */}
           <div className="text-center pt-24 sm:pt-32 md:pt-40 lg:pt-48">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-              Jelajahi Indonesia Bersama Kami
+              {heroTitle}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed px-4">
-              Solusi terpercaya untuk semua kebutuhan perjalanan Anda. 
-              Dari rental mobil hingga paket wisata lengkap.
+              {heroSubTitle}
             </p>
           </div>
 

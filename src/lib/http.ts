@@ -40,6 +40,10 @@ async function request<T = unknown>(path: string, options: RequestOptions = {}):
   const headers: Record<string, string> = {
     ...(options.headers || {}),
   };
+  const apiKey = import.meta.env.VITE_API_KEY;
+  if (apiKey) {
+    headers['api-key'] = apiKey;
+  }
   const hasBody = options.body !== undefined && options.body !== null;
   if (hasBody && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
   if (options.token) headers['Authorization'] = `Bearer ${options.token}`;
@@ -79,3 +83,81 @@ export const http = {
 };
 
 export { API_BASE_URL };
+
+export type FleetCore = {
+  fleet_id: string;
+  fleet_type: string;
+  fleet_name: string;
+  capacity: number;
+  engine: string;
+  body: string;
+  thumbnail: string | null;
+  created_at: string;
+  created_by: string;
+  updated_at: string | null;
+  updated_by: string | null;
+};
+
+export type FleetFacility = {
+  uuid: string;
+  fleet_id: string;
+  facility: string;
+};
+
+export type FleetPickup = {
+  uuid: string;
+  city_id: string | number;
+  city_name?: string;
+};
+
+export type FleetAddon = {
+  uuid: string;
+  addon_name: string;
+  addon_desc: string;
+  addon_price: number;
+};
+
+export type FleetPricing = {
+  uuid: string;
+  duration: string;
+  rent_type: number | string;
+  price: number;
+  disc_amount: number | null;
+  disc_price: number | null;
+  rent_type_label?: string;
+};
+
+export type FleetImage = {
+  uuid: string;
+  path_file: string;
+};
+
+export type FleetDetailResponse = {
+  fleet: FleetCore;
+  facilities: FleetFacility[];
+  pickup: FleetPickup[];
+  addon: FleetAddon[];
+  pricing: FleetPricing[];
+  images: FleetImage[];
+};
+
+export const RentTypeLabel: Record<number, string> = {
+  1: 'City Tour',
+  2: 'Overland',
+  3: 'Pickup / Drop Only',
+};
+
+export async function getFleetDetail(fleetId: string, token?: string) {
+  const res = await http.post<FleetDetailResponse>('/api/partner/services/fleet/detail', { fleet_id: fleetId }, { token });
+  const data = res.data;
+  const pricing = Array.isArray(data?.pricing)
+    ? data.pricing.map(p => ({
+        ...p,
+        rent_type_label:
+          typeof p.rent_type === 'number'
+            ? RentTypeLabel[p.rent_type] || String(p.rent_type)
+            : String(p.rent_type),
+      }))
+    : [];
+  return { ...data, pricing } as FleetDetailResponse;
+}

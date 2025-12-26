@@ -390,7 +390,7 @@ export const PackageForm: React.FC = () => {
             <CardTitle>Gambar Thumbnail</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center space-x-4">
+            <div className="w-full">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -399,18 +399,18 @@ export const PackageForm: React.FC = () => {
                 onChange={handleImageUpload}
                 className="hidden"
               />
-              <Button
-                type="button"
-                variant="outline"
+              <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center space-x-2"
+                className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors"
               >
-                <Upload className="h-4 w-4" />
-                <span>Upload Gambar</span>
-              </Button>
-              <span className="text-sm text-gray-500">
-                Maksimal 10 gambar ({formData.images.length}/10)
-              </span>
+                <Upload className="h-12 w-12 text-gray-400 mb-2" />
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  Klik untuk upload gambar
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Maksimal 10 gambar ({formData.images.length}/10)
+                </p>
+              </div>
             </div>
             
             {formData.images.length > 0 && (

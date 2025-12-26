@@ -137,36 +137,34 @@ export const EditProfile: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center space-x-6">
-                <div className="relative">
-                  <img
-                    src={avatar}
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700"
-                  />
-                  <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <Camera className="h-6 w-6 text-white" />
+              <div className="flex flex-col items-center justify-center py-6">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                  id="avatar-upload"
+                />
+                <label
+                  htmlFor="avatar-upload"
+                  className="cursor-pointer group relative"
+                >
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-700 hover:border-blue-500 transition-colors">
+                    <img
+                      src={avatar}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <Camera className="h-8 w-8 text-white mb-1" />
+                      <span className="text-xs text-white font-medium">Ubah Foto</span>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                    id="avatar-upload"
-                  />
-                  <label
-                    htmlFor="avatar-upload"
-                    className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                  >
-                    <Camera className="h-4 w-4 mr-2" />
-                    Ganti Foto
-                  </label>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Format: JPG, PNG. Maksimal 2MB
-                  </p>
-                </div>
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                  Klik gambar untuk mengganti foto profil<br/>
+                  Format: JPG, PNG. Maksimal 2MB
+                </p>
               </div>
             </CardContent>
           </Card>
