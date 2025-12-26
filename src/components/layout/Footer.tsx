@@ -37,7 +37,6 @@ export const Footer: React.FC = () => {
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <MapPin className="h-8 w-8 text-blue-400" />
               <span className="text-xl font-bold">{brandName}</span>
             </div>
             <p className="text-gray-400 mb-4">{brandDesc}</p>
