@@ -106,6 +106,7 @@ export const Navbar: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
+              className="bg-white"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

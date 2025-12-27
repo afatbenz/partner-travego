@@ -271,7 +271,7 @@ export const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {loadingFleets ? (
               <div className="col-span-full text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -349,7 +349,7 @@ export const Home: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <Button className="w-full" onClick={() => navigate(`/armada/${fleet.fleet_id}`)}>
+                      <Button className="w-full" onClick={() => navigate(`/detail/armada/${fleet.fleet_id}`)}>
                         Lihat Detail
                       </Button>
                     </div>
@@ -407,7 +407,7 @@ export const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6">
             {popularCatalogs.map((item) => (
             <Card key={item.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col">
               <div className="relative overflow-hidden h-60">
