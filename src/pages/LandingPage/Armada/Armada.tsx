@@ -3,6 +3,34 @@ import { InquirySection } from '@/components/common/InquirySection';
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { FilterSection } from '@/components/common/FilterSection';
 import { Pagination } from '@/components/common/Pagination';
+import { http } from '@/lib/http';
+
+interface Fleet {
+  fleet_id: string;
+  fleet_name: string;
+  fleet_type: string;
+  capacity: number;
+  production_year: number;
+  engine: string;
+  body: string;
+  description: string;
+  thumbnail: string;
+  original_price: number;
+  uom: string;
+  created_at: string;
+  discount_type: string | null;
+  discount_value: number | null;
+  price: number;
+  facilities?: { facility: string }[];
+  pickup_areas?: { city_name: string }[];
+}
+
+interface FleetResponse {
+  status: string;
+  message: string;
+  data: Fleet[];
+  transaction_id: string;
+}
 
 const Armada = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,118 +41,62 @@ const Armada = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  const armadaData = [
-    {
-      id: 1,
-      name: 'Innova Reborn',
-      type: 'MPV',
-      capacity: '7-8 Penumpang',
-      price: 'Rp 500.000/hari',
-      originalPrice: 'Rp 600.000/hari',
-      image: 'https://otomax.store/cdn/shop/articles/Inova-reborn-otomax_7fd04eb7-de3d-4a8c-9238-5516acc5cb6c.jpg?v=1739441814',
-      rating: 4.8,
-      reviews: 156,
-      features: ['AC', 'Audio System', 'Safety Features', 'Comfortable Seats'],
-      location: 'Jakarta',
-      transmission: 'Manual',
-      fuel: 'Bensin',
-      year: '2023',
-      badge: 'Popular',
-      discount: '-17%'
-    },
-    {
-      id: 2,
-      name: 'Hiace Premio',
-      type: 'Minibus',
-      capacity: '12-15 Penumpang',
-      price: 'Rp 800.000/hari',
-      originalPrice: 'Rp 950.000/hari',
-      image: 'https://www.balialphardrental.com/wp-content/uploads/2024/11/Hiace-premio.jpg',
-      rating: 4.9,
-      reviews: 89,
-      features: ['AC', 'Audio System', 'Comfortable Seats', 'Large Space'],
-      location: 'Jakarta',
-      transmission: 'Manual',
-      fuel: 'Bensin',
-      year: '2024',
-      badge: 'New',
-      discount: '-16%'
-    },
-    {
-      id: 3,
-      name: 'Hiace Commuter',
-      type: 'Minibus',
-      capacity: '12-15 Penumpang',
-      price: 'Rp 750.000/hari',
-      originalPrice: 'Rp 900.000/hari',
-      image: 'https://www.balialphardrental.com/wp-content/uploads/2024/11/Hiace-premio.jpg',
-      rating: 4.7,
-      reviews: 124,
-      features: ['AC', 'Audio System', 'Comfortable Seats', 'Large Space'],
-      location: 'Jakarta',
-      transmission: 'Manual',
-      fuel: 'Bensin',
-      year: '2023',
-      badge: 'Popular',
-      discount: '-17%'
-    },
-    {
-      id: 4,
-      name: 'Toyota Alphard',
-      type: 'Luxury MPV',
-      capacity: '7 Penumpang',
-      price: 'Rp 1.200.000/hari',
-      originalPrice: 'Rp 1.400.000/hari',
-      image: 'https://sewamobilpalingmurah.com/wp-content/uploads/2024/07/Biaya-Pajak-Mobil-Toyota-Alphard-Berdasarkan-Tahun-dan-Tipe.jpg',
-      rating: 4.9,
-      reviews: 67,
-      features: ['Premium AC', 'Audio System', 'Leather Seats', 'Luxury Interior'],
-      location: 'Jakarta',
-      transmission: 'Automatic',
-      fuel: 'Bensin',
-      year: '2024',
-      badge: 'Luxury',
-      discount: '-14%'
-    },
-    {
-      id: 5,
-      name: 'Isuzu Elf',
-      type: 'Truck',
-      capacity: '2-3 Penumpang',
-      price: 'Rp 400.000/hari',
-      originalPrice: 'Rp 500.000/hari',
-      image: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=400',
-      rating: 4.6,
-      reviews: 98,
-      features: ['AC', 'Large Cargo', 'Durable', 'Economical'],
-      location: 'Jakarta',
-      transmission: 'Manual',
-      fuel: 'Diesel',
-      year: '2023',
-      badge: 'Economical',
-      discount: '-20%'
-    },
-    {
-      id: 6,
-      name: 'Coaster Minibus',
-      type: 'Minibus',
-      capacity: '20-25 Penumpang',
-      price: 'Rp 1.000.000/hari',
-      originalPrice: 'Rp 1.200.000/hari',
-      image: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=400',
-      rating: 4.8,
-      reviews: 45,
-      features: ['AC', 'Audio System', 'Large Capacity', 'Comfortable Seats'],
-      location: 'Jakarta',
-      transmission: 'Manual',
-      fuel: 'Diesel',
-      year: '2023',
-      badge: 'Large Capacity',
-      discount: '-17%'
-    }
+  const [armadaData, setArmadaData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFleets = async () => {
+      try {
+        const res = await http.get<FleetResponse>('/api/service/fleet');
+        if (res.data && Array.isArray(res.data.data)) {
+          const mappedFleets = res.data.data.map((fleet) => {
+            const displayPrice = fleet.uom === 'jam' ? fleet.price / 12 : fleet.price;
+            const displayUom = fleet.uom === 'jam' ? 'jam' : fleet.uom;
+            
+            return {
+              id: fleet.fleet_id,
+              name: fleet.fleet_name,
+              type: fleet.fleet_type,
+              capacity: `${fleet.capacity} Penumpang`,
+              price: `Rp ${displayPrice.toLocaleString('id-ID')}/${displayUom}`,
+              originalPrice: fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
+              image: fleet.thumbnail,
+              rating: 5.0, // Default value as API doesn't provide rating
+              reviews: 0, // Default value
+              features: fleet.facilities && fleet.facilities.length > 0 
+                ? fleet.facilities.map(f => f.facility) 
+                : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
+              location: 'Jakarta', // Default fallback
+              pickupAreas: fleet.pickup_areas ? fleet.pickup_areas.map(p => p.city_name) : [],
+              transmission: 'Manual', // Default value
+              fuel: 'Bensin', // Default value
+              year: fleet.production_year.toString(),
+              productionYear: fleet.production_year,
+              badge: fleet.discount_value ? 'Discount' : 'New',
+              discount: fleet.discount_value ? `-${fleet.discount_value}%` : '',
+              rawPrice: displayPrice // For sorting
+            };
+          });
+          setArmadaData(mappedFleets);
+        }
+      } catch (err) {
+        console.error('Failed to fetch fleets:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFleets();
+  }, []);
+
+  // Extract unique categories from data
+  const uniqueTypes = Array.from(new Set(armadaData.map(item => item.type)));
+  const dynamicCategories = [
+    { value: 'all', label: 'Semua Tipe' },
+    ...uniqueTypes.map(type => ({ value: type.toLowerCase(), label: type }))
   ];
 
-  const categories = [
+  const categories = uniqueTypes.length > 0 ? dynamicCategories : [
     { value: 'all', label: 'Semua Tipe' },
     { value: 'mpv', label: 'MPV' },
     { value: 'minibus', label: 'Minibus' },
@@ -160,9 +132,9 @@ const Armada = () => {
   const sortedArmada = [...filteredArmada].sort((a, b) => {
     switch (sortBy) {
       case 'price-low':
-        return parseFloat(a.price.replace(/[^\d]/g, '')) - parseFloat(b.price.replace(/[^\d]/g, ''));
+        return (a.rawPrice || 0) - (b.rawPrice || 0);
       case 'price-high':
-        return parseFloat(b.price.replace(/[^\d]/g, '')) - parseFloat(a.price.replace(/[^\d]/g, ''));
+        return (b.rawPrice || 0) - (a.rawPrice || 0);
       case 'rating':
         return b.rating - a.rating;
       default:
@@ -234,22 +206,39 @@ const Armada = () => {
 
       {/* Armada Grid */}
       <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
-        <div className={viewMode === 'grid' 
-          ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-6" 
-          : "space-y-6"
-        }>
-          {paginatedArmada.map((armada) => (
-            <ArmadaCard key={armada.id} armada={armada} viewMode={viewMode} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Memuat armada...</p>
+          </div>
+        ) : (
+          <>
+            <div className={viewMode === 'grid' 
+              ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-6" 
+              : "space-y-6"
+            }>
+              {paginatedArmada.length > 0 ? (
+                paginatedArmada.map((armada) => (
+                  <ArmadaCard key={armada.id} armada={armada} viewMode={viewMode} />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>
+                </div>
+              )}
+            </div>
 
-        {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          className="mt-8"
-        />
+            {/* Pagination */}
+            {paginatedArmada.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                className="mt-8"
+              />
+            )}
+          </>
+        )}
       </div>
 
       {/* Inquiry Section */}

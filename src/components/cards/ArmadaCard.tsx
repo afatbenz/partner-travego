@@ -7,7 +7,7 @@ import { MapPin, Star, Users, Calendar, Heart, Eye } from 'lucide-react';
 
 interface ArmadaCardProps {
   armada: {
-    id: number;
+    id: number | string;
     name: string;
     type: string;
     capacity: string;
@@ -18,11 +18,13 @@ interface ArmadaCardProps {
     reviews: number;
     features: string[];
     location: string;
+    pickupAreas?: string[];
     year: string;
     transmission: string;
     fuel: string;
     badge: string;
     discount: string;
+    productionYear?: number;
   };
   viewMode?: 'grid' | 'list';
 }
@@ -33,9 +35,14 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
   const handleDetailClick = () => {
     navigate(`/detail/armada/${armada.id}`);
   };
+
+  const displayLocation = armada.pickupAreas && armada.pickupAreas.length > 0 
+    ? armada.pickupAreas.join(', ') 
+    : armada.location;
+
   if (viewMode === 'list') {
     return (
-      <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300" style={{ height: '20rem' }}>
+      <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300" style={{ height: '22rem' }}>
         <div className="flex h-full">
           {/* Image Section - Left Side */}
           <div className="relative w-[32rem] flex-shrink-0 h-full">
@@ -85,11 +92,11 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
                 </div>
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <MapPin className="h-4 w-4 mr-2" />
-                  <span>{armada.location}</span>
+                  <span className="truncate" title={displayLocation}>{displayLocation}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <Calendar className="h-4 w-4 mr-2" />
-                  <span>Durasi: {armada.year} • {armada.transmission} • {armada.fuel}</span>
+                  <span>Tahun: {armada.productionYear || armada.year} • {armada.transmission} • {armada.fuel}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <Star className="h-4 w-4 text-yellow-400 fill-current mr-2" />
@@ -98,38 +105,36 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
               </div>
 
               <div className="mb-4">
-                <div className="flex flex-wrap gap-1">
-                  {armada.features.slice(0, 6).map((feature, index) => (
+                <div className="flex flex-wrap gap-2">
+                  {armada.features.slice(0, 5).map((feature, index) => (
                     <Badge key={index} variant="outline" className="text-xs">
                       {feature}
                     </Badge>
                   ))}
-                  {armada.features.length > 6 && (
+                  {armada.features.length > 5 && (
                     <Badge variant="outline" className="text-xs">
-                      +{armada.features.length - 6} lagi
+                      +{armada.features.length - 5} lainnya
                     </Badge>
                   )}
                 </div>
               </div>
             </div>
-            
-            {/* Price and Button Section - Bottom */}
-            <div className="mt-auto">
-              <div className="border-t border-gray-200 dark:border-gray-700 mb-3"></div>
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="text-sm text-gray-500 line-through block">
-                    {armada.originalPrice}
-                  </span>
-                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {armada.price}
-                  </span>
-                  <span className="text-sm text-gray-500 ml-1">/hari</span>
+
+            <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Mulai dari</div>
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {armada.price}
                 </div>
-                <Button className="w-32" onClick={handleDetailClick}>
-                  Lihat Detail
-                </Button>
+                {armada.originalPrice && (
+                  <div className="text-sm text-gray-400 line-through">
+                    {armada.originalPrice}
+                  </div>
+                )}
               </div>
+              <Button onClick={handleDetailClick}>
+                Lihat Detail
+              </Button>
             </div>
           </CardContent>
         </div>
@@ -137,10 +142,9 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
     );
   }
 
-  // Grid View (Default)
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col">
-      <div className="relative overflow-hidden h-60">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+      <div className="relative overflow-hidden h-48">
         <img
           src={armada.image}
           alt={armada.name}
@@ -156,80 +160,57 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
           }`}>
             {armada.badge}
           </Badge>
-          <Badge variant="destructive" className="text-xs">
-            {armada.discount}
-          </Badge>
-        </div>
-        <div className="absolute top-3 right-3 flex gap-2">
-          <Button size="sm" variant="secondary" className="h-8 w-8 p-0">
-            <Heart className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="secondary" className="h-8 w-8 p-0">
-            <Eye className="h-4 w-4" />
-          </Button>
         </div>
       </div>
-      
-      <CardContent className="p-4 flex flex-col h-full">
-        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white line-clamp-2">
+      <CardContent className="p-4 flex flex-col flex-1">
+        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white line-clamp-1" title={armada.name}>
           {armada.name}
         </h3>
         
-        {/* Garis tipis di bawah judul */}
-        <div className="border-t border-gray-200 dark:border-gray-700 mb-4"></div>
-        
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2 mb-4 flex-1">
           <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <Users className="h-4 w-4 mr-2" />
+            <Users className="h-4 w-4 mr-2 flex-shrink-0" />
             <span>{armada.capacity}</span>
           </div>
           <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <MapPin className="h-4 w-4 mr-2" />
-            <span>{armada.location}</span>
+            <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="truncate" title={displayLocation}>{displayLocation}</span>
           </div>
           <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <Calendar className="h-4 w-4 mr-2" />
-            <span>Durasi: {armada.year} • {armada.transmission} • {armada.fuel}</span>
+            <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span>{armada.productionYear || armada.year}</span>
           </div>
-        </div>
-
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-1 max-h-12 overflow-hidden">
-            {armada.features.slice(0, 4).map((feature, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
+          
+          {/* Facilities */}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {armada.features.slice(0, 3).map((feature, index) => (
+              <span key={index} className="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">
                 {feature}
-              </Badge>
+              </span>
             ))}
-            {armada.features.length > 4 && (
-              <Badge variant="outline" className="text-xs">
-                +{armada.features.length - 4} lagi
-              </Badge>
+            {armada.features.length > 3 && (
+              <span className="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">
+                +{armada.features.length - 3}
+              </span>
             )}
           </div>
         </div>
 
-        <div className="mt-auto">
-          {/* Garis tipis di atas original price */}
-          <div className="border-t border-gray-200 dark:border-gray-700 mb-3"></div>
-          
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <span className="text-sm text-gray-500 line-through block">
-                {armada.originalPrice}
-              </span>
-              <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+        <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400">Mulai dari</div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                 {armada.price}
               </span>
-              <span className="text-sm text-gray-500 ml-1">/hari</span>
-            </div>
-            <div className="flex items-center">
-              <Star className="h-4 w-4 text-yellow-400 fill-current" />
-              <span className="ml-1 text-sm text-gray-600 dark:text-gray-300">
-                {armada.rating} ({armada.reviews})
-              </span>
+              {armada.originalPrice && (
+                <span className="text-xs text-gray-400 line-through">
+                  {armada.originalPrice}
+                </span>
+              )}
             </div>
           </div>
-          <Button className="w-full" onClick={handleDetailClick}>
+          <Button className="w-full text-sm h-9" onClick={handleDetailClick}>
             Lihat Detail
           </Button>
         </div>

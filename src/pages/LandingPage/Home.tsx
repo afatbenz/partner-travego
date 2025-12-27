@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Star, Shield, Clock, Headphones, ArrowRight, MapPin, Phone, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,12 +7,57 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
+import { http } from '@/lib/http';
+
+export interface Fleet {
+  fleet_id: string;
+  fleet_name: string;
+  fleet_type: string;
+  capacity: number;
+  production_year: number;
+  engine: string;
+  body: string;
+  description: string;
+  thumbnail: string;
+  original_price: number;
+  uom: string;
+  created_at: string;
+  discount_type: string | null;
+  discount_value: number | null;
+  price: number;
+}
+
+export interface FleetResponse {
+  status: string;
+  message: string;
+  data: Fleet[];
+  transaction_id: string;
+}
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { getContentByTag, getContentIn, getListIn } = useGeneralContent();
   const heroTitle = getContentIn('landing-page', 'hero-section') || getContentByTag('hero-section') || 'Lorem Ipsum Dolor Sit Amet';
   const heroSubTitle = getContentIn('landing-page', 'sub-hero-section') || getContentByTag('sub-hero-section') || 'Lorem Ipsum Dolor Sit Amet';
+
+  const [fleets, setFleets] = useState<Fleet[]>([]);
+  const [loadingFleets, setLoadingFleets] = useState(true);
+
+  useEffect(() => {
+    const fetchFleets = async () => {
+      try {
+        const res = await http.get<FleetResponse>('/api/service/fleet');
+        if (res.data && Array.isArray(res.data.data)) {
+          setFleets(res.data.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch fleets:', err);
+      } finally {
+        setLoadingFleets(false);
+      }
+    };
+    fetchFleets();
+  }, []);
 
   const [searchCity, setSearchCity] = useState('');
   const [cityInput, setCityInput] = useState('');
@@ -80,49 +125,6 @@ export const Home: React.FC = () => {
       rating: 4.9,
       type: 'Paket Wisata',
       location: 'Papua'
-    }
-  ];
-
-  const fleetTypes = [
-    {
-      id: 1,
-      name: 'Bus Wisata',
-      category: 'Bus',
-      description: 'Bus wisata nyaman dengan kapasitas besar untuk perjalanan grup dan wisata.',
-      capacity: '30-50 Penumpang',
-      features: 'AC, Audio System, Toilet',
-      startingPrice: 'Rp 2.500.000',
-      image: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=400'
-    },
-    {
-      id: 2,
-      name: 'Mobil MPV',
-      category: 'MPV',
-      description: 'Mobil MPV keluarga dengan ruang lega dan fitur keamanan terbaik.',
-      capacity: '7-8 Penumpang',
-      features: 'AC, Safety Features, Comfortable Seats',
-      startingPrice: 'Rp 500.000',
-      image: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=400'
-    },
-    {
-      id: 3,
-      name: 'Luxury Car',
-      category: 'Luxury',
-      description: 'Mobil mewah dengan interior premium dan pengalaman berkendara terbaik.',
-      capacity: '4-5 Penumpang',
-      features: 'Premium Interior, Leather Seats, Advanced Safety',
-      startingPrice: 'Rp 1.200.000',
-      image: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=400'
-    },
-    {
-      id: 4,
-      name: 'Minibus',
-      category: 'Minibus',
-      description: 'Minibus dengan kapasitas sedang untuk perjalanan kelompok kecil hingga menengah.',
-      capacity: '12-15 Penumpang',
-      features: 'AC, Audio System, Large Space',
-      startingPrice: 'Rp 800.000',
-      image: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=400'
     }
   ];
 
@@ -270,64 +272,95 @@ export const Home: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {fleetTypes.map((fleet) => (
-              <Card key={fleet.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col bg-white dark:bg-gray-800">
-                <div className="relative overflow-hidden h-60">
-                  <img
-                    src={fleet.image}
-                    alt={fleet.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <Badge className="bg-blue-600 hover:bg-blue-600 text-white text-sm font-bold">
-                      {fleet.category}
-                    </Badge>
-                  </div>
-                </div>
-                
-                <CardContent className="p-6 flex flex-col h-full">
-                  <h3 className="font-semibold text-xl mb-2 text-gray-900 dark:text-white line-clamp-2">
-                    {fleet.name}
-                  </h3>
-                  
-                  {/* Garis tipis di bawah judul */}
-                  <div className="border-t border-gray-200 dark:border-gray-700 mb-4"></div>
-                  
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                    {fleet.description}
-                  </p>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                      <Users className="h-4 w-4 mr-2" />
-                      <span>{fleet.capacity}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                      <Shield className="h-4 w-4 mr-2" />
-                      <span>{fleet.features}</span>
+            {loadingFleets ? (
+              <div className="col-span-full text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-500">Memuat armada...</p>
+              </div>
+            ) : fleets.length > 0 ? (
+              fleets.map((fleet) => (
+                <Card key={fleet.fleet_id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col bg-white dark:bg-gray-800">
+                  <div className="relative overflow-hidden h-60">
+                    <img
+                      src={fleet.thumbnail}
+                      alt={fleet.fleet_name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-blue-600 hover:bg-blue-600 text-white text-sm font-bold">
+                        {fleet.fleet_type}
+                      </Badge>
                     </div>
                   </div>
-                  
-                  <div className="mt-auto">
-                    {/* Garis tipis di atas harga */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 mb-3"></div>
-                    
-                    <div className="mb-3">
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                        Mulai dari
+                  <CardContent className="p-6 flex flex-col h-full">
+                    <h3 className="font-semibold text-xl mb-2 text-gray-900 dark:text-white line-clamp-2">
+                      {fleet.fleet_name}
+                    </h3>
+                    <div className="border-t border-gray-200 dark:border-gray-700 mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                      {fleet.description ? fleet.description.replace(/<[^>]*>?/gm, '') : ''}
+                    </p>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                        <Users className="h-4 w-4 mr-2" />
+                        <span>{fleet.capacity} Penumpang</span>
                       </div>
-                      <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                        {fleet.startingPrice}
-                        <span className="text-sm text-gray-500 dark:text-gray-400 font-normal ml-1">/hari</span>
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                        <Shield className="h-4 w-4 mr-2" />
+                        <span>{fleet.body || fleet.engine}</span>
                       </div>
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                        <Clock className="h-4 w-4 mr-2" />
+                        <span>Tahun: {fleet.production_year}</span>
+                      </div>
+                      {fleet.pickup_areas && fleet.pickup_areas.length > 0 && (
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          <span className="truncate">{fleet.pickup_areas.map(area => area.city_name).join(', ')}</span>
+                        </div>
+                      )}
+                      {fleet.facilities && fleet.facilities.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {fleet.facilities.slice(0, 3).map((fac, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {fac.facility}
+                            </Badge>
+                          ))}
+                          {fleet.facilities.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{fleet.facilities.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <Button className="w-full">
-                      Lihat Detail
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="mt-auto">
+                      <div className="border-t border-gray-200 dark:border-gray-700 mb-3"></div>
+                      <div className="mb-3">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                          Mulai dari
+                        </div>
+                        <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                          Rp {fleet.uom === 'jam' 
+                            ? (fleet.price / 12).toLocaleString('id-ID') 
+                            : fleet.price.toLocaleString('id-ID')}
+                          <span className="text-sm text-gray-500 dark:text-gray-400 font-normal ml-1">
+                            /{fleet.uom === 'jam' ? 'jam' : fleet.uom}
+                          </span>
+                        </div>
+                      </div>
+                      <Button className="w-full" onClick={() => navigate(`/armada/${fleet.fleet_id}`)}>
+                        Lihat Detail
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">Belum ada armada tersedia.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
