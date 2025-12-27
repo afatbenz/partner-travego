@@ -10,6 +10,7 @@ export const Navbar: React.FC = () => {
   const [user, setUser] = useState<{ id: number; name: string; role: string } | null>(null);
   const location = useLocation();
   const { getContentIn } = useGeneralContent();
+  const brandLogo = getContentIn('general-config', 'brand-logo');
 
   useEffect(() => {
     // Check if user is logged in
@@ -37,10 +38,16 @@ export const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <MapPin className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              {getContentIn('general-config', 'brand-name') || 'TraveGO'}
-            </span>
+            {brandLogo ? (
+              <img src={brandLogo} alt="Logo" className="h-8 w-auto object-contain" />
+            ) : (
+              <>
+                <MapPin className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <span className="text-xl font-bold text-gray-900 dark:text-white">
+                  {getContentIn('general-config', 'brand-name') || 'TraveGO'}
+                </span>
+              </>
+            )}
           </Link>
 
           {/* Desktop Navigation */}
