@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,14 +31,24 @@ interface ArmadaCardProps {
 
 export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid' }) => {
   const navigate = useNavigate();
+  const features = armada.features || [];
 
   const handleDetailClick = () => {
     navigate(`/detail/armada/${armada.id}`);
   };
 
-  const displayLocation = armada.pickupAreas && armada.pickupAreas.length > 0 
+  const fullLocation = armada.pickupAreas && armada.pickupAreas.length > 0 
     ? armada.pickupAreas.join(', ') 
     : armada.location;
+
+  const displayLocation = fullLocation.length > 50 
+    ? fullLocation.substring(0, 50) + '...' 
+    : fullLocation;
+
+  // Split price into amount and unit
+  const priceParts = (armada.price || '').split('/');
+  const priceAmount = priceParts[0];
+  const priceUnit = priceParts.length > 1 ? `/${priceParts.slice(1).join('/')}` : '';
 
   if (viewMode === 'list') {
     return (
@@ -92,11 +102,7 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
                 </div>
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <MapPin className="h-4 w-4 mr-2" />
-                  <span className="truncate" title={displayLocation}>{displayLocation}</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span>Tahun: {armada.productionYear || armada.year} • {armada.transmission} • {armada.fuel}</span>
+                  <span title={fullLocation}>{displayLocation}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <Star className="h-4 w-4 text-yellow-400 fill-current mr-2" />
@@ -106,25 +112,32 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
 
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
-                  {armada.features.slice(0, 5).map((feature, index) => (
+                  {features.slice(0, 5).map((feature, index) => (
                     <Badge key={index} variant="outline" className="text-xs">
                       {feature}
                     </Badge>
                   ))}
-                  {armada.features.length > 5 && (
+                  {features.length > 5 && (
                     <Badge variant="outline" className="text-xs">
-                      +{armada.features.length - 5} lainnya
+                      +{features.length - 5} lainnya
                     </Badge>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <div className="mt-auto pt-2 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">Mulai dari</div>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {armada.price}
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {priceAmount}
+                  </span>
+                  {priceUnit && (
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                      {priceUnit}
+                    </span>
+                  )}
                 </div>
                 {armada.originalPrice && (
                   <div className="text-sm text-gray-400 line-through">
@@ -144,14 +157,14 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
 
   return (
     <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-      <div className="relative overflow-hidden h-48">
+      <div className="relative overflow-hidden aspect-[4/3] md:aspect-auto md:h-48">
         <img
           src={armada.image}
           alt={armada.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3 flex gap-2">
-          <Badge className={`text-xs ${
+          <Badge className={`text-[10px] md:text-xs ${
             armada.badge === 'Popular' ? 'bg-blue-600 hover:bg-blue-600' :
             armada.badge === 'New' ? 'bg-green-600 hover:bg-green-600' :
             armada.badge === 'Luxury' ? 'bg-purple-600 hover:bg-purple-600' :
@@ -162,55 +175,59 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
           </Badge>
         </div>
       </div>
-      <CardContent className="p-4 flex flex-col flex-1">
-        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white line-clamp-1" title={armada.name}>
+      <CardContent className="p-3 md:p-4 flex flex-col flex-1">
+        <h3 className="md:hidden font-semibold text-base mb-2 text-gray-900 dark:text-white" title={armada.name}>
+          {armada.name.length > 15 ? armada.name.substring(0, 15) + '...' : armada.name}
+        </h3>
+        <h3 className="hidden md:block font-semibold text-lg mb-2 text-gray-900 dark:text-white line-clamp-1" title={armada.name}>
           {armada.name}
         </h3>
         
-        <div className="space-y-2 mb-4 flex-1">
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+        <div className="space-y-1 md:space-y-2 mb-3 md:mb-4 flex-1">
+          <div className="flex items-center text-xs md:text-sm text-gray-600 dark:text-gray-300">
+            <Users className="h-3 w-3 md:h-4 md:w-4 mr-2 flex-shrink-0" />
             <span>{armada.capacity}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span className="truncate" title={displayLocation}>{displayLocation}</span>
-          </div>
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span>{armada.productionYear || armada.year}</span>
+          <div className="flex items-center text-xs md:text-sm text-gray-600 dark:text-gray-300">
+            <MapPin className="h-3 w-3 md:h-4 md:w-4 mr-2 flex-shrink-0" />
+            <span title={fullLocation}>{displayLocation}</span>
           </div>
           
           {/* Facilities */}
           <div className="flex flex-wrap gap-1 mt-2">
-            {armada.features.slice(0, 3).map((feature, index) => (
+            {features.slice(0, 3).map((feature, index) => (
               <span key={index} className="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">
                 {feature}
               </span>
             ))}
-            {armada.features.length > 3 && (
+            {features.length > 3 && (
               <span className="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">
-                +{armada.features.length - 3}
+                +{features.length - 3}
               </span>
             )}
           </div>
         </div>
 
-        <div className="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 dark:text-gray-400">Mulai dari</div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                {armada.price}
+        <div className="mt-auto pt-1 border-t border-gray-100 dark:border-gray-700">
+          <div className="mb-0">
+            <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Mulai dari</div>
+            <div className="flex items-baseline flex-wrap gap-1">
+              <span className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">
+                {priceAmount}
               </span>
+              {priceUnit && (
+                <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  {priceUnit}
+                </span>
+              )}
               {armada.originalPrice && (
-                <span className="text-xs text-gray-400 line-through">
+                <span className="text-[10px] md:text-xs text-gray-400 line-through ml-1">
                   {armada.originalPrice}
                 </span>
               )}
             </div>
           </div>
-          <Button className="w-full text-sm h-9" onClick={handleDetailClick}>
+          <Button className="w-full text-xs md:text-sm h-8 md:h-9 mt-2 md:mt-3" onClick={handleDetailClick}>
             Lihat Detail
           </Button>
         </div>

@@ -99,7 +99,7 @@ export const Services: React.FC = () => {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/50" />
         
-        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-7xl mx-auto w-full">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Layanan Kami</h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto">
@@ -112,7 +112,7 @@ export const Services: React.FC = () => {
 
       {/* Services Section */}
       <section className="py-16">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="grid md:grid-cols-2 gap-8">
             {services.map((service, index) => (
               <Card key={index} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white dark:bg-gray-800">
@@ -167,7 +167,7 @@ export const Services: React.FC = () => {
 
       {/* Why Choose Us Section */}
       <section className="py-16 bg-white dark:bg-gray-950">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Mengapa Memilih Layanan Kami?

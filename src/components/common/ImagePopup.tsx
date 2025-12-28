@@ -54,13 +54,13 @@ export const ImagePopup: React.FC<ImagePopupProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex h-[calc(90vh-120px)]">
+        <div className="flex flex-col lg:flex-row h-[calc(90vh-120px)]">
           {/* Left Section - Main Image */}
-          <div className="flex-1 relative">
+          <div className="relative w-full lg:flex-1 h-2/3 lg:h-auto bg-black/5">
             <img
               src={currentImage}
               alt={`Gallery image ${currentIndex + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain lg:object-cover"
             />
             
             {/* Navigation Arrows */}
@@ -83,14 +83,14 @@ export const ImagePopup: React.FC<ImagePopupProps> = ({
           </div>
 
           {/* Right Section - Photo List & Reviews */}
-          <div className="w-96 p-4 border-l bg-gray-50 dark:bg-gray-900">
+          <div className="w-full lg:w-96 h-1/3 lg:h-full p-4 border-t lg:border-t-0 lg:border-l bg-gray-50 dark:bg-gray-900 overflow-y-auto">
             {/* Photo List */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Semua Foto ({images.length})
               </h3>
               
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+              <div className="space-y-2 overflow-y-auto">
                 {images.map((image, index) => (
                   <div
                     key={index}
@@ -122,70 +122,7 @@ export const ImagePopup: React.FC<ImagePopupProps> = ({
               </div>
             </div>
 
-            {/* Reviews Section */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Ulasan (2)
-              </h3>
-              
-              <div className="space-y-4 max-h-64 overflow-y-auto">
-                {/* Review 1 */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
-                      A
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">Ahmad Rizki</p>
-                      <div className="flex items-center">
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i} className="text-xs">★</span>
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">2 hari yang lalu</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    "Paket tour yang sangat memuaskan! Pelayanan guide sangat baik dan tempat wisata yang dikunjungi sesuai dengan yang dijanjikan. Recommended!"
-                  </p>
-                </div>
 
-                {/* Review 2 */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
-                      S
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">Sari Dewi</p>
-                      <div className="flex items-center">
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i} className="text-xs">★</span>
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">1 minggu yang lalu</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    "Pengalaman wisata yang tak terlupakan! Hotel bagus, makanan enak, dan transportasi nyaman. Worth it banget untuk harga segini."
-                  </p>
-                </div>
-              </div>
-
-              {/* View All Reviews Button */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full mt-4"
-                onClick={() => navigate(`/reviews/${itemType}/${itemId}`)}
-              >
-                Lihat Semua Ulasan
-              </Button>
-            </div>
           </div>
         </div>
 

@@ -253,7 +253,7 @@ export const ArmadaDetail: React.FC = () => {
 
       {/* Image Gallery Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Main Image */}
             <div className="lg:col-span-3">
@@ -270,10 +270,10 @@ export const ArmadaDetail: React.FC = () => {
             {/* Thumbnail Grid */}
             <div className="lg:col-span-1">
               <div className="grid grid-cols-2 gap-3">
-                {allImages.slice(1, 5).map((image, index) => (
+                {allImages.slice(1, 7).map((image, index) => (
                   <div
                     key={index + 1}
-                    className="relative h-24 rounded-lg overflow-hidden cursor-pointer group"
+                    className={`relative h-24 rounded-lg overflow-hidden cursor-pointer group ${index > 1 ? 'hidden lg:block' : ''}`}
                     onClick={() => handleImageClick(index + 1)}
                   >
                     <img
@@ -282,23 +282,22 @@ export const ArmadaDetail: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                    
+                    {/* Mobile Overlay: Show on 2nd gallery photo (index 1) if more than 3 photos total (1 main + 2 gallery) */}
+                    {index === 1 && allImages.length > 3 && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-colors duration-300 lg:hidden">
+                        <span className="text-white font-bold text-xl">+{allImages.length - 3}</span>
+                      </div>
+                    )}
+
+                    {/* Desktop Overlay: Show on 6th gallery photo (index 5) if more than 7 photos total (1 main + 6 gallery) */}
+                    {index === 5 && allImages.length > 7 && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-colors duration-300 hidden lg:flex">
+                        <span className="text-white font-bold text-xl">+{allImages.length - 7}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
-                
-                {/* See All Photos Button if more than 5 images */}
-                {allImages.length > 5 && (
-                  <div
-                    className="relative h-24 rounded-lg overflow-hidden cursor-pointer group bg-gray-200 flex items-center justify-center"
-                    onClick={() => handleImageClick(0)}
-                  >
-                    <div className="text-center">
-                      <div className="w-8 h-8 mx-auto mb-2 bg-white/80 rounded-full flex items-center justify-center">
-                        <Search className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <span className="text-sm text-gray-600 font-medium">Lihat Semua ({allImages.length})</span>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -307,7 +306,7 @@ export const ArmadaDetail: React.FC = () => {
 
       {/* Description Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-white">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">

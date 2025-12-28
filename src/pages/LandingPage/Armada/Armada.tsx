@@ -22,7 +22,7 @@ interface Fleet {
   discount_value: number | null;
   price: number;
   facilities?: { facility: string }[];
-  pickup_areas?: { city_name: string }[];
+  cities?: string[];
 }
 
 interface FleetResponse {
@@ -50,16 +50,15 @@ const Armada = () => {
         const res = await http.get<FleetResponse>('/api/service/fleet');
         if (res.data && Array.isArray(res.data.data)) {
           const mappedFleets = res.data.data.map((fleet) => {
-            const displayPrice = fleet.uom === 'jam' ? fleet.price / 12 : fleet.price;
-            const displayUom = fleet.uom === 'jam' ? 'jam' : fleet.uom;
+            const displayUom = fleet.duration ? `${fleet.duration} ${fleet.uom}` : fleet.uom;
             
             return {
               id: fleet.fleet_id,
               name: fleet.fleet_name,
               type: fleet.fleet_type,
               capacity: `${fleet.capacity} Penumpang`,
-              price: `Rp ${displayPrice.toLocaleString('id-ID')}/${displayUom}`,
-              originalPrice: fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
+              price: `Rp ${fleet.price.toLocaleString('id-ID')}/${displayUom}`,
+              originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
               image: fleet.thumbnail,
               rating: 5.0, // Default value as API doesn't provide rating
               reviews: 0, // Default value
@@ -67,14 +66,14 @@ const Armada = () => {
                 ? fleet.facilities.map(f => f.facility) 
                 : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
               location: 'Jakarta', // Default fallback
-              pickupAreas: fleet.pickup_areas ? fleet.pickup_areas.map(p => p.city_name) : [],
+              pickupAreas: fleet.cities || [],
               transmission: 'Manual', // Default value
               fuel: 'Bensin', // Default value
               year: fleet.production_year.toString(),
               productionYear: fleet.production_year,
               badge: fleet.discount_value ? 'Discount' : 'New',
               discount: fleet.discount_value ? `-${fleet.discount_value}%` : '',
-              rawPrice: displayPrice // For sorting
+              rawPrice: fleet.price // For sorting
             };
           });
           setArmadaData(mappedFleets);
@@ -167,7 +166,7 @@ const Armada = () => {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/50" />
         
-        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-7xl mx-auto w-full">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Armada Kami</h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto">
@@ -179,7 +178,7 @@ const Armada = () => {
 
       {/* Search and Filter Section */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
           <FilterSection
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
@@ -205,7 +204,7 @@ const Armada = () => {
       </div>
 
       {/* Armada Grid */}
-      <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -214,7 +213,7 @@ const Armada = () => {
         ) : (
           <>
             <div className={viewMode === 'grid' 
-              ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-6" 
+              ? "grid grid-cols-2 lg:grid-cols-3 gap-6" 
               : "space-y-6"
             }>
               {paginatedArmada.length > 0 ? (

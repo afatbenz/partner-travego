@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Star, Shield, Clock, Headphones, ArrowRight, MapPin, Phone, Users } from 'lucide-react';
+import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { useNavigate } from 'react-router-dom';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { http } from '@/lib/http';
 
-export interface Fleet {
+export interface FleetApiResponse {
   fleet_id: string;
   fleet_name: string;
   fleet_type: string;
@@ -25,12 +33,15 @@ export interface Fleet {
   discount_type: string | null;
   discount_value: number | null;
   price: number;
+  duration?: number;
+  facilities?: { facility: string }[];
+  cities?: string[];
 }
 
 export interface FleetResponse {
   status: string;
   message: string;
-  data: Fleet[];
+  data: FleetApiResponse[];
   transaction_id: string;
 }
 
@@ -40,7 +51,7 @@ export const Home: React.FC = () => {
   const heroTitle = getContentIn('landing-page', 'hero-section') || getContentByTag('hero-section') || 'Lorem Ipsum Dolor Sit Amet';
   const heroSubTitle = getContentIn('landing-page', 'sub-hero-section') || getContentByTag('sub-hero-section') || 'Lorem Ipsum Dolor Sit Amet';
 
-  const [fleets, setFleets] = useState<Fleet[]>([]);
+  const [fleets, setFleets] = useState<any[]>([]);
   const [loadingFleets, setLoadingFleets] = useState(true);
 
   useEffect(() => {
@@ -48,7 +59,33 @@ export const Home: React.FC = () => {
       try {
         const res = await http.get<FleetResponse>('/api/service/fleet');
         if (res.data && Array.isArray(res.data.data)) {
-          setFleets(res.data.data);
+          const mappedFleets = res.data.data.map((fleet) => {
+            const displayUom = fleet.duration ? `${fleet.duration} ${fleet.uom}` : fleet.uom;
+            
+            return {
+              id: fleet.fleet_id,
+              name: fleet.fleet_name,
+              type: fleet.fleet_type,
+              capacity: `${fleet.capacity} Penumpang`,
+              price: `Rp ${fleet.price.toLocaleString('id-ID')}/${displayUom}`,
+              originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
+              image: fleet.thumbnail,
+              rating: 5.0, // Default value as API doesn't provide rating
+              reviews: 0, // Default value
+              features: fleet.facilities && fleet.facilities.length > 0 
+                ? fleet.facilities.map(f => f.facility) 
+                : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
+              location: 'Jakarta', // Default fallback
+              pickupAreas: fleet.cities || [],
+              transmission: 'Manual', // Default value
+              fuel: 'Bensin', // Default value
+              year: fleet.production_year.toString(),
+              productionYear: fleet.production_year,
+              badge: fleet.discount_value ? 'Discount' : 'New',
+              discount: fleet.discount_value ? `-${fleet.discount_value}%` : ''
+            };
+          });
+          setFleets(mappedFleets);
         }
       } catch (err) {
         console.error('Failed to fetch fleets:', err);
@@ -78,7 +115,6 @@ export const Home: React.FC = () => {
   );
 
   // Debug logging
-  console.log('Debug:', { cityInput, filteredCities, searchCity });
 
   const handleSearch = () => {
     console.log('Searching for:', { city: searchCity, service: serviceType });
@@ -140,7 +176,6 @@ export const Home: React.FC = () => {
     'arrow-right': ArrowRight,
   };
   const whyChooseUsList = getListIn('choose-use', 'why-choose-us-points') as { icon?: string; label?: string; sub_label?: string }[] | null;
-  console.log("---> whyChooseUsList", {whyChooseUsList})
   const whyChooseUs = (whyChooseUsList && whyChooseUsList.length
     ? whyChooseUsList.map((item) => ({
         icon: iconMap[(item.icon || '').toLowerCase()] || Shield,
@@ -149,7 +184,6 @@ export const Home: React.FC = () => {
       }))
     : []
   );
-  console.log("x---- ", {whyChooseUs})
 
   return (
     <div className="min-h-screen">
@@ -165,7 +199,7 @@ export const Home: React.FC = () => {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/50" />
         
-        <div className="relative h-full flex flex-col justify-between px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8 sm:py-12">
+        <div className="relative h-full flex flex-col justify-between px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8 sm:py-12 max-w-7xl mx-auto w-full">
           {/* Title and Subtitle - Top Section */}
           <div className="text-center pt-24 sm:pt-32 md:pt-40 lg:pt-48">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
@@ -261,7 +295,7 @@ export const Home: React.FC = () => {
 
       {/* Armada Kami Section */}
       <section className="py-16 bg-white dark:bg-gray-800">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Armada Kami
@@ -271,7 +305,38 @@ export const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Mobile View - Carousel */}
+          <div className="block md:hidden">
+            {loadingFleets ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-500">Memuat armada...</p>
+              </div>
+            ) : fleets.length > 0 ? (
+              <Carousel className="w-full max-w-sm mx-auto">
+                <CarouselContent>
+                  {fleets.map((fleet) => (
+                    <CarouselItem key={fleet.id}>
+                      <div className="p-1 h-full">
+                        <ArmadaCard armada={fleet} viewMode="grid" />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="hidden sm:block">
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </div>
+              </Carousel>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Belum ada armada tersedia.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop View - Grid */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-6">
             {loadingFleets ? (
               <div className="col-span-full text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -279,82 +344,7 @@ export const Home: React.FC = () => {
               </div>
             ) : fleets.length > 0 ? (
               fleets.map((fleet) => (
-                <Card key={fleet.fleet_id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col bg-white dark:bg-gray-800">
-                  <div className="relative overflow-hidden h-60">
-                    <img
-                      src={fleet.thumbnail}
-                      alt={fleet.fleet_name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-blue-600 hover:bg-blue-600 text-white text-sm font-bold">
-                        {fleet.fleet_type}
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardContent className="p-6 flex flex-col h-full">
-                    <h3 className="font-semibold text-xl mb-2 text-gray-900 dark:text-white line-clamp-2">
-                      {fleet.fleet_name}
-                    </h3>
-                    <div className="border-t border-gray-200 dark:border-gray-700 mb-4"></div>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                      {fleet.description ? fleet.description.replace(/<[^>]*>?/gm, '') : ''}
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                        <Users className="h-4 w-4 mr-2" />
-                        <span>{fleet.capacity} Penumpang</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                        <Shield className="h-4 w-4 mr-2" />
-                        <span>{fleet.body || fleet.engine}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                        <Clock className="h-4 w-4 mr-2" />
-                        <span>Tahun: {fleet.production_year}</span>
-                      </div>
-                      {fleet.pickup_areas && fleet.pickup_areas.length > 0 && (
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          <span className="truncate">{fleet.pickup_areas.map(area => area.city_name).join(', ')}</span>
-                        </div>
-                      )}
-                      {fleet.facilities && fleet.facilities.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {fleet.facilities.slice(0, 3).map((fac, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {fac.facility}
-                            </Badge>
-                          ))}
-                          {fleet.facilities.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{fleet.facilities.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-auto">
-                      <div className="border-t border-gray-200 dark:border-gray-700 mb-3"></div>
-                      <div className="mb-3">
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                          Mulai dari
-                        </div>
-                        <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                          Rp {fleet.uom === 'jam' 
-                            ? (fleet.price / 12).toLocaleString('id-ID') 
-                            : fleet.price.toLocaleString('id-ID')}
-                          <span className="text-sm text-gray-500 dark:text-gray-400 font-normal ml-1">
-                            /{fleet.uom === 'jam' ? 'jam' : fleet.uom}
-                          </span>
-                        </div>
-                      </div>
-                      <Button className="w-full" onClick={() => navigate(`/detail/armada/${fleet.fleet_id}`)}>
-                        Lihat Detail
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <ArmadaCard key={fleet.id} armada={fleet} viewMode="grid" />
               ))
             ) : (
               <div className="col-span-full text-center py-12">
@@ -367,7 +357,7 @@ export const Home: React.FC = () => {
 
       {/* Why Choose Us Section */}
       <section className="py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Kenapa Pilih TravelPro?
@@ -397,7 +387,7 @@ export const Home: React.FC = () => {
 
       {/* Popular Catalog Section */}
       <section className="py-12 sm:py-16 bg-white dark:bg-gray-950">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
               Katalog Terpopuler
@@ -407,7 +397,7 @@ export const Home: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {popularCatalogs.map((item) => (
             <Card key={item.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col">
               <div className="relative overflow-hidden h-60">
