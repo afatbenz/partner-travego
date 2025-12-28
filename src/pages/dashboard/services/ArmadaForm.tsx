@@ -6,6 +6,29 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { http } from '@/lib/http';
+
+interface FleetApiResponse {
+  fleet_id: string;
+  fleet_name: string;
+  fleet_type: string;
+  capacity: number;
+  production_year: number;
+  engine: string;
+  description: string;
+  thumbnail: string;
+  price: number;
+  uom: string;
+  duration?: number;
+  cities?: string[];
+  facilities?: { facility: string }[];
+}
+
+interface FleetResponse {
+  status: string;
+  message: string;
+  data: FleetApiResponse[];
+}
 
 export const ArmadaForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -56,6 +79,44 @@ export const ArmadaForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (isEdit && id) {
+      const fetchFleet = async () => {
+        try {
+          const res = await http.get<FleetResponse>('/api/service/fleet');
+          if (res.data && Array.isArray(res.data.data)) {
+            const fleet = res.data.data.find(f => f.fleet_id === id || String(f.fleet_id) === String(id));
+            
+            if (fleet) {
+              setFormData(prev => ({
+                ...prev,
+                name: fleet.fleet_name,
+                type: fleet.fleet_type,
+                capacity: fleet.capacity,
+                year: fleet.production_year,
+                engine: fleet.engine,
+                features: fleet.facilities ? fleet.facilities.map(f => f.facility) : [],
+                pickupPoints: fleet.cities || [],
+                rentalPrices: [
+                  { 
+                    duration: fleet.duration ? `${fleet.duration} ${fleet.uom}` : fleet.uom, 
+                    price: fleet.price, 
+                    type: 'citytour'
+                  }
+                ],
+                images: fleet.thumbnail ? [fleet.thumbnail] : [],
+                description: fleet.description
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching fleet:', error);
+        }
+      };
+      fetchFleet();
+    }
+  }, [isEdit, id]);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -75,7 +136,6 @@ export const ArmadaForm: React.FC = () => {
     e.preventDefault();
     if (validateForm()) {
       // Handle form submission
-      console.log('Form submitted:', formData);
       // In real app, this would make API call
       navigate('/dashboard/services/fleet');
     }

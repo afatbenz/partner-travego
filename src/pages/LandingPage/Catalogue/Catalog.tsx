@@ -157,7 +157,7 @@ export const Catalog: React.FC = () => {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/50" />
         
-        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-7xl mx-auto w-full">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Katalog Layanan</h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto">
@@ -170,7 +170,7 @@ export const Catalog: React.FC = () => {
 
       {/* Search and Filter Section */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
           <FilterSection
             searchTerm={searchQuery}
             onSearchChange={setSearchQuery}
@@ -195,11 +195,11 @@ export const Catalog: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
 
         {/* Catalog Items */}
         <div className={viewMode === 'grid' 
-          ? "grid md:grid-cols-2 lg:grid-cols-4 gap-6" 
+          ? "grid grid-cols-2 lg:grid-cols-3 gap-6" 
           : "space-y-6"
         }>
           {paginatedItems.map((item) => (

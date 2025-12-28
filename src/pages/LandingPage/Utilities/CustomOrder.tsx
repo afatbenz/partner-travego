@@ -93,10 +93,10 @@ export const CustomOrder: React.FC = () => {
       <PageHeader
         title="Ajukan Custom Order"
         subtitle="Isi form di bawah ini untuk mengajukan permintaan custom order"
-        maxWidth="6xl"
+        maxWidth="7xl"
       />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Form */}
           <div className="lg:col-span-2">

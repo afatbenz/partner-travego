@@ -160,7 +160,7 @@ export const Reviews: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 pt-24">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="!w-auto !h-auto p-2 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800">
               <ArrowLeft className="h-5 w-5" />
@@ -177,7 +177,7 @@ export const Reviews: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
         <div className="space-y-6">
           {/* Rating Summary */}
           <Card>

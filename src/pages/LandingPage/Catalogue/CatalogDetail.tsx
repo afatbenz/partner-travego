@@ -136,7 +136,7 @@ export const CatalogDetail: React.FC = () => {
 
       {/* Tour Details */}
       <section className="py-8 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-white">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="flex items-center space-x-6">
             <div className="flex items-center">
               <Calendar className="h-5 w-5 mr-2 text-gray-600" />
@@ -152,7 +152,7 @@ export const CatalogDetail: React.FC = () => {
 
       {/* Image Gallery Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Main Image */}
             <div className="lg:col-span-3">
@@ -204,7 +204,7 @@ export const CatalogDetail: React.FC = () => {
 
       {/* Description Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-white">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-3">
@@ -311,7 +311,7 @@ export const CatalogDetail: React.FC = () => {
 
       {/* Reviews Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-3">

@@ -20,7 +20,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
         <ThemeToggle />
       </div>
       
-      <div className="flex h-screen w-full py-2 sm:py-4 lg:py-6 xl:py-8">
+      <div className="flex h-screen w-full py-2 sm:py-4 lg:py-6 xl:py-8 max-w-7xl mx-auto">
         {/* Left Side - Form */}
         <div className="flex-1 flex items-center justify-center px-4 lg:px-8 xl:px-12 2xl:px-16">
           <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl">

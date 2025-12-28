@@ -126,7 +126,7 @@ export const EditProfile: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Avatar Section */}
           <Card>

@@ -1,131 +1,108 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Calendar, Star, Share2, Heart, Search, ChevronLeft, Users, Car } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Calendar, Star, Share2, Heart, Search, ChevronLeft, Users, Car, MapPin, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ImagePopup } from '@/components/common/ImagePopup';
+import { http } from '@/lib/http';
 
-// Sample data - in real app, this would come from API
-const sampleData = {
-  id: 1,
-  name: "Toyota Hiace Premio",
-  type: "Minibus",
-  capacity: "12-15 orang",
-  year: "2023",
-  transmission: "Manual",
-  fuel: "Diesel",
-  price: "Rp 800.000",
-  originalPrice: "Rp 1.000.000",
-  rating: 4.8,
-  reviews: 24,
-  images: [
-    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop"
-  ],
-  description: `
-    Toyota Hiace Premio adalah pilihan terbaik untuk perjalanan grup dengan kapasitas 12-15 orang. Dilengkapi dengan fitur-fitur modern dan kenyamanan maksimal untuk perjalanan jarak jauh.
+// Interfaces
+interface FleetMeta {
+  fleet_id: string;
+  fleet_type: string;
+  fleet_name: string;
+  capacity: number;
+  engine: string;
+  body: string;
+  description: string;
+  thumbnail: string;
+  created_at: string;
+  production_year?: number;
+  transmission?: string;
+  fuel_type?: string;
+}
 
-    **Spesifikasi Teknis:**
-    - Mesin: 2.8L Turbo Diesel
-    - Transmisi: Manual 5-speed
-    - Kapasitas Bahan Bakar: 70 liter
-    - Dimensi: 5,265 x 1,950 x 2,280 mm
-    - Ground Clearance: 190 mm
-    - Berat Kosong: 2,200 kg
+interface FleetPickup {
+  city_id: number;
+  city_name: string;
+}
 
-    **Fitur Interior:**
-    - 15 kursi empuk dengan headrest
-    - AC dengan 4 blower
-    - Audio system dengan Bluetooth
-    - Charging port USB di setiap kursi
-    - Bagasi besar untuk koper dan barang
-    - Jendela besar untuk pemandangan
-    - Lantai karpet premium
+interface FleetAddon {
+  uuid: string;
+  addon_name: string;
+  addon_desc: string;
+  addon_price: number;
+}
 
-    **Fitur Keamanan:**
-    - ABS (Anti-lock Braking System)
-    - EBD (Electronic Brake Distribution)
-    - Dual Airbag untuk pengemudi dan penumpang depan
-    - Seatbelt 3-point untuk semua penumpang
-    - Central lock dengan remote
-    - Alarm system
-    - Immobilizer
+interface FleetPricing {
+  price_id: number;
+  duration: number;
+  rent_type: number;
+  rent_type_label: string;
+  price: number;
+  disc_amount: number;
+  disc_price: number;
+  uom: string;
+}
 
-    **Fitur Eksterior:**
-    - Body warna solid dengan cat premium
-    - Bumper depan dan belakang
-    - Spion elektrik dengan defogger
-    - Lampu LED untuk efisiensi energi
-    - Ban tubeless dengan velg alloy
-    - Kaca film untuk privasi dan kenyamanan
+interface FleetImage {
+  uuid: string;
+  path_file: string;
+}
 
-    **Sesuai untuk:**
-    - Tour grup keluarga
-    - Perjalanan bisnis
-    - Event perusahaan
-    - Wisata religi
-    - Perjalanan antar kota
-    - Airport transfer
+interface FleetDetailData {
+  meta: FleetMeta;
+  facilities: string[];
+  pickup: FleetPickup[];
+  addon: FleetAddon[];
+  pricing: FleetPricing[];
+  images: FleetImage[];
+}
 
-    **Driver & Service:**
-    - Driver berpengalaman dan profesional
-    - Berpakaian rapi dan sopan
-    - Menguasai rute dengan baik
-    - Siap membantu dengan barang bawaan
-    - Tersedia 24/7 untuk kebutuhan darurat
-
-    **Termasuk dalam harga:**
-    - Bahan bakar untuk perjalanan
-    - Driver profesional
-    - Parkir dan tol
-    - Air mineral untuk penumpang
-    - Tissue dan sanitizer
-    - First aid kit
-  `,
-  features: [
-    "AC",
-    "Audio System",
-    "Kursi empuk",
-    "Driver berpengalaman",
-    "Bahan bakar",
-    "Parkir tol"
-  ],
-  specifications: [
-    "Mesin: 2.8L Turbo Diesel",
-    "Transmisi: Manual 5-speed",
-    "Kapasitas: 12-15 orang",
-    "Tahun: 2023",
-    "Bahan Bakar: Diesel",
-    "AC: 4 blower"
-  ],
-  amenities: [
-    "Charging port USB",
-    "Audio Bluetooth",
-    "Bagasi besar",
-    "Jendela besar",
-    "Karpet premium",
-    "Air mineral"
-  ]
-};
+interface FleetDetailResponse {
+  status: string;
+  message: string;
+  data: FleetDetailData;
+}
 
 export const ArmadaDetail: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [reviewText, setReviewText] = useState('');
   const [selectedRating, setSelectedRating] = useState(0);
+  const [selectedPricing, setSelectedPricing] = useState<FleetPricing | null>(null);
+  const [showAllPricing, setShowAllPricing] = useState(false);
+  
+  const [fleet, setFleet] = useState<FleetDetailData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // In real app, fetch data based on id from useParams
-  const data = sampleData;
+  useEffect(() => {
+    const fetchFleetDetail = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await http.post<FleetDetailResponse>('/api/service/fleet/detail', { fleet_id: id });
+        if (response.data.status === 'success') {
+          setFleet(response.data.data);
+        } else {
+          setError(response.data.message || 'Failed to fetch fleet details');
+        }
+      } catch (err) {
+        console.error('Error fetching fleet detail:', err);
+        setError('Terjadi kesalahan saat mengambil detail armada. Silakan coba lagi nanti.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFleetDetail();
+  }, [id]);
 
   const handleImageClick = (index: number) => {
     setSelectedImageIndex(index);
@@ -141,20 +118,74 @@ export const ArmadaDetail: React.FC = () => {
   };
 
   const handleOrderNow = () => {
-    navigate(`/checkout/armada/${data.id}`);
+    if (fleet && selectedPricing) {
+      navigate(`/checkout/armada/${fleet.meta.fleet_id}`, { 
+        state: { 
+          fleet_id: fleet.meta.fleet_id,
+          price_id: selectedPricing.price_id,
+          pricing: selectedPricing 
+        } 
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Memuat detail armada...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !fleet) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Gagal Memuat Data</h2>
+          <p className="text-gray-600 mb-6">{error || 'Data armada tidak ditemukan'}</p>
+          <Button onClick={() => navigate('/armada')} variant="outline">
+            Kembali ke Daftar Armada
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Prepare images for gallery (thumbnail + additional images)
+  const allImages = [fleet.meta.thumbnail, ...fleet.images.map(img => img.path_file)].filter(Boolean);
+  
+  // Calculate display price (lowest price)
+  const lowestPrice = fleet.pricing.length > 0 
+    ? Math.min(...fleet.pricing.map(p => p.price))
+    : 0;
+    
+  const displayPrice = lowestPrice;
+  // Find the UOM associated with the lowest price
+  const lowestPriceItem = fleet.pricing.find(p => p.price === lowestPrice);
+  const priceUom = lowestPriceItem ? lowestPriceItem.uom : 'hari';
+
+  // Format price for display
+  const formattedPrice = `Rp ${displayPrice.toLocaleString('id-ID')}`;
+  
+  // Default rating (API doesn't provide rating yet)
+  const rating = 5.0;
+  const reviews = 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Banner with Blue Tosca Background */}
+      {/* Header Banner with Parallax Background */}
       <section className="relative h-96 w-full text-white overflow-hidden">
         <div
-          className="absolute inset-0 bg-gradient-to-br from-teal-400 via-teal-500 to-teal-600"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
-            background: 'linear-gradient(135deg, #20B2AA 0%, #008B8B 50%, #006666 100%)'
+            backgroundImage: `url(${fleet.meta.thumbnail})`
           }}
         />
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/75" />
         
         <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="max-w-4xl w-full">
@@ -169,32 +200,41 @@ export const ArmadaDetail: React.FC = () => {
             </Button>
 
             {/* Title */}
-            <h1 className="text-4xl font-bold mb-4 text-white">
-              {data.name}
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-white">
+              {fleet.meta.fleet_name}
             </h1>
 
             {/* Vehicle Info */}
-            <div className="flex items-center mb-4">
-              <Car className="h-5 w-5 mr-2 text-white" />
-              <span className="text-white mr-4">{data.type} • {data.capacity}</span>
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                {data.year}
-              </Badge>
+            <div className="flex flex-wrap items-center mb-4 gap-3">
+              <div className="flex items-center">
+                <Car className="h-5 w-5 mr-2 text-white" />
+                <span className="text-white">{fleet.meta.fleet_type}</span>
+              </div>
+              <span className="hidden sm:inline text-white">•</span>
+              <div className="flex items-center">
+                <Users className="h-5 w-5 mr-2 text-white" />
+                <span className="text-white">{fleet.meta.capacity} Penumpang</span>
+              </div>
+              {fleet.meta.production_year && (
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  {fleet.meta.production_year}
+                </Badge>
+              )}
             </div>
 
             {/* Vehicle Details */}
-            <div className="flex items-center space-x-6">
+            <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center">
-                <Users className="h-5 w-5 mr-2 text-white" />
-                <span className="text-white">Kapasitas: {data.capacity}</span>
-              </div>
-              <div className="flex items-center">
-                <Calendar className="h-5 w-5 mr-2 text-white" />
-                <span className="text-white">Tahun: {data.year}</span>
+                <MapPin className="h-5 w-5 mr-2 text-white" />
+                <span className="text-white">
+                  {fleet.pickup.length > 0 
+                    ? `${fleet.pickup.length} Area Penjemputan` 
+                    : 'Konfirmasi Admin'}
+                </span>
               </div>
               <div className="flex items-center">
                 <Star className="h-5 w-5 mr-2 text-white" />
-                <span className="text-white">Rating: {data.rating} ({data.reviews} ulasan)</span>
+                <span className="text-white">Rating: {rating} ({reviews} ulasan)</span>
               </div>
             </div>
           </div>
@@ -207,23 +247,20 @@ export const ArmadaDetail: React.FC = () => {
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
               <Share2 className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
-              <Search className="h-5 w-5" />
-            </Button>
           </div>
         </div>
       </section>
 
       {/* Image Gallery Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Main Image */}
             <div className="lg:col-span-3">
-              <div className="relative h-96 rounded-lg overflow-hidden cursor-pointer group" onClick={() => handleImageClick(0)}>
+              <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden cursor-pointer group" onClick={() => handleImageClick(0)}>
                 <img
-                  src={data.images[0]}
-                  alt={data.name}
+                  src={allImages[0]}
+                  alt={fleet.meta.fleet_name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
@@ -233,10 +270,10 @@ export const ArmadaDetail: React.FC = () => {
             {/* Thumbnail Grid */}
             <div className="lg:col-span-1">
               <div className="grid grid-cols-2 gap-3">
-                {data.images.slice(1, 5).map((image, index) => (
+                {allImages.slice(1, 7).map((image, index) => (
                   <div
                     key={index + 1}
-                    className="relative h-24 rounded-lg overflow-hidden cursor-pointer group"
+                    className={`relative h-24 rounded-lg overflow-hidden cursor-pointer group ${index > 1 ? 'hidden lg:block' : ''}`}
                     onClick={() => handleImageClick(index + 1)}
                   >
                     <img
@@ -245,21 +282,22 @@ export const ArmadaDetail: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                    
+                    {/* Mobile Overlay: Show on 2nd gallery photo (index 1) if more than 3 photos total (1 main + 2 gallery) */}
+                    {index === 1 && allImages.length > 3 && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-colors duration-300 lg:hidden">
+                        <span className="text-white font-bold text-xl">+{allImages.length - 3}</span>
+                      </div>
+                    )}
+
+                    {/* Desktop Overlay: Show on 6th gallery photo (index 5) if more than 7 photos total (1 main + 6 gallery) */}
+                    {index === 5 && allImages.length > 7 && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center transition-colors duration-300 hidden lg:flex">
+                        <span className="text-white font-bold text-xl">+{allImages.length - 7}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
-                
-                {/* See All Photos Button */}
-                <div
-                  className="relative h-24 rounded-lg overflow-hidden cursor-pointer group bg-gray-200 flex items-center justify-center"
-                  onClick={() => handleImageClick(0)}
-                >
-                  <div className="text-center">
-                    <div className="w-8 h-8 mx-auto mb-2 bg-white/80 rounded-full flex items-center justify-center">
-                      <Search className="h-4 w-4 text-gray-600" />
-                    </div>
-                    <span className="text-sm text-gray-600 font-medium">See All Photos</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -268,312 +306,204 @@ export const ArmadaDetail: React.FC = () => {
 
       {/* Description Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-white">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Deskripsi Armada</h2>
               
-              <div className="prose prose-lg max-w-none">
-                {data.description.split('\n').map((paragraph, index) => {
-                  if (paragraph.trim() === '') return <br key={index} />;
-                  
-                  if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
-                    return (
-                      <h3 key={index} className="text-xl font-semibold text-gray-900 mt-6 mb-3">
-                        {paragraph.replace(/\*\*/g, '')}
-                      </h3>
-                    );
-                  }
-                  
-                  if (paragraph.startsWith('- ')) {
-                    return (
-                      <p key={index} className="text-gray-700 mb-2 ml-4">
-                        {paragraph}
-                      </p>
-                    );
-                  }
-                  
-                  return (
-                    <p key={index} className="text-gray-700 mb-4 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  );
-                })}
+              <div 
+                className="prose prose-lg max-w-none text-gray-700"
+                dangerouslySetInnerHTML={{ __html: fleet.meta.description }}
+              />
+
+              {/* Pickup Areas */}
+              {fleet.pickup.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Area Penjemputan</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {fleet.pickup.map((area) => (
+                      <Badge key={area.city_id} variant="outline" className="px-3 py-1 border-blue-200 bg-blue-50 text-blue-700">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {area.city_name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Specifications & Facilities */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                {/* Specifications */}
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Spesifikasi</h3>
+                  <div className="bg-white rounded-lg border border-gray-100 p-6 shadow-sm">
+                    <ul className="space-y-3">
+                      <li className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                        <span className="font-medium w-24">Mesin:</span> {fleet.meta.engine}
+                      </li>
+                      <li className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                        <span className="font-medium w-24">Body:</span> {fleet.meta.body}
+                      </li>
+                      <li className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                        <span className="font-medium w-24">Kapasitas:</span> {fleet.meta.capacity} Orang
+                      </li>
+                      <li className="flex items-center text-sm text-gray-700">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                        <span className="font-medium w-24">Tipe:</span> {fleet.meta.fleet_type}
+                      </li>
+                      {fleet.meta.transmission && (
+                        <li className="flex items-center text-sm text-gray-700">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                          <span className="font-medium w-24">Transmisi:</span> {fleet.meta.transmission}
+                        </li>
+                      )}
+                      {fleet.meta.fuel_type && (
+                        <li className="flex items-center text-sm text-gray-700">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                          <span className="font-medium w-24">Bahan Bakar:</span> {fleet.meta.fuel_type}
+                        </li>
+                      )}
+                      {fleet.meta.production_year && (
+                        <li className="flex items-center text-sm text-gray-700">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                          <span className="font-medium w-24">Tahun:</span> {fleet.meta.production_year}
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Facilities */}
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Fasilitas</h3>
+                  <div className="bg-white rounded-lg border border-gray-100 p-6 shadow-sm">
+                    <ul className="space-y-2">
+                      {fleet.facilities.map((feature, index) => (
+                        <li key={index} className="flex items-start text-sm text-gray-700">
+                          <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-6">
-                {/* Rating */}
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                  <div className="flex items-center mb-4">
-                    <Star className="h-6 w-6 text-yellow-400 fill-current mr-2" />
-                    <span className="text-2xl font-bold text-gray-900">{data.rating}/5</span>
-                    <span className="text-sm text-gray-500 ml-2">(From {data.reviews} Reviews)</span>
-                  </div>
-                  
-                  {/* Price */}
+                {/* Pricing Card */}
+                <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border border-gray-100">
                   <div className="mb-6">
-                    <div className="text-sm text-gray-500 line-through mb-1">
-                      {data.originalPrice}
+                    <div className="text-sm text-gray-500 mb-1">
+                      Mulai dari
                     </div>
                     <div className="text-3xl font-bold text-blue-600">
-                      {data.price}
+                      {formattedPrice}
                     </div>
-                    <div className="text-sm text-gray-500">/hari</div>
+                    <div className="text-sm text-gray-500">
+                       {lowestPriceItem && lowestPriceItem.duration > 0 
+                         ? `/ ${lowestPriceItem.duration} ${lowestPriceItem.uom}` 
+                         : `/${priceUom}`}
+                    </div>
                   </div>
+
+                  {/* Pricing Options List */}
+                  {fleet.pricing.length > 0 && (
+                    <div className="mb-6 space-y-3">
+                      <h4 className="font-semibold text-gray-900 text-sm">Pilihan Durasi:</h4>
+                      {(showAllPricing ? fleet.pricing : fleet.pricing.slice(0, 5)).map((pkg, idx) => {
+                        const isSelected = selectedPricing === pkg;
+                        return (
+                          <div 
+                            key={idx} 
+                            className={`flex justify-between items-center text-sm p-3 rounded cursor-pointer border transition-all ${
+                              isSelected 
+                                ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500' 
+                                : 'bg-gray-50 border-transparent hover:bg-gray-100'
+                            }`}
+                            onClick={() => setSelectedPricing(pkg)}
+                          >
+                            <div>
+                              <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                                {pkg.rent_type_label}
+                              </span>
+                              <span className={`text-xs block ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>
+                                {pkg.duration > 0 ? `${pkg.duration} ${pkg.uom}` : `Per ${pkg.uom}`}
+                              </span>
+                            </div>
+                            <div className={`font-semibold ${isSelected ? 'text-blue-700' : 'text-blue-600'}`}>
+                              Rp {pkg.price.toLocaleString('id-ID')}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      {fleet.pricing.length > 5 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          onClick={() => setShowAllPricing(!showAllPricing)}
+                        >
+                          {showAllPricing ? 'Sembunyikan' : `Lihat Semua (${fleet.pricing.length})`}
+                        </Button>
+                      )}
+                    </div>
+                  )}
 
                   {/* Action Buttons */}
                   <div className="space-y-3">
                     <Button 
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={handleOrderNow}
+                      disabled={!selectedPricing}
                     >
-                      Pesan Sekarang
+                      {selectedPricing ? 'Pesan Sekarang' : 'Pilih Durasi'}
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full"
-                      onClick={() => navigate(`/custom-order/armada/${data.id}`)}
+                      className="w-full py-6"
+                      onClick={() => navigate(`/custom-order/armada/${fleet.meta.fleet_id}`)}
                     >
-                      Ajukan custom order
+                      Ajukan Custom Order
                     </Button>
                   </div>
                 </div>
 
-                {/* Specifications */}
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Spesifikasi</h3>
-                  <ul className="space-y-2">
-                    {data.specifications.map((spec, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-700">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                        {spec}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Features */}
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Fasilitas</h3>
-                  <ul className="space-y-2">
-                    {data.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-700">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Amenities */}
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Fasilitas Tambahan</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {data.amenities.map((amenity, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {amenity}
-                      </Badge>
-                    ))}
+                {/* Addons */}
+                {fleet.addon.length > 0 && (
+                  <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Add-on Tersedia</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {fleet.addon.map((addon, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs flex flex-col items-start gap-1 p-2 h-auto">
+                          <span className="font-bold">{addon.addon_name}</span>
+                          <span className="text-gray-500 font-normal">Rp {addon.addon_price.toLocaleString('id-ID')}</span>
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Reviews Section */}
+      {/* Reviews Section - Placeholder as API doesn't return reviews yet */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
             <div className="lg:col-span-2">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Ulasan Terbaru</h2>
-              
-              {/* Write Review Form */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tulis Ulasan Anda</h3>
-                
-                {/* Rating Selection */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Rating
-                  </label>
-                  <div className="flex space-x-1">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        key={rating}
-                        type="button"
-                        onClick={() => setSelectedRating(rating)}
-                        className="focus:outline-none bg-transparent p-1 rounded"
-                      >
-                        <Star
-                          className={`h-6 w-6 transition-colors ${
-                            rating <= selectedRating
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300 dark:text-gray-600 hover:text-yellow-300 dark:hover:text-yellow-500'
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Review Text */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Ulasan Anda
-                  </label>
-                  <Textarea
-                    placeholder="Bagikan pengalaman Anda menggunakan layanan ini..."
-                    value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                </div>
-                
-                {/* Submit Button */}
-                <Button 
-                  className="bg-blue-600 hover:bg-blue-700"
-                  disabled={!selectedRating || !reviewText.trim()}
-                >
-                  Kirim Ulasan
-                </Button>
-              </div>
-              
-              <div className="space-y-6">
-                {/* Review 1 */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-start mb-4">
-                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white text-lg font-medium mr-4 flex-shrink-0">
-                      B
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Budi Santoso</h3>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">3 hari yang lalu</span>
-                      </div>
-                      <div className="flex items-center mb-3">
-                        <div className="flex text-yellow-400 mr-2">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i} className="text-sm">★</span>
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">5.0</span>
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        "Armada Hiace Premio ini sangat nyaman untuk perjalanan grup. AC dingin, kursi empuk, dan driver sangat profesional. Cocok untuk perjalanan jarak jauh. Recommended banget!"
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Review Images */}
-                  <div className="flex space-x-2 mt-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=100&h=100&fit=crop"
-                      alt="Review photo 1"
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop"
-                      alt="Review photo 2"
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                {/* Review 2 */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-start mb-4">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-lg font-medium mr-4 flex-shrink-0">
-                      M
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Maya Sari</h3>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">1 minggu yang lalu</span>
-                      </div>
-                      <div className="flex items-center mb-3">
-                        <div className="flex text-yellow-400 mr-2">
-                          {[...Array(4)].map((_, i) => (
-                            <span key={i} className="text-sm">★</span>
-                          ))}
-                          <span className="text-sm text-gray-300">★</span>
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">4.0</span>
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        "Kendaraan bersih dan terawat dengan baik. Driver ramah dan menguasai rute. Harga sesuai dengan kualitas pelayanan. Akan menggunakan lagi untuk perjalanan berikutnya."
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* View All Reviews Button */}
-              <div className="text-center mt-8">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="px-8"
-                  onClick={() => navigate(`/reviews/armada/${data.id}`)}
-                >
-                  Lihat Semua Ulasan ({data.reviews})
-                </Button>
-              </div>
-            </div>
-
-            {/* Sidebar - Rating Summary */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-6">
-                {/* Overall Rating */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Rating Keseluruhan</h3>
-                  
-                  <div className="text-center mb-4">
-                    <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">{data.rating}</div>
-                    <div className="flex justify-center text-yellow-400 mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className={`text-lg ${i < Math.floor(data.rating) ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
-                      ))}
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Berdasarkan {data.reviews} ulasan</p>
-                  </div>
-
-                  {/* Rating Breakdown */}
-                  <div className="space-y-2">
-                    {[5, 4, 3, 2, 1].map((rating) => (
-                      <div key={rating} className="flex items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-300 w-8">{rating}</span>
-                        <span className="text-yellow-400 text-sm mr-2">★</span>
-                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mx-2">
-                          <div 
-                            className="bg-yellow-400 h-2 rounded-full" 
-                            style={{ width: `${rating === 5 ? 80 : rating === 4 ? 15 : rating === 3 ? 5 : 0}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300 w-8">
-                          {rating === 5 ? '19' : rating === 4 ? '4' : rating === 3 ? '1' : '0'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Write Review Button */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Bagikan Pengalaman Anda</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                    Sudah pernah menggunakan layanan ini? Bagikan pengalaman Anda kepada calon pelanggan lainnya.
-                  </p>
-                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                    Tulis Ulasan
-                  </Button>
-                </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Ulasan</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border border-gray-200 dark:border-gray-700">
+                <p className="text-gray-500">Belum ada ulasan untuk armada ini.</p>
               </div>
             </div>
           </div>
@@ -581,15 +511,17 @@ export const ArmadaDetail: React.FC = () => {
       </section>
 
       {/* Image Popup */}
-      <ImagePopup
-        images={data.images}
-        currentIndex={selectedImageIndex}
-        isOpen={isPopupOpen}
-        onClose={handleClosePopup}
-        onImageChange={handleImageChange}
-        itemType="armada"
-        itemId={data.id.toString()}
-      />
+      {fleet && (
+        <ImagePopup
+          images={allImages}
+          currentIndex={selectedImageIndex}
+          isOpen={isPopupOpen}
+          onClose={handleClosePopup}
+          onImageChange={handleImageChange}
+          itemType="armada"
+          itemId={fleet.meta.fleet_id}
+        />
+      )}
     </div>
   );
 };

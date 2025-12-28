@@ -109,7 +109,7 @@ export const Team: React.FC = () => {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/50" />
         
-        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-7xl mx-auto w-full">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Tim Profesional Kami</h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto">
@@ -122,7 +122,7 @@ export const Team: React.FC = () => {
 
       {/* Stats Section */}
       <section className="py-12 bg-white dark:bg-gray-950">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
@@ -158,7 +158,7 @@ export const Team: React.FC = () => {
 
       {/* Departments Filter */}
       <section className="py-8 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex flex-wrap justify-center gap-4">
             {departments.map((dept, index) => (
               <Badge key={index} className={`px-4 py-2 text-sm font-medium ${dept.color}`}>
@@ -171,7 +171,7 @@ export const Team: React.FC = () => {
 
       {/* Team Members Section */}
       <section className="py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {teamMembers.map((member) => (
               <Card key={member.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white dark:bg-gray-800">
