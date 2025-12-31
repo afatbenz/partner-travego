@@ -253,7 +253,7 @@ export const ArmadaCheckout: React.FC = () => {
     fullName: '',
     email: '',
     phone: '',
-    emergencyContact: '',
+    address: '',
     
     // Tanggal dan jam
     pickupDate: '',
@@ -314,7 +314,7 @@ export const ArmadaCheckout: React.FC = () => {
         console.log("get active fleetid ---- ", { activeFleetId, activePriceId, state: location.state })
 
         if (activeFleetId && activePriceId) {
-          const response = await http.post<FleetSummaryResponse>('/api/checkout/fleet/summary', {
+          const response = await http.post<FleetSummaryResponse>('/api/order/fleet/summary', {
             fleet_id: activeFleetId,
             price_id: activePriceId
           });
@@ -458,7 +458,7 @@ export const ArmadaCheckout: React.FC = () => {
 
   const basePrice = fleetSummary.price;
   const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.addon_price, 0);
-  const totalPrice = (basePrice + addonsTotal) * days * formData.armadaCount;
+  const totalPrice = (basePrice * formData.armadaCount) + addonsTotal;
 
   const data = fleetSummary;
 
@@ -540,13 +540,13 @@ export const ArmadaCheckout: React.FC = () => {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Kontak Darurat
+                        Alamat
                       </label>
                       <Input
-                        name="emergencyContact"
-                        value={formData.emergencyContact}
+                        name="address"
+                        value={formData.address}
                         onChange={handleInputChange}
-                        placeholder="Nomor telepon darurat"
+                        placeholder="Alamat lengkap"
                       />
                     </div>
                   </div>
@@ -844,28 +844,10 @@ export const ArmadaCheckout: React.FC = () => {
                   <div className="space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-300">
-                        Harga per {data.uom}
+                        Harga Sewa
                       </span>
                       <span className="text-gray-900 dark:text-white">
                         Rp {data.price.toLocaleString('id-ID')}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-300">
-                        Durasi sewa
-                      </span>
-                      <span className="text-gray-900 dark:text-white">
-                        {days} hari
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-300">
-                        Jumlah Armada
-                      </span>
-                      <span className="text-gray-900 dark:text-white">
-                        {formData.armadaCount} unit
                       </span>
                     </div>
 
