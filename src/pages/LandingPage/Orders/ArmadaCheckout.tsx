@@ -30,6 +30,7 @@ import { http } from '@/lib/http';
 
 interface FleetAddon {
   uuid: string;
+  addon_id: string;
   addon_name: string;
   addon_desc: string;
   addon_price: number;
@@ -51,6 +52,7 @@ interface FleetSummaryData {
   thumbnail: string;
   duration: number;
   rent_type: number;
+  rent_type_label?: string;
   price: number;
   uom: string;
   facilities?: string[];
@@ -94,7 +96,7 @@ const CitySearchSelect: React.FC<CitySearchSelectProps> = ({ value, onSelect, pl
         
         const response = await http.get<any>(url);
         if (response.data.status === 'success') {
-             setCities(response.data.data);
+             setCities(response.data.data || []);
         }
       } catch (error) {
         console.error("Failed to fetch cities", error);
@@ -140,7 +142,7 @@ const CitySearchSelect: React.FC<CitySearchSelectProps> = ({ value, onSelect, pl
                     <>
                         <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>
                         <CommandGroup>
-                        {cities.map((city) => (
+                        {Array.isArray(cities) && cities.map((city) => (
                             <CommandItem
                             key={city.id}
                             value={city.name}
@@ -247,6 +249,8 @@ export const ArmadaCheckout: React.FC = () => {
   const [addons, setAddons] = useState<FleetAddon[]>([]);
   const [selectedAddons, setSelectedAddons] = useState<FleetAddon[]>([]);
   const [loadingAddons, setLoadingAddons] = useState(false);
+  const [activePriceId, setActivePriceId] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     // Nama dan kontak pemesan
@@ -314,6 +318,7 @@ export const ArmadaCheckout: React.FC = () => {
         console.log("get active fleetid ---- ", { activeFleetId, activePriceId, state: location.state })
 
         if (activeFleetId && activePriceId) {
+          setActivePriceId(activePriceId);
           const response = await http.post<FleetSummaryResponse>('/api/order/fleet/summary', {
             fleet_id: activeFleetId,
             price_id: activePriceId
@@ -429,11 +434,50 @@ export const ArmadaCheckout: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Armada checkout data:', formData);
-    // Handle checkout submission
-    navigate(`/payment/armada/${data.id}`);
+    
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        fleet_id: id,
+        price_id: activePriceId,
+        fullname: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        start_date: `${formData.pickupDate} ${formData.pickupTime}`,
+        end_date: `${formData.returnDate} ${formData.pickupTime}`,
+        pickup_city_id: formData.pickupCity,
+        pickup_location: formData.pickupLocation,
+        destinations: formData.destinations.map(d => ({
+          location: d.location,
+          city_id: d.city_id
+        })),
+        qty: formData.armadaCount,
+        addons: selectedAddons.map(a => a.addon_id || a.uuid)
+      };
+
+      const response = await http.post('/api/order/fleet/create', payload);
+
+      if (response.data.token) {
+        const token = response.data.token;
+        navigate(`/payment/armada/${token}`);
+      } else if (response.data.status === 'success') {
+        const orderId = response.data.data?.order_id || response.data.order_id;
+        navigate(`/payment/armada/${orderId}`);
+      } else {
+        // You might want to use a toast here instead of alert
+        alert(response.data.message || 'Terjadi kesalahan saat membuat pesanan');
+      }
+    } catch (error) {
+      console.error('Order creation failed:', error);
+      alert('Gagal membuat pesanan. Silakan coba lagi.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const days = fleetSummary?.duration || 1;
@@ -458,12 +502,12 @@ export const ArmadaCheckout: React.FC = () => {
 
   const basePrice = fleetSummary.price;
   const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.addon_price, 0);
-  const totalPrice = (basePrice * formData.armadaCount) + addonsTotal;
+  const totalPrice = (basePrice + addonsTotal) * formData.armadaCount;
 
   const data = fleetSummary;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -472,7 +516,7 @@ export const ArmadaCheckout: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-              className="mr-4"
+              className="mr-4 bg-transparent hover:bg-transparent"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Kembali
@@ -677,7 +721,7 @@ export const ArmadaCheckout: React.FC = () => {
                               </Button>
                             )}
                          </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className={`grid grid-cols-1 ${fleetSummary?.rent_type === 1 || fleetSummary?.rent_type === 3 ? '' : 'md:grid-cols-2'} gap-4`}>
                             <div>
                                 <Input
                                     value={destination.location}
@@ -686,14 +730,16 @@ export const ArmadaCheckout: React.FC = () => {
                                     required
                                 />
                             </div>
-                            <div>
-                                <CitySearchSelect
-                                    value={destination.city_name}
-                                    onSelect={(city) => handleCitySelect(index, city)}
-                                    placeholder="Pilih Kota"
-                                    required
-                                />
-                            </div>
+                            {fleetSummary?.rent_type !== 1 && fleetSummary?.rent_type !== 3 && (
+                              <div>
+                                  <CitySearchSelect
+                                      value={destination.city_name}
+                                      onSelect={(city) => handleCitySelect(index, city)}
+                                      placeholder="Pilih Kota"
+                                      required
+                                  />
+                              </div>
+                            )}
                         </div>
                       </div>
                     ))}
@@ -792,8 +838,8 @@ export const ArmadaCheckout: React.FC = () => {
 
               {/* Submit Button */}
               <div className="flex justify-end">
-                <Button type="submit" size="lg" className="px-8">
-                  Lanjutkan Pembayaran
+                <Button type="submit" size="lg" className="px-8" disabled={isSubmitting}>
+                  {isSubmitting ? 'Memproses...' : 'Lanjutkan Pembayaran'}
                 </Button>
               </div>
             </form>
@@ -819,6 +865,11 @@ export const ArmadaCheckout: React.FC = () => {
                       <h4 className="font-medium text-gray-900 dark:text-white text-sm">
                         {data.fleet_name}
                       </h4>
+                      {data.rent_type_label && (
+                        <span className="inline-block mt-1 mb-1 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
+                          {data.rent_type_label}
+                        </span>
+                      )}
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {data.engine} • {data.body} • {data.capacity} Orang
                       </p>

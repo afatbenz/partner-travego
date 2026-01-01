@@ -59,6 +59,13 @@ async function request<T = unknown>(path: string, options: RequestOptions = {}):
     const message = typeof json === 'object' && json && 'message' in (json as Record<string, unknown>)
       ? String((json as Record<string, unknown>).message)
       : res.statusText || 'Request failed';
+
+    if (res.status === 401 && message === 'Organization not found or invalid') {
+      window.dispatchEvent(new Event('invalid-api-key'));
+      // Return a promise that never resolves to halt execution and avoid error logs
+      return new Promise(() => {});
+    }
+
     throw new Error(message);
   }
   return { data: json as T, status: res.status, headers: res.headers };
