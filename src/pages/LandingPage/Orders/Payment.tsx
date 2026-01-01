@@ -1,88 +1,228 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, QrCode, Clock, CheckCircle, Copy, Download } from 'lucide-react';
+import { ArrowLeft, CreditCard, QrCode, Clock, CheckCircle, Copy, Download, ChevronDown, Wallet, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { http } from '@/lib/http';
 
-// Sample data - in real app, this would come from API
-const sampleOrderData = {
-  id: "ORD-2024-001",
-  type: "catalog", // or "armada"
-  title: "Thailand Bangkok Tour Package - 4 Days 3 Nights",
-  price: "Rp 2.500.000",
-  totalPrice: "Rp 5.000.000",
-  participants: 2,
-  orderDate: "2024-01-15",
-  paymentDeadline: "2024-01-17"
-};
+interface OrderData {
+  id: string;
+  type: string;
+  title: string;
+  price: string;
+  totalPrice: string;
+  rawTotalAmount: number;
+  participants: number;
+  orderDate: string;
+  paymentDeadline: string;
+  duration: number;
+  durationUom: string;
+  pickup: { 
+    pickup_location: string; 
+    pickup_city: string;
+    start_date: string;
+    end_date: string;
+  };
+  destination: { city: string; location: string }[];
+  addon: { addon_name: string; addon_price: number }[];
+}
 
 const bankTransferData = {
   bankName: "BCA",
   accountNumber: "1234567890",
   accountName: "PT TRAVEGO INDONESIA",
-  amount: "Rp 5.000.000",
   transferCode: "123456"
 };
 
 const qrisData = {
   qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=QRIS_PAYMENT_123456789",
-  amount: "Rp 5.000.000",
   merchantName: "TRAVEGO"
 };
 
 export const Payment: React.FC = () => {
-  const { type } = useParams<{ id: string; type: string }>();
+  const { type, id } = useParams<{ id: string; type: string }>();
   const navigate = useNavigate();
   
-  // In real app, fetch data based on id and type
-  const orderData = sampleOrderData;
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState<'bank' | 'qris'>('bank');
-  const [copied, setCopied] = useState(false);
+  const [paymentType, setPaymentType] = useState<'full' | 'dp' | null>(null);
+  const [dpPercentage, setDpPercentage] = useState<10 | 25 | 50 | 75>(25);
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<{code: string, amount: number} | null>(null);
+  const [promoError, setPromoError] = useState('');
+  // const [copied, setCopied] = useState(false); // Removed unused
+  // const [timeLeft, setTimeLeft] = useState<string>(''); // Removed unused
 
-  const handleCopyAccount = () => {
-    navigator.clipboard.writeText(bankTransferData.accountNumber);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  useEffect(() => {
+    const fetchOrderDetail = async () => {
+      if (!id || type !== 'armada') return;
 
-  const handleCopyTransferCode = () => {
-    navigator.clipboard.writeText(bankTransferData.transferCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+      try {
+        const response = await http.get<any>(`/api/order/fleet/detail/${id}`);
+        if (response.data.status === 'success') {
+          const data = response.data.data;
+          
+          // Helper to format currency
+          const formatCurrency = (amount: number) => {
+            return `Rp ${amount.toLocaleString('id-ID')}`;
+          };
 
-  const handlePaymentComplete = () => {
-    // In real app, this would submit payment proof
-    alert('Pembayaran berhasil! Tim kami akan memverifikasi pembayaran Anda.');
-    navigate('/');
+          // Calculate deadline (example: 24 hours from order time)
+           const orderDate = new Date(data.order_date);
+           const deadlineDate = new Date(orderDate.getTime() + 24 * 60 * 60 * 1000);
+
+           setOrderData({
+             id: data.order_id,
+             type: 'armada',
+             title: data.fleet_name,
+             price: formatCurrency(data.price),
+             totalPrice: formatCurrency(data.total_amount),
+             rawTotalAmount: data.total_amount,
+             participants: data.quantity,
+             orderDate: data.order_date,
+             paymentDeadline: deadlineDate.toISOString(),
+             duration: data.duration,
+             durationUom: data.duration_uom || 'Jam',
+             pickup: data.pickup,
+             destination: data.destination,
+             addon: data.addon
+           });
+        }
+      } catch (error) {
+        console.error('Failed to fetch order detail:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (type === 'armada') {
+        fetchOrderDetail();
+    } else {
+        // Fallback or handle other types if needed
+        // For now, if not armada, maybe use sample data or just stop loading
+        setLoading(false);
+    }
+  }, [id, type]);
+
+  /* Removed Timer Logic
+  useEffect(() => {
+    if (!orderData?.paymentDeadline) return;
+    // ...
+  }, [orderData?.paymentDeadline]);
+  */
+
+  const handleProcessPayment = async () => {
+    if (!id || !paymentType) return;
+    
+    setLoading(true);
+    try {
+      const payload: any = {
+        token: id,
+        payment_method: selectedPayment,
+        payment_type: paymentType === 'full' ? 1 : 2,
+      };
+
+      if (appliedPromo) {
+        payload.promo_code = appliedPromo.code;
+      }
+
+      if (paymentType === 'dp') {
+        payload.payment_percentage = dpPercentage;
+      }
+
+      const response = await http.post('/api/order/fleet/payment', payload);
+
+      if (response.data.status === 'success' || response.status === 200) {
+        navigate(`/purchase/armada/${id}`, { 
+          state: { 
+            paymentMethod: selectedPayment,
+            paymentAmount: getPaymentAmount(),
+            paymentType: paymentType
+          } 
+        });
+      }
+    } catch (error) {
+      console.error('Payment processing failed:', error);
+      // You might want to show an error message here
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
+    return date.toLocaleString('id-ID', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
-    });
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).replace('pukul ', '').replace('Pukul ', '');
   };
 
-  const getPaymentDeadline = () => {
-    const deadline = new Date(orderData.paymentDeadline);
-    const now = new Date();
-    const diffTime = deadline.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const formatCurrency = (amount: number) => {
+    return `Rp ${amount.toLocaleString('id-ID')}`;
+  };
+
+  const getPaymentAmount = () => {
+    if (!orderData || !paymentType) return 0;
     
-    if (diffDays > 0) {
-      return `${diffDays} hari lagi`;
+    let baseAmount = orderData.rawTotalAmount;
+    if (appliedPromo) {
+      baseAmount -= appliedPromo.amount;
+    }
+    
+    if (baseAmount < 0) baseAmount = 0;
+
+    if (paymentType === 'full') return baseAmount;
+    return (baseAmount * dpPercentage) / 100;
+  };
+
+  const handleApplyPromo = () => {
+    if (!promoCode) return;
+    
+    setPromoError('');
+    
+    // Mock validation logic
+    const code = promoCode.toUpperCase();
+    if (code === 'HEMAT100') {
+      setAppliedPromo({ code: 'HEMAT100', amount: 100000 });
+    } else if (code === 'DISKON10') {
+       const discount = orderData ? orderData.rawTotalAmount * 0.1 : 0;
+       setAppliedPromo({ code: 'DISKON10', amount: discount });
     } else {
-      return 'Hari ini';
+      setPromoError('Kode promo tidak valid');
+      setAppliedPromo(null);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!orderData) {
+     return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Data Pesanan Tidak Ditemukan</h2>
+            <Button onClick={() => navigate('/')}>Kembali ke Beranda</Button>
+        </div>
+     )
+  }
+
+  const currentPaymentAmount = getPaymentAmount();
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4">
@@ -91,7 +231,7 @@ export const Payment: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-              className="mr-4"
+              className="mr-4 bg-transparent hover:bg-transparent"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Kembali
@@ -126,6 +266,30 @@ export const Payment: React.FC = () => {
                       {formatDate(orderData.orderDate)}
                     </span>
                   </div>
+
+                  {/* Pickup Info - Moved here as requested */}
+                  {orderData.pickup && (
+                    <>
+                        <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-300">Lokasi Penjemputan</span>
+                            <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
+                                {orderData.pickup.pickup_location}, {orderData.pickup.pickup_city}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-300">Tanggal Penjemputan</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                                {formatDate(orderData.pickup.start_date)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-300">Tanggal Kembali</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                                {formatDate(orderData.pickup.end_date)}
+                            </span>
+                        </div>
+                    </>
+                  )}
                   
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-300">Item</span>
@@ -135,18 +299,65 @@ export const Payment: React.FC = () => {
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">Jumlah Peserta</span>
+                    <span className="text-gray-600 dark:text-gray-300">
+                      {type === 'armada' ? 'Jumlah Armada' : 'Jumlah Peserta'}
+                    </span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {orderData.participants} orang
+                      {orderData.participants} {type === 'armada' ? 'Unit' : 'orang'}
                     </span>
                   </div>
                   
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-300">Durasi Sewa</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {orderData.duration} {orderData.durationUom}
+                    </span>
+                  </div>
+
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-300">Harga per {type === 'catalog' ? 'pax' : 'hari'}</span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {orderData.price}
                     </span>
                   </div>
+
+                  {/* Detailed Order Info Collapsible */}
+                  <Collapsible className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors bg-white dark:bg-gray-800 p-2 rounded-md">
+                        <span>Detail Lainnya</span>
+                        <ChevronDown className="h-4 w-4" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-4 space-y-4">
+                         {/* Destination */}
+                         {orderData.destination && orderData.destination.length > 0 && (
+                            <div className="text-sm">
+                                <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Tujuan</p>
+                                <ul className="list-disc list-inside text-gray-600 dark:text-gray-400">
+                                    {orderData.destination.map((dest, idx) => (
+                                        <li key={idx}>{dest.location}, {dest.city}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                         )}
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Addon Info - Moved here */}
+                  {orderData.addon && orderData.addon.length > 0 && (
+                    <>
+                        <div className="mt-4 mb-2">
+                            <span className="font-semibold text-gray-900 dark:text-white">Add-on</span>
+                        </div>
+                        {orderData.addon.map((addon, idx) => (
+                            <div key={idx} className="flex justify-between mt-2">
+                            <span className="text-gray-600 dark:text-gray-300">{addon.addon_name}</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                                {formatCurrency(addon.addon_price)}
+                            </span>
+                            </div>
+                        ))}
+                    </>
+                  )}
                   
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                     <div className="flex justify-between text-lg font-semibold">
@@ -160,8 +371,138 @@ export const Payment: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Payment Method Selection */}
+            {/* Promo Code Selection */}
             <Card className="mb-6">
+                <CardContent className="p-6">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                        Kode Promo
+                    </h2>
+                    <div className="flex space-x-2">
+                        <div className="relative flex-1">
+                            <Tag className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                            <Input
+                                placeholder="Masukkan kode promo (ex: HEMAT100)"
+                                value={promoCode}
+                                onChange={(e) => setPromoCode(e.target.value)}
+                                className="pl-9"
+                                disabled={!!appliedPromo}
+                            />
+                        </div>
+                        {appliedPromo ? (
+                             <Button variant="outline" onClick={() => {
+                                 setAppliedPromo(null);
+                                 setPromoCode('');
+                             }}>
+                                 Hapus
+                             </Button>
+                        ) : (
+                             <Button onClick={handleApplyPromo}>
+                                 Terapkan
+                             </Button>
+                        )}
+                    </div>
+                    {promoError && (
+                        <p className="text-sm text-red-500 mt-2">{promoError}</p>
+                    )}
+                    {appliedPromo && (
+                        <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg flex justify-between items-center animate-in fade-in slide-in-from-top-2">
+                            <span className="text-sm text-green-700 dark:text-green-300">
+                                Promo diterapkan: {appliedPromo.code}
+                            </span>
+                            <span className="font-bold text-green-600 dark:text-green-400">
+                                -{formatCurrency(appliedPromo.amount)}
+                            </span>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Payment Type Selection */}
+            <Card className="mb-6">
+                <CardContent className="p-6">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                        Pilih Jenis Pembayaran
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        {/* Full Payment */}
+                        <div
+                            className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                                paymentType === 'full'
+                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                            }`}
+                            onClick={() => setPaymentType('full')}
+                        >
+                            <div className="flex items-center mb-2">
+                                <Wallet className="h-5 w-5 text-blue-600 mr-2" />
+                                <h3 className="font-semibold text-gray-900 dark:text-white">
+                                    Pembayaran Penuh
+                                </h3>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                Bayar lunas sekarang
+                            </p>
+                             <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                {appliedPromo ? formatCurrency(orderData.rawTotalAmount - appliedPromo.amount) : orderData.totalPrice}
+                            </div>
+                        </div>
+
+                        {/* Down Payment */}
+                        <div
+                            className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                                paymentType === 'dp'
+                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                            }`}
+                            onClick={() => setPaymentType('dp')}
+                        >
+                            <div className="flex items-center mb-2">
+                                <Wallet className="h-5 w-5 text-blue-600 mr-2" />
+                                <h3 className="font-semibold text-gray-900 dark:text-white">
+                                    Uang Muka (DP)
+                                </h3>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Bayar sebagian dulu
+                            </p>
+                        </div>
+                    </div>
+
+                    {paymentType === 'dp' && (
+                        <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                                Pilih Persentase Uang Muka
+                            </h3>
+                            <div className="flex space-x-3">
+                                {[10, 25, 50, 75].map((percentage) => (
+                                    <Button
+                                        key={percentage}
+                                        variant={dpPercentage === percentage ? "default" : "outline"}
+                                        onClick={() => setDpPercentage(percentage as 10 | 25 | 50 | 75)}
+                                        className="flex-1"
+                                    >
+                                        {percentage}%
+                                    </Button>
+                                ))}
+                            </div>
+                             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex justify-between items-center">
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                    Jumlah yang harus dibayar ({dpPercentage}%)
+                                </span>
+                                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                    {formatCurrency(currentPaymentAmount)}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+
+
+            {/* Payment Method Selection */}
+            {paymentType && (
+            <Card className="mb-6 animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                   Pilih Metode Pembayaran
@@ -220,289 +561,26 @@ export const Payment: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Payment Instructions */}
-            {selectedPayment === 'bank' ? (
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                    Instruksi Transfer Bank
-                  </h2>
-                  
-                  <div className="space-y-6">
-                    {/* Bank Details */}
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-                        Detail Rekening
-                      </h3>
-                      
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-300">Bank</span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {bankTransferData.bankName}
-                          </span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600 dark:text-gray-300">Nomor Rekening</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-gray-900 dark:text-white font-mono">
-                              {bankTransferData.accountNumber}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleCopyAccount}
-                              className="h-8 w-8 p-0"
-                            >
-                              {copied ? (
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-300">Atas Nama</span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {bankTransferData.accountName}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Transfer Amount */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        Jumlah Transfer
-                      </h3>
-                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {bankTransferData.amount}
-                      </div>
-                    </div>
-
-                    {/* Transfer Code */}
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        Kode Transfer
-                      </h3>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-mono text-yellow-800 dark:text-yellow-200">
-                          {bankTransferData.transferCode}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleCopyTransferCode}
-                          className="h-8 w-8 p-0"
-                        >
-                          {copied ? (
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">
-                        *Wajib mencantumkan kode transfer ini pada keterangan transfer
-                      </p>
-                    </div>
-
-                    {/* Instructions */}
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        Cara Transfer:
-                      </h3>
-                      <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                        <li>Buka aplikasi mobile banking atau ATM</li>
-                        <li>Pilih menu transfer ke rekening lain</li>
-                        <li>Masukkan nomor rekening BCA: <span className="font-mono font-semibold">{bankTransferData.accountNumber}</span></li>
-                        <li>Masukkan jumlah transfer: <span className="font-semibold">{bankTransferData.amount}</span></li>
-                        <li>Masukkan kode transfer pada keterangan: <span className="font-mono font-semibold">{bankTransferData.transferCode}</span></li>
-                        <li>Konfirmasi dan selesaikan transfer</li>
-                        <li>Simpan bukti transfer untuk konfirmasi</li>
-                      </ol>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                    Instruksi Pembayaran QRIS
-                  </h2>
-                  
-                  <div className="space-y-6">
-                    {/* QR Code */}
-                    <div className="text-center">
-                      <div className="inline-block p-4 bg-white rounded-lg shadow-lg">
-                        <img
-                          src={qrisData.qrCode}
-                          alt="QR Code Payment"
-                          className="w-48 h-48 mx-auto"
-                        />
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                        Scan QR Code dengan aplikasi mobile banking atau e-wallet
-                      </p>
-                    </div>
-
-                    {/* Payment Amount */}
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        Jumlah Pembayaran
-                      </h3>
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {qrisData.amount}
-                      </div>
-                      <p className="text-sm text-green-700 dark:text-green-300 mt-2">
-                        Merchant: {qrisData.merchantName}
-                      </p>
-                    </div>
-
-                    {/* Instructions */}
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        Cara Pembayaran:
-                      </h3>
-                      <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                        <li>Buka aplikasi mobile banking atau e-wallet</li>
-                        <li>Pilih menu scan QR Code</li>
-                        <li>Scan QR Code yang ditampilkan</li>
-                        <li>Periksa detail pembayaran (jumlah dan merchant)</li>
-                        <li>Konfirmasi dan selesaikan pembayaran</li>
-                        <li>Simpan bukti pembayaran untuk konfirmasi</li>
-                      </ol>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             )}
 
-            {/* Payment Confirmation */}
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Konfirmasi Pembayaran
-                </h2>
-                
-                <div className="space-y-4">
-                  <p className="text-gray-700 dark:text-gray-300">
-                    Setelah melakukan pembayaran, silakan upload bukti pembayaran untuk mempercepat proses verifikasi.
-                  </p>
-                  
-                  <div className="flex space-x-4">
-                    <Button variant="outline" className="flex-1">
-                      <Download className="h-4 w-4 mr-2" />
-                      Upload Bukti Pembayaran
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                      onClick={handlePaymentComplete}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Konfirmasi Pembayaran
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Continue Payment Button */}
+            {selectedPayment && (
+              <div className="mt-8 flex justify-end">
+                <Button 
+                  size="lg" 
+                  onClick={handleProcessPayment}
+                  disabled={loading}
+                  className="w-full md:w-auto"
+                >
+                  {loading ? 'Memproses...' : 'Lanjutkan Pembayaran'}
+                </Button>
+              </div>
+            )}
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar - Removed as requested */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6">
-              {/* Payment Deadline */}
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    <Clock className="h-5 w-5 text-orange-500 mr-2" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Batas Waktu Pembayaran
-                    </h3>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-                      {getPaymentDeadline()}
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Sampai {formatDate(orderData.paymentDeadline)}
-                    </p>
-                  </div>
-                  
-                  <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                    <p className="text-xs text-orange-700 dark:text-orange-300">
-                      ⚠️ Pesanan akan otomatis dibatalkan jika pembayaran tidak dilakukan dalam batas waktu yang ditentukan.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Payment Status */}
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Status Pembayaran
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-300">Pesanan</span>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                        Dikonfirmasi
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-300">Pembayaran</span>
-                      <Badge variant="outline" className="border-orange-300 text-orange-600">
-                        Menunggu Pembayaran
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Contact Support */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Butuh Bantuan?
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Jika mengalami kesulitan dalam proses pembayaran, hubungi customer service kami.
-                    </p>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-300 w-16">WhatsApp:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          +62 812-3456-7890
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-300 w-16">Email:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          support@travego.com
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <Button variant="outline" size="sm" className="w-full">
-                      Hubungi Customer Service
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Content moved to Purchase page */}
           </div>
         </div>
       </div>

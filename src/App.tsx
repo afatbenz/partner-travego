@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { GeneralContentProvider } from '@/contexts/GeneralContentContext';
@@ -32,6 +32,7 @@ import { ArmadaDetail } from '@/pages/LandingPage/Armada/ArmadaDetail';
 import { CatalogCheckout } from '@/pages/LandingPage/Orders/CatalogCheckout';
 import { ArmadaCheckout } from '@/pages/LandingPage/Orders/ArmadaCheckout';
 import { Payment } from '@/pages/LandingPage/Orders/Payment';
+import { PurchaseArmada } from '@/pages/LandingPage/Orders/PurchaseArmada';
 import { MyProfile } from '@/pages/LandingPage/Profile/MyProfile';
 import { Welcome } from '@/pages/LandingPage/Utilities/Welcome';
 import { MyOrders } from '@/pages/LandingPage/Orders/MyOrders';
@@ -40,6 +41,7 @@ import { PromoDiscount } from '@/pages/LandingPage/Utilities/PromoDiscount';
 import { Referral } from '@/pages/LandingPage/Utilities/Referral';
 import { Reviews } from '@/pages/LandingPage/Utilities/Reviews';
 import { CustomOrder } from '@/pages/LandingPage/Utilities/CustomOrder';
+import { InvalidApiKey } from '@/pages/LandingPage/Utilities/InvalidApiKey';
 
 // Auth Pages
 import { Login } from '@/pages/LandingPage/Auth/Login';
@@ -73,6 +75,22 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 };
 
 function App() {
+  const [isInvalidApiKey, setIsInvalidApiKey] = useState(false);
+
+  useEffect(() => {
+    const handleInvalidApiKey = () => setIsInvalidApiKey(true);
+    window.addEventListener('invalid-api-key', handleInvalidApiKey);
+    return () => window.removeEventListener('invalid-api-key', handleInvalidApiKey);
+  }, []);
+
+  if (isInvalidApiKey) {
+    return (
+      <ThemeProvider>
+        <InvalidApiKey />
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider>
       <GeneralContentProvider>
@@ -135,6 +153,11 @@ function App() {
               <Payment />
             </PublicLayout>
           } />
+          <Route path="/purchase/armada/:id" element={
+            <PublicLayout>
+              <PurchaseArmada />
+            </PublicLayout>
+          } />
           <Route path="/myprofile" element={
             <PublicLayout>
               <MyProfile />
@@ -174,6 +197,9 @@ function App() {
             <PublicLayout>
               <CustomOrder />
             </PublicLayout>
+          } />
+          <Route path="/invalid-apikey" element={
+            <InvalidApiKey />
           } />
 
           {/* Auth Routes */}
