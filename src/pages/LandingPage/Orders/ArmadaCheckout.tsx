@@ -460,14 +460,21 @@ export const ArmadaCheckout: React.FC = () => {
         addons: selectedAddons.map(a => a.addon_id || a.uuid)
       };
 
-      const response = await http.post('/api/order/fleet/create', payload);
+      const response = await http.post<any>('/api/order/fleet/create', payload);
+      console.log('Order create response:', response);
 
-      if (response.data.token) {
-        const token = response.data.token;
+      const token = response.data?.token || response.data?.data?.token;
+
+      if (token) {
         navigate(`/payment/armada/${token}`);
       } else if (response.data.status === 'success') {
         const orderId = response.data.data?.order_id || response.data.order_id;
-        navigate(`/payment/armada/${orderId}`);
+        if (orderId) {
+          navigate(`/payment/armada/${orderId}`);
+        } else {
+          console.error('Order ID missing in success response');
+          alert('Terjadi kesalahan: ID pesanan tidak ditemukan.');
+        }
       } else {
         // You might want to use a toast here instead of alert
         alert(response.data.message || 'Terjadi kesalahan saat membuat pesanan');
@@ -519,7 +526,6 @@ export const ArmadaCheckout: React.FC = () => {
               className="mr-4 bg-transparent hover:bg-transparent"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
             </Button>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Checkout Armada
@@ -839,7 +845,7 @@ export const ArmadaCheckout: React.FC = () => {
               {/* Submit Button */}
               <div className="flex justify-end">
                 <Button type="submit" size="lg" className="px-8" disabled={isSubmitting}>
-                  {isSubmitting ? 'Memproses...' : 'Lanjutkan Pembayaran'}
+                  {isSubmitting ? 'Memproses...' : 'Pilih metode pembayaran'}
                 </Button>
               </div>
             </form>

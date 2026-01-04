@@ -31,7 +31,7 @@ export const Footer: React.FC = () => {
     'map-pin': MapPin,
   };
   return (
-    <footer className="bg-gray-900 dark:bg-black text-white">
+    <footer className="bg-gray-900 dark:bg-black text-white print:hidden">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
@@ -68,6 +68,9 @@ export const Footer: React.FC = () => {
               </Link>
               <Link to="/team" className="block text-gray-400 hover:text-white transition-colors">
                 Tim Kami
+              </Link>
+              <Link to="/find-order" className="block text-gray-400 hover:text-white transition-colors">
+                Lacak Pesanan
               </Link>
               <Link to="/contact" className="block text-gray-400 hover:text-white transition-colors">
                 Kontak

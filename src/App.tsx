@@ -35,7 +35,7 @@ import { Payment } from '@/pages/LandingPage/Orders/Payment';
 import { PurchaseArmada } from '@/pages/LandingPage/Orders/PurchaseArmada';
 import { MyProfile } from '@/pages/LandingPage/Profile/MyProfile';
 import { Welcome } from '@/pages/LandingPage/Utilities/Welcome';
-import { MyOrders } from '@/pages/LandingPage/Orders/MyOrders';
+import FindOrder from '@/pages/LandingPage/Orders/FindOrder';
 import { EditProfile } from '@/pages/LandingPage/Profile/EditProfile';
 import { PromoDiscount } from '@/pages/LandingPage/Utilities/PromoDiscount';
 import { Referral } from '@/pages/LandingPage/Utilities/Referral';
@@ -60,6 +60,7 @@ import { EditArmada } from '@/pages/dashboard/services/EditArmada';
 import { TeamMember } from '@/pages/dashboard/team/TeamMember';
 import { ScheduleArmada } from '@/pages/dashboard/team/ScheduleArmada';
 import { AddSchedule } from '@/pages/dashboard/team/AddSchedule';
+import { OpenApiSettings } from '@/pages/dashboard/organization/OpenApiSettings';
 
 // Layout wrapper for public pages
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -168,9 +169,9 @@ function App() {
               <Welcome />
             </PublicLayout>
           } />
-          <Route path="/myorders" element={
+          <Route path="/find-order" element={
             <PublicLayout>
-              <MyOrders />
+              <FindOrder />
             </PublicLayout>
           } />
           <Route path="/edit-profile" element={
@@ -288,6 +289,11 @@ function App() {
           <Route path="/dashboard/team/schedule-armada/add" element={
             <DashboardLayout>
               <AddSchedule />
+            </DashboardLayout>
+          } />
+          <Route path="/dashboard/partner/organization/open-api" element={
+            <DashboardLayout>
+              <OpenApiSettings />
             </DashboardLayout>
           } />
 
