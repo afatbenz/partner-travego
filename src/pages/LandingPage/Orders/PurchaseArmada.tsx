@@ -1,10 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, CreditCard, QrCode, Clock, CheckCircle, Copy, Download } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, CreditCard, QrCode, Clock, CheckCircle, Copy, Download, Home, ShoppingBag, Upload, X, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { http } from '@/lib/http';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+interface PaymentDetail {
+  bank_code: string;
+  account_name: string;
+  account_number: string;
+  bank_name: string;
+  payment_type: number;
+  payment_percentage: number;
+  payment_amount: number;
+  total_amount: number;
+  payment_remaining: number;
+  status: number;
+  payment_date: string;
+  unique_code: number;
+}
 
 interface OrderData {
   id: string;
@@ -26,39 +52,31 @@ interface OrderData {
   };
   destination: { city: string; location: string }[];
   addon: { addon_name: string; addon_price: number }[];
-  // Added fields that might come from backend after payment initiation
-  payment_method?: 'bank' | 'qris';
-  payment_amount?: number;
+  customer: {
+    customer_name: string;
+    customer_phone: string;
+    customer_email: string;
+    customer_address: string;
+  };
+  payment: PaymentDetail[];
 }
-
-const bankTransferData = {
-  bankName: "BCA",
-  accountNumber: "1234567890",
-  accountName: "PT TRAVEGO INDONESIA",
-  transferCode: "123456"
-};
-
-const qrisData = {
-  qrCode: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=QRIS_PAYMENT_123456789",
-  merchantName: "TRAVEGO"
-};
 
 export const PurchaseArmada: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
   
-  // Get state passed from Payment page
-  const locationState = location.state as { 
-    paymentMethod?: 'bank' | 'qris'; 
-    paymentAmount?: number;
-    paymentType?: 'full' | 'dp';
-  } | null;
+  // Upload State
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
@@ -92,9 +110,9 @@ export const PurchaseArmada: React.FC = () => {
              durationUom: data.duration_uom || 'Jam',
              pickup: data.pickup,
              destination: data.destination,
-             addon: data.addon,
-             payment_method: data.payment_method || locationState?.paymentMethod || 'bank', // Fallback to state or default
-             payment_amount: data.payment_amount || locationState?.paymentAmount || data.total_amount
+             addon: data.addon || [],
+             customer: data.customer,
+             payment: data.payment || []
            });
         }
       } catch (error) {
@@ -105,7 +123,7 @@ export const PurchaseArmada: React.FC = () => {
     };
 
     fetchOrderDetail();
-  }, [id, locationState]);
+  }, [id]);
 
   useEffect(() => {
     if (!orderData?.paymentDeadline) return;
@@ -133,21 +151,68 @@ export const PurchaseArmada: React.FC = () => {
     return () => clearInterval(timer);
   }, [orderData?.paymentDeadline]);
 
-  const handleCopyAccount = () => {
-    navigator.clipboard.writeText(bankTransferData.accountNumber);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
   };
 
-  const handleCopyTransferCode = () => {
-    navigator.clipboard.writeText(bankTransferData.transferCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
   };
 
-  const handlePaymentComplete = () => {
-    alert('Pembayaran berhasil! Tim kami akan memverifikasi pembayaran Anda.');
-    navigate('/');
+  const handleUploadPaymentProof = async () => {
+    if (!selectedFile || !id) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+    formData.append('token', id);
+
+    try {
+      const response = await http.post('/api/order/payment-confirmation/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.status === 200 || response.data.status === 'success') {
+        setIsUploadModalOpen(false);
+        alert('Bukti pembayaran berhasil diupload!');
+        handleRemoveFile();
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Gagal mengupload bukti pembayaran. Silakan coba lagi.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handlePaymentComplete = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await http.post('/api/order/payment-confirmation', {
+        order_type: 'fleet',
+        token: id
+      });
+      
+      if (response.status === 200 || response.data.status === 'success') {
+        setIsPaymentConfirmed(true);
+      }
+    } catch (error) {
+      console.error('Payment confirmation failed:', error);
+      alert('Gagal mengkonfirmasi pembayaran. Silakan coba lagi.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -184,8 +249,56 @@ export const PurchaseArmada: React.FC = () => {
      )
   }
 
-  const currentPaymentAmount = orderData.payment_amount || orderData.rawTotalAmount;
-  const selectedPayment = orderData.payment_method || 'bank';
+  const hasPayment = orderData?.payment && orderData.payment.length > 0;
+  const activePayment = hasPayment 
+    ? [...orderData.payment].sort((a, b) => {
+        const tb = new Date(b.payment_date).getTime();
+        const ta = new Date(a.payment_date).getTime();
+        return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta);
+      })[0]
+    : null;
+  const isDeadlinePassed = !hasPayment || (orderData ? new Date(orderData.paymentDeadline).getTime() <= new Date().getTime() : false);
+
+  if (isPaymentConfirmed) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12 flex flex-col items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="p-8 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6">
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+            
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Terimakasih!
+            </h2>
+            
+            <p className="text-gray-600 dark:text-gray-300 mb-8">
+              Pembayaran anda sedang menunggu konfirmasi. Kami akan segera memberi tahu ke email anda.
+            </p>
+            
+            <div className="space-y-3 w-full">
+              <Button 
+                onClick={() => navigate('/')} 
+                variant="outline" 
+                className="w-full"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Kembali ke Beranda
+              </Button>
+              
+              <Button 
+                onClick={() => navigate('/find-order')} 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                Lacak Pesanan
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
@@ -200,7 +313,6 @@ export const PurchaseArmada: React.FC = () => {
               className="mr-4 bg-transparent hover:bg-transparent"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
             </Button>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Selesaikan Pembayaran
@@ -215,11 +327,11 @@ export const PurchaseArmada: React.FC = () => {
           <div className="lg:col-span-2">
             
             {/* Payment Instructions */}
-            {selectedPayment === 'bank' ? (
+            {activePayment && (
               <Card className="mb-6">
                 <CardContent className="p-6">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                    Instruksi Transfer Bank
+                    Instruksi Pembayaran
                   </h2>
                   
                   <div className="space-y-6">
@@ -233,7 +345,14 @@ export const PurchaseArmada: React.FC = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600 dark:text-gray-300">Bank</span>
                           <span className="font-medium text-gray-900 dark:text-white">
-                            {bankTransferData.bankName}
+                            {activePayment.bank_name}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-300">Kode Bank</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {activePayment.bank_code}
                           </span>
                         </div>
                         
@@ -241,12 +360,16 @@ export const PurchaseArmada: React.FC = () => {
                           <span className="text-gray-600 dark:text-gray-300">Nomor Rekening</span>
                           <div className="flex items-center space-x-2">
                             <span className="font-medium text-gray-900 dark:text-white font-mono">
-                              {bankTransferData.accountNumber}
+                              {activePayment.account_number}
                             </span>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={handleCopyAccount}
+                              onClick={() => {
+                                navigator.clipboard.writeText(activePayment.account_number);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 2000);
+                              }}
                               className="h-8 w-8 p-0"
                             >
                               {copied ? (
@@ -261,8 +384,20 @@ export const PurchaseArmada: React.FC = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600 dark:text-gray-300">Atas Nama</span>
                           <span className="font-medium text-gray-900 dark:text-white">
-                            {bankTransferData.accountName}
+                            {activePayment.account_name}
                           </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-300">Kode Referensi</span>
+                            <span className="font-medium text-gray-900 dark:text-white font-mono">
+                              {activePayment.unique_code}
+                            </span>
+                          </div>
+                          <p className="text-xs text-amber-600 dark:text-amber-400 italic">
+                            * Gunakan kode referensi sebagai berita transaksi untuk mempermudah verifikasi pembayaran
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -270,91 +405,11 @@ export const PurchaseArmada: React.FC = () => {
                     {/* Transfer Amount */}
                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                       <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        Jumlah Transfer
-                      </h3>
-                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {formatCurrency(currentPaymentAmount)}
-                      </div>
-                    </div>
-
-                    {/* Transfer Code */}
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        Kode Transfer
-                      </h3>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-mono text-yellow-800 dark:text-yellow-200">
-                          {bankTransferData.transferCode}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleCopyTransferCode}
-                          className="h-8 w-8 p-0"
-                        >
-                          {copied ? (
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">
-                        *Wajib mencantumkan kode transfer ini pada keterangan transfer
-                      </p>
-                    </div>
-
-                    {/* Instructions */}
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        Cara Transfer:
-                      </h3>
-                      <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                        <li>Buka aplikasi mobile banking atau ATM</li>
-                        <li>Pilih menu transfer ke rekening lain</li>
-                        <li>Masukkan nomor rekening BCA: <span className="font-mono font-semibold">{bankTransferData.accountNumber}</span></li>
-                        <li>Masukkan jumlah transfer: <span className="font-semibold">{formatCurrency(currentPaymentAmount)}</span></li>
-                        <li>Masukkan kode transfer pada keterangan: <span className="font-mono font-semibold">{bankTransferData.transferCode}</span></li>
-                        <li>Konfirmasi dan selesaikan transfer</li>
-                        <li>Simpan bukti transfer untuk konfirmasi</li>
-                      </ol>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                    Instruksi Pembayaran QRIS
-                  </h2>
-                  
-                  <div className="space-y-6">
-                    {/* QR Code */}
-                    <div className="text-center">
-                      <div className="inline-block p-4 bg-white rounded-lg shadow-lg">
-                        <img
-                          src={qrisData.qrCode}
-                          alt="QR Code Payment"
-                          className="w-48 h-48 mx-auto"
-                        />
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                        Scan QR Code dengan aplikasi mobile banking atau e-wallet
-                      </p>
-                    </div>
-
-                    {/* Payment Amount */}
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                         Jumlah Pembayaran
                       </h3>
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {formatCurrency(currentPaymentAmount)}
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {formatCurrency(activePayment.payment_amount)}
                       </div>
-                      <p className="text-sm text-green-700 dark:text-green-300 mt-2">
-                        Merchant: {qrisData.merchantName}
-                      </p>
                     </div>
 
                     {/* Instructions */}
@@ -363,12 +418,12 @@ export const PurchaseArmada: React.FC = () => {
                         Cara Pembayaran:
                       </h3>
                       <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                        <li>Buka aplikasi mobile banking atau e-wallet</li>
-                        <li>Pilih menu scan QR Code</li>
-                        <li>Scan QR Code yang ditampilkan</li>
-                        <li>Periksa detail pembayaran (jumlah dan merchant)</li>
+                        <li>Buka aplikasi mobile banking atau ATM Anda</li>
+                        <li>Pilih menu transfer ke {activePayment.bank_name}</li>
+                        <li>Masukkan nomor rekening: <span className="font-mono font-semibold">{activePayment.account_number}</span> dengan kode bank <span className="font-mono font-semibold">{activePayment.bank_code}</span></li>
+                        <li>Masukkan jumlah pembayaran: <span className="font-semibold">{formatCurrency(activePayment.payment_amount)}</span></li>
                         <li>Konfirmasi dan selesaikan pembayaran</li>
-                        <li>Simpan bukti pembayaran untuk konfirmasi</li>
+                        <li>Simpan bukti transfer untuk konfirmasi</li>
                       </ol>
                     </div>
                   </div>
@@ -377,33 +432,105 @@ export const PurchaseArmada: React.FC = () => {
             )}
 
             {/* Payment Confirmation */}
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Konfirmasi Pembayaran
-                </h2>
-                
-                <div className="space-y-4">
-                  <p className="text-gray-700 dark:text-gray-300">
-                    Setelah melakukan pembayaran, silakan upload bukti pembayaran untuk mempercepat proses verifikasi.
-                  </p>
+            {hasPayment && (
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                    Konfirmasi Pembayaran
+                  </h2>
                   
-                  <div className="flex space-x-4">
-                    <Button variant="outline" className="flex-1">
-                      <Download className="h-4 w-4 mr-2" />
-                      Upload Bukti Pembayaran
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                      onClick={handlePaymentComplete}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Konfirmasi Pembayaran
-                    </Button>
+                  <div className="space-y-4">
+                    <p className="text-gray-700 dark:text-gray-300">
+                      Setelah melakukan pembayaran, silakan upload bukti pembayaran untuk mempercepat proses verifikasi.
+                    </p>
+                    
+                    <div className="flex space-x-4">
+                      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="flex-1">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Bukti Pembayaran
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Upload Bukti Pembayaran</DialogTitle>
+                            <DialogDescription>
+                              Upload foto bukti transfer anda disini. Format yang didukung: JPG, PNG, JPEG.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid w-full max-w-sm items-center gap-1.5">
+                              <Label htmlFor="picture">Bukti Transfer</Label>
+                              <div 
+                                className="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors p-6"
+                                onClick={() => document.getElementById('picture')?.click()}
+                              >
+                                <Image className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Choose an image file</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, JPEG</span>
+                              </div>
+                              <Input 
+                                id="picture" 
+                                type="file" 
+                                accept="image/png, image/jpeg, image/jpg" 
+                                className="hidden" 
+                                onChange={handleFileSelect} 
+                              />
+                            </div>
+                            
+                            {previewUrl && (
+                              <div className="relative mt-4 border rounded-lg overflow-hidden">
+                                <img src={previewUrl} alt="Preview" className="w-full h-auto max-h-[300px] object-contain" />
+                                <Button
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute top-2 right-2 h-6 w-6 rounded-full"
+                                  onClick={handleRemoveFile}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          <DialogFooter>
+                            <Button type="button" variant="secondary" onClick={() => setIsUploadModalOpen(false)}>
+                              Batal
+                            </Button>
+                            <Button 
+                              type="button" 
+                              onClick={handleUploadPaymentProof} 
+                              disabled={!selectedFile || isUploading}
+                            >
+                              {isUploading ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                                  Mengirim...
+                                </>
+                              ) : (
+                                'Kirim Bukti Pembayaran'
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                      <Button 
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        onClick={handlePaymentComplete}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        ) : (
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                        )}
+                        {isSubmitting ? 'Memproses...' : 'Konfirmasi Pembayaran'}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -420,7 +547,7 @@ export const PurchaseArmada: React.FC = () => {
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{orderData.title}</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {orderData.participants} Penumpang
+                        {orderData.participants} Unit
                       </p>
                       {orderData.pickup && (
                           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
@@ -435,15 +562,21 @@ export const PurchaseArmada: React.FC = () => {
                         <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                           Tambahan:
                         </p>
-                        <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-300">
+                        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                           {orderData.addon.map((addon, idx) => (
-                            <li key={idx}>
-                              {addon.addon_name} - {formatCurrency(addon.addon_price)}
-                            </li>
+                            <div key={idx} className="flex justify-between items-center">
+                              <span>{addon.addon_name}</span>
+                              <span>{formatCurrency(addon.addon_price)}</span>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       </div>
                     )}
+
+                    <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
+                       <span>Harga Unit</span>
+                       <span>{orderData.price}</span>
+                    </div>
 
                     <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
                       <span className="font-medium text-gray-900 dark:text-white">Total Tagihan</span>
@@ -467,10 +600,12 @@ export const PurchaseArmada: React.FC = () => {
                   
                   <div className="text-center">
                     <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2 font-mono">
-                      {timeLeft || '00:00:00'}
+                      {isDeadlinePassed ? '00:00:00' : (timeLeft || '00:00:00')}
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Sampai {orderData ? formatDate(orderData.paymentDeadline) : '-'}
+                      {isDeadlinePassed
+                        ? 'Batas Waktu Pembayaran telah habis silakan lakukan order kembali'
+                        : `Sampai ${orderData ? formatDate(orderData.paymentDeadline) : '-'}`}
                     </p>
                   </div>
                   
@@ -499,8 +634,11 @@ export const PurchaseArmada: React.FC = () => {
                     
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-gray-300">Pembayaran</span>
-                      <Badge variant="outline" className="border-orange-300 text-orange-600">
-                        Menunggu Pembayaran
+                      <Badge 
+                        variant="outline" 
+                        className={isDeadlinePassed ? 'border-red-300 text-red-600' : 'border-orange-300 text-orange-600'}
+                      >
+                        {isDeadlinePassed ? 'Pembayaran Dibatalkan' : 'Menunggu Pembayaran'}
                       </Badge>
                     </div>
                   </div>

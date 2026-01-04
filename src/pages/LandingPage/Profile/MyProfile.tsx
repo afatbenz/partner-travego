@@ -196,7 +196,7 @@ export const MyProfile: React.FC = () => {
               <div className="space-y-2">
                 {/* Pesanan Saya */}
                 <button
-                  onClick={() => navigate('/myorders')}
+                  onClick={() => navigate('/find-order')}
                   className="w-full flex items-center justify-between p-4 text-left border border-gray-200 dark:border-gray-700 rounded-lg bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
@@ -204,7 +204,7 @@ export const MyProfile: React.FC = () => {
                       <ShoppingBag className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Pesanan Saya</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">Lacak Pesanan</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-300">Lihat riwayat pemesanan</p>
                     </div>
                   </div>
