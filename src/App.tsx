@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { GeneralContentProvider } from '@/contexts/GeneralContentContext';
+import { CheckoutProvider } from '@/contexts/CheckoutContext';
 import { Toaster } from '@/components/ui/toaster';
+// Main App Component
 
 // Layouts
 import { Navbar } from '@/components/layout/Navbar';
@@ -31,6 +33,7 @@ import { CatalogDetail } from '@/pages/LandingPage/Catalogue/CatalogDetail';
 import { ArmadaDetail } from '@/pages/LandingPage/Armada/ArmadaDetail';
 import { CatalogCheckout } from '@/pages/LandingPage/Orders/CatalogCheckout';
 import { ArmadaCheckout } from '@/pages/LandingPage/Orders/ArmadaCheckout';
+import { ItineraryRequest } from '@/pages/LandingPage/Orders/ItineraryRequest';
 import { Payment } from '@/pages/LandingPage/Orders/Payment';
 import { PurchaseArmada } from '@/pages/LandingPage/Orders/PurchaseArmada';
 import { MyProfile } from '@/pages/LandingPage/Profile/MyProfile';
@@ -95,9 +98,10 @@ function App() {
   return (
     <ThemeProvider>
       <GeneralContentProvider>
-        <Router>
-          <ScrollToTop />
-          <Routes>
+        <CheckoutProvider>
+          <Router>
+            <ScrollToTop />
+            <Routes>
           {/* Public Routes */}
           <Route path="/" element={
             <PublicLayout>
@@ -147,6 +151,11 @@ function App() {
           <Route path="/checkout/armada/:id" element={
             <PublicLayout>
               <ArmadaCheckout />
+            </PublicLayout>
+          } />
+          <Route path="/checkout/armada/special-request" element={
+            <PublicLayout>
+              <ItineraryRequest />
             </PublicLayout>
           } />
           <Route path="/payment/:type/:id" element={
@@ -301,7 +310,8 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
           <Toaster />
-        </Router>
+          </Router>
+        </CheckoutProvider>
       </GeneralContentProvider>
     </ThemeProvider>
   );

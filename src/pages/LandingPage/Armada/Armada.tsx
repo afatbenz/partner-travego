@@ -4,6 +4,10 @@ import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { FilterSection } from '@/components/common/FilterSection';
 import { Pagination } from '@/components/common/Pagination';
 import { http } from '@/lib/http';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Phone, MapPin, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Fleet {
   fleet_id: string;
@@ -152,54 +156,76 @@ const Armada = () => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory, selectedLocation, sortBy]);
 
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header Section with Parallax Background */}
-      <section className="relative h-80 w-full text-white overflow-hidden">
-        {/* Background Image dengan Parallax Effect */}
+    <div className="min-h-screen bg-white">
+      {/* Header Section with Cinematic Background */}
+      <section className="relative min-h-[60vh] flex items-center pt-20 overflow-hidden">
+        {/* Background Image with Overlay */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
+          className="absolute inset-0 z-0"
           style={{
-            backgroundImage: 'url(https://cdn.paradisotour.co.id/wp-content/uploads/2024/01/Kelebihan-Mobil-Hiace.jpg)'
+            backgroundImage: 'url(https://cdn.paradisotour.co.id/wp-content/uploads/2024/01/Kelebihan-Mobil-Hiace.jpg)',
+            backgroundPosition: 'center',
+            backgroundSize: 'cover'
           }}
-        />
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/50" />
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/60 to-transparent" />
+        </div>
         
-        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-7xl mx-auto w-full">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Armada Kami</h1>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-              Pilih armada terbaik untuk perjalanan Anda dengan kenyamanan dan keamanan terjamin
-            </p>
+        <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-7xl mx-auto">
+          <div className="max-w-2xl animate-in fade-in slide-in-from-left duration-1000">
+            <div className="space-y-4">
+              <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+                Armada <span className="text-blue-400">Terbaik</span> <br />
+                Untuk Anda
+              </h1>
+              <p className="text-lg text-blue-50 font-light leading-relaxed">
+                Pilih armada terbaik untuk perjalanan Anda dengan kenyamanan dan keamanan terjamin. Layanan rental premium di seluruh Indonesia.
+              </p>
+            </div>
           </div>
+        </div>
+
+        {/* Wave Divider */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-10">
+          <svg 
+            className="relative block w-[calc(100%+1.3px)] h-[60px] md:h-[100px]" 
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 1200 120" 
+            preserveAspectRatio="none"
+          >
+            <path 
+              d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5,73.84-4.36,147.54,16.88,218.2,35.26,69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-1.42,1200,0.48V120H0Z" 
+              className="fill-white dark:fill-gray-950"
+            ></path>
+          </svg>
         </div>
       </section>
 
-      {/* Search and Filter Section */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6">
-          <FilterSection
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            selectedLocation={selectedLocation}
-            onLocationChange={setSelectedLocation}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            categories={categories}
-            locations={locations}
-            sortOptions={sortOptions}
-          />
-          
-          <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Menampilkan {paginatedArmada.length} dari {sortedArmada.length} armada
-            </p>
-          </div>
+      {/* Search and Filter Section - Overlapping */}
+      <div className="relative z-20 -mt-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <FilterSection
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          selectedLocation={selectedLocation}
+          onLocationChange={setSelectedLocation}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          categories={categories}
+          locations={locations}
+          sortOptions={sortOptions}
+        />
+        
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-gray-600 dark:text-gray-300 px-4">
+            Menampilkan {paginatedArmada.length} dari {sortedArmada.length} armada
+          </p>
         </div>
       </div>
 

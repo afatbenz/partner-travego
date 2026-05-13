@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Search, Star } from 'lucide-react';
+import { Calendar, Clock, Search, Star, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ImagePopup } from '@/components/common/ImagePopup';
@@ -19,16 +19,11 @@ const sampleData = {
   price: "Rp 2.500.000",
   originalPrice: "Rp 3.000.000",
   images: [
-    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop"
+    "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&q=80&w=1200",
+    "https://images.unsplash.com/photo-1523010152108-172551997434?auto=format&fit=crop&q=80&w=1200",
+    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&q=80&w=1200",
+    "https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=1200",
+    "https://images.unsplash.com/photo-1512100356956-c1227c331f01?auto=format&fit=crop&q=80&w=1200"
   ],
   description: `
     Nikmati pengalaman wisata yang tak terlupakan di Bangkok, Thailand dengan paket tour 4 hari 3 malam yang telah dirancang khusus untuk memberikan Anda pengalaman terbaik. 
@@ -126,181 +121,253 @@ export const CatalogDetail: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header Banner with Blue Tosca Background */}
-      <DetailBanner
-        title={data.title}
-        location={data.location}
-        showMapButton={true}
-      />
-
-      {/* Tour Details */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center">
-              <Calendar className="h-5 w-5 mr-2 text-gray-600" />
-              <span className="text-gray-600">Nearest Tour Date | {data.nearestDate}</span>
-            </div>
-            <div className="flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-gray-600" />
-              <span className="text-gray-600">Tour Duration | {data.duration}</span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-white">
+      {/* Header Section with Thumbnail Background */}
+      <section className="relative min-h-[45vh] flex items-center pt-20 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(${data.images[0]})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover'
+          }}
+        >
+          {/* Navy Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/40 to-transparent" />
         </div>
-      </section>
-
-      {/* Image Gallery Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main Image */}
-            <div className="lg:col-span-3">
-              <div className="relative h-96 rounded-lg overflow-hidden cursor-pointer group" onClick={() => handleImageClick(0)}>
-                <img
-                  src={data.images[0]}
-                  alt={data.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-              </div>
-            </div>
-
-            {/* Thumbnail Grid */}
-            <div className="lg:col-span-1">
-              <div className="grid grid-cols-2 gap-3">
-                {data.images.slice(1, 5).map((image, index) => (
-                  <div
-                    key={index + 1}
-                    className="relative h-24 rounded-lg overflow-hidden cursor-pointer group"
-                    onClick={() => handleImageClick(index + 1)}
-                  >
-                    <img
-                      src={image}
-                      alt={`Gallery ${index + 2}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                  </div>
-                ))}
-                
-                {/* See All Photos Button */}
-                <div
-                  className="relative h-24 rounded-lg overflow-hidden cursor-pointer group bg-gray-200 flex items-center justify-center"
-                  onClick={() => handleImageClick(0)}
-                >
-                  <div className="text-center">
-                    <div className="w-8 h-8 mx-auto mb-2 bg-white/80 rounded-full flex items-center justify-center">
-                      <Search className="h-4 w-4 text-gray-600" />
-                    </div>
-                    <span className="text-sm text-gray-600 font-medium">See All Photos</span>
-                  </div>
+        
+        <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-7xl mx-auto">
+          <div className="max-w-3xl animate-in fade-in slide-in-from-left duration-1000">
+            <div className="space-y-6">
+              <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+                {data.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-6 text-white/90">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-blue-400" />
+                  <span className="font-normal tracking-wide">{data.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-orange-400 fill-current" />
+                  <span className="font-normal">{data.rating}/10 Rating</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Wave Divider */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-10">
+          <svg 
+            className="relative block w-[calc(100%+1.3px)] h-[60px] md:h-[100px]" 
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 1200 120" 
+            preserveAspectRatio="none"
+          >
+            <path 
+              d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5,73.84-4.36,147.54,16.88,218.2,35.26,69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-1.42,1200,0.48V120H0Z" 
+              className="fill-white dark:fill-gray-950"
+            ></path>
+          </svg>
+        </div>
       </section>
 
-      {/* Description Section */}
+      {/* Image Gallery Grid - Under Wave Divider */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {data.images.slice(0, 4).map((image, index) => (
+              <div 
+                key={index}
+                className="relative aspect-video rounded-2xl overflow-hidden cursor-pointer group shadow-md"
+                onClick={() => handleImageClick(index)}
+              >
+                <img
+                  src={image}
+                  alt={`Gallery ${index + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                {index === 3 && data.images.length > 4 && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white font-bold uppercase tracking-widest text-sm">Lihat foto lain</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Info Stats */}
+      <section className="pb-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-white">
+        <div className="max-w-7xl mx-auto border-y border-gray-100 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex items-center gap-4">
+              <div className="bg-blue-50 p-3 rounded-2xl">
+                <Calendar className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Tanggal Terdekat</p>
+                <p className="font-normal text-gray-900">{data.nearestDate}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="bg-blue-50 p-3 rounded-2xl">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Durasi Tour</p>
+                <p className="font-normal text-gray-900">{data.duration}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="bg-orange-50 p-3 rounded-2xl">
+                <Star className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Rating Pengguna</p>
+                <p className="font-normal text-gray-900">{data.rating}/10 ({data.reviewCount} Ulasan)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Content Section */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             {/* Main Content */}
-            <div className="lg:col-span-3">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Deskripsi Paket</h2>
-              
-              <div className="prose prose-lg max-w-none">
-                {data.description.split('\n').map((paragraph, index) => {
-                  if (paragraph.trim() === '') return <br key={index} />;
-                  
-                  if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+            <div className="lg:col-span-8 space-y-12">
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-1 w-12 bg-blue-600 rounded-full" />
+                  <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Deskripsi Paket</h2>
+                </div>
+                
+                <div className="prose prose-lg max-w-none text-gray-600 font-medium leading-relaxed">
+                  {data.description.split('\n').map((paragraph, index) => {
+                    if (paragraph.trim() === '') return <br key={index} />;
+                    
+                    if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+                      return (
+                        <h3 key={index} className="text-xl font-bold text-gray-900 mt-8 mb-4">
+                          {paragraph.replace(/\*\*/g, '')}
+                        </h3>
+                      );
+                    }
+                    
+                    if (paragraph.startsWith('- ')) {
+                      return (
+                        <div key={index} className="flex items-start gap-3 mb-2 ml-4">
+                          <div className="h-1.5 w-1.5 bg-blue-600 rounded-full mt-2.5 shrink-0" />
+                          <p className="text-gray-600">{paragraph.replace('- ', '')}</p>
+                        </div>
+                      );
+                    }
+                    
                     return (
-                      <h3 key={index} className="text-xl font-semibold text-gray-900 mt-6 mb-3">
-                        {paragraph.replace(/\*\*/g, '')}
-                      </h3>
-                    );
-                  }
-                  
-                  if (paragraph.startsWith('- ')) {
-                    return (
-                      <p key={index} className="text-gray-700 mb-2 ml-4">
+                      <p key={index} className="mb-4">
                         {paragraph}
                       </p>
                     );
-                  }
-                  
-                  return (
-                    <p key={index} className="text-gray-700 mb-4 leading-relaxed">
-                      {paragraph}
-                    </p>
-                  );
-                })}
+                  })}
+                </div>
+              </div>
+
+              {/* Rating Summary - Moved here below description */}
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-[2.5rem] p-8 md:p-12 border border-blue-100/50">
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                  <div className="text-center md:text-left space-y-4">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Rating Keseluruhan</h3>
+                    <div className="flex flex-col gap-2">
+                      <div className="text-6xl font-bold text-blue-600 dark:text-blue-400">10.0</div>
+                      <div className="flex justify-center md:justify-start text-orange-400">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-6 w-6 fill-current" />
+                        ))}
+                      </div>
+                      <p className="text-gray-500 font-bold tracking-wide">Berdasarkan {data.reviewCount} ulasan pelanggan</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {[5, 4, 3, 2, 1].map((rating) => (
+                      <div key={rating} className="flex items-center gap-4">
+                        <span className="text-sm font-bold text-gray-600 w-4">{rating}</span>
+                        <Star className="h-4 w-4 text-orange-400 fill-current" />
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div 
+                            className="bg-orange-400 h-2 rounded-full" 
+                            style={{ width: `${rating === 5 ? 100 : 0}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-bold text-gray-400 w-8 text-right">
+                          {rating === 5 ? '100%' : '0%'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-6">
-                {/* Rating */}
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                  <div className="flex items-center mb-4">
-                    <Star className="h-6 w-6 text-yellow-400 fill-current mr-2" />
-                    <span className="text-2xl font-bold text-gray-900">{data.rating}/10</span>
-                    <span className="text-sm text-gray-500 ml-2">(From {data.reviewCount} Reviews)</span>
+            {/* Sidebar - Booking Card */}
+            <div className="lg:col-span-4 lg:sticky lg:top-24">
+              <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-gray-100 p-8 space-y-8">
+                <div className="space-y-4">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Harga Mulai Dari</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-blue-600">{data.price}</span>
+                    <span className="text-sm font-normal text-gray-400">/pax</span>
                   </div>
-                  
-                  {/* Price */}
-                  <div className="mb-6">
-                    <div className="text-sm text-gray-500 line-through mb-1">
-                      {data.originalPrice}
-                    </div>
-                    <div className="text-3xl font-bold text-blue-600">
-                      {data.price}
-                    </div>
-                    <div className="text-sm text-gray-500">/pax</div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="space-y-3">
-                    <Button 
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-                      onClick={handleOrderNow}
-                    >
-                      Pesan Sekarang
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => navigate(`/custom-order/catalog/${data.id}`)}
-                    >
-                      Ajukan custom order
-                    </Button>
-                  </div>
+                  <p className="text-sm text-gray-400 line-through font-semibold">{data.originalPrice}</p>
                 </div>
 
-                {/* Features */}
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Fasilitas</h3>
-                  <ul className="space-y-2">
+                <div className="space-y-4">
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-16 font-semibold text-lg shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95"
+                    onClick={handleOrderNow}
+                  >
+                    Pesan Sekarang
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 bg-white rounded-2xl h-16 font-semibold text-lg transition-all hover:scale-[1.02]"
+                    onClick={() => navigate(`/custom-order/catalog/${data.id}`)}
+                  >
+                    Ajukan Custom Order
+                  </Button>
+                </div>
+
+                <div className="h-px bg-gray-100" />
+
+                <div className="space-y-6">
+                  <h4 className="font-bold text-gray-900 uppercase tracking-wider text-xs">Fasilitas Termasuk</h4>
+                  <ul className="space-y-4">
                     {data.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-700">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                      <li key={index} className="flex items-center gap-3 text-sm font-semibold text-gray-600">
+                        <div className="h-2 w-2 bg-blue-600 rounded-full shrink-0" />
                         {feature}
                       </li>
                     ))}
                   </ul>
-                </div>
 
-                {/* Highlights */}
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Highlight Wisata</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {data.highlights.map((highlight, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {highlight}
-                      </Badge>
-                    ))}
+                  <div className="h-px bg-gray-100" />
+
+                  {/* Highlights */}
+                  <div className="space-y-6">
+                    <h4 className="font-bold text-gray-900 uppercase tracking-wider text-xs">Highlight Wisata</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {data.highlights.map((highlight, index) => (
+                        <Badge key={index} variant="secondary" className="bg-blue-50 text-blue-600 border-none font-normal text-[10px] px-3 py-1 rounded-lg">
+                          {highlight}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -310,167 +377,63 @@ export const CatalogDetail: React.FC = () => {
       </section>
 
       {/* Reviews Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-gray-50 dark:bg-gray-900">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Ulasan Terbaru</h2>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div className="space-y-4 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <div className="h-1 w-12 bg-orange-500 rounded-full" />
+                <span className="text-orange-500 font-bold tracking-widest uppercase text-sm">Review Pelanggan</span>
+              </div>
+              <h2 className="text-4xl font-bold text-gray-900 leading-tight">Ulasan <span className="text-orange-500">Terbaru</span></h2>
+            </div>
+            <Button 
+              variant="outline" 
+              className="rounded-2xl px-8 h-14 font-normal border-gray-200 text-blue-600 hover:bg-blue-50 transition-all"
+              onClick={() => navigate(`/reviews/catalog/${data.id}`)}
+            >
+              Lihat Semua Ulasan (15)
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-8 space-y-8">
               
-              {/* Write Review Form */}
-              <ReviewForm
-                onSubmit={(rating, review) => {
-                  console.log('Review submitted:', { rating, review });
-                }}
-                className="mb-6"
-              />
-              
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {/* Review 1 */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-start mb-4">
-                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white text-lg font-medium mr-4 flex-shrink-0">
+                <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-500">
+                  <div className="flex items-start gap-6">
+                    <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shrink-0 shadow-lg shadow-blue-600/20">
                       A
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ahmad Rizki</h3>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">2 hari yang lalu</span>
-                      </div>
-                      <div className="flex items-center mb-3">
-                        <div className="flex text-yellow-400 mr-2">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i} className="text-sm">★</span>
-                          ))}
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">Ahmad Rizki</h3>
+                          <p className="text-sm text-gray-400 font-normal">2 hari yang lalu</p>
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">5.0</span>
+                        <div className="flex items-center bg-orange-50 px-3 py-1.5 rounded-xl">
+                          <Star className="h-4 w-4 text-orange-500 fill-current mr-1.5" />
+                          <span className="font-normal text-orange-600 text-sm">5.0</span>
+                        </div>
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        "Paket tour yang sangat memuaskan! Pelayanan guide sangat baik dan tempat wisata yang dikunjungi sesuai dengan yang dijanjikan. Hotel yang disediakan juga nyaman dan lokasinya strategis. Makanan yang disajikan sangat lezat dan autentik. Transportasi selama tour juga sangat nyaman. Recommended banget untuk yang ingin liburan ke Bangkok!"
+                      <p className="text-gray-600 font-medium leading-relaxed">
+                        "Paket tour yang sangat memuaskan! Pelayanan guide sangat baik dan tempat wisata yang dikunjungi sesuai dengan yang dijanjikan. Hotel yang disediakan juga nyaman dan lokasinya strategis. Recommended banget!"
                       </p>
-                    </div>
-                  </div>
-                  
-                  {/* Review Images */}
-                  <div className="flex space-x-2 mt-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=100&h=100&fit=crop"
-                      alt="Review photo 1"
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop"
-                      alt="Review photo 2"
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=100&h=100&fit=crop"
-                      alt="Review photo 3"
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                {/* Review 2 */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-start mb-4">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-lg font-medium mr-4 flex-shrink-0">
-                      S
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sari Dewi</h3>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">1 minggu yang lalu</span>
+                      
+                      {/* Review Images */}
+                      <div className="flex gap-3 pt-2">
+                        {[1, 2, 3].map((_, i) => (
+                          <img
+                            key={i}
+                            src={data.images[i+1]}
+                            alt="Review"
+                            className="w-20 h-20 object-cover rounded-2xl border-2 border-white shadow-sm"
+                          />
+                        ))}
                       </div>
-                      <div className="flex items-center mb-3">
-                        <div className="flex text-yellow-400 mr-2">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i} className="text-sm">★</span>
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">5.0</span>
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        "Pengalaman wisata yang tak terlupakan! Hotel bagus, makanan enak, dan transportasi nyaman. Worth it banget untuk harga segini. Guide-nya ramah dan informatif, bisa bahasa Indonesia dengan baik. Itinerary yang diberikan juga sangat lengkap dan tidak terburu-buru. Pasti akan booking lagi untuk destinasi lain!"
-                      </p>
                     </div>
                   </div>
-                  
-                  {/* Review Images */}
-                  <div className="flex space-x-2 mt-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop"
-                      alt="Review photo 1"
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=100&h=100&fit=crop"
-                      alt="Review photo 2"
-                      className="w-16 h-16 object-cover rounded-lg"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* View All Reviews Button */}
-              <div className="text-center mt-8">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="px-8"
-                  onClick={() => navigate(`/reviews/catalog/${data.id}`)}
-                >
-                  Lihat Semua Ulasan (15)
-                </Button>
-              </div>
-            </div>
-
-            {/* Sidebar - Rating Summary */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-6">
-                {/* Overall Rating */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Rating Keseluruhan</h3>
-                  
-                  <div className="text-center mb-4">
-                    <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">10.0</div>
-                    <div className="flex justify-center text-yellow-400 mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className="text-lg">★</span>
-                      ))}
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Berdasarkan 15 ulasan</p>
-                  </div>
-
-                  {/* Rating Breakdown */}
-                  <div className="space-y-2">
-                    {[5, 4, 3, 2, 1].map((rating) => (
-                      <div key={rating} className="flex items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-300 w-8">{rating}</span>
-                        <span className="text-yellow-400 text-sm mr-2">★</span>
-                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mx-2">
-                          <div 
-                            className="bg-yellow-400 h-2 rounded-full" 
-                            style={{ width: `${rating === 5 ? 100 : rating === 4 ? 0 : 0}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300 w-8">
-                          {rating === 5 ? '15' : '0'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Write Review Button */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Bagikan Pengalaman Anda</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                    Sudah pernah menggunakan layanan ini? Bagikan pengalaman Anda kepada calon pelanggan lainnya.
-                  </p>
-                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                    Tulis Ulasan
-                  </Button>
                 </div>
               </div>
             </div>
