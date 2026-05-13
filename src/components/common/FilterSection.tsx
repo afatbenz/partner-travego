@@ -43,30 +43,35 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
-      <div className="flex flex-col lg:flex-row gap-4">
+    <div className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/40 dark:border-gray-800/40 p-4 sm:p-8 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] ${className}`}>
+      <div className="flex flex-col lg:flex-row gap-6 items-end">
         {/* Search Input */}
-        <div className="flex-1">
+        <div className="flex-1 w-full space-y-2">
+          <label className="text-sm font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2 px-1">
+            <Search className="h-4 w-4 text-blue-600" />
+            Cari Layanan
+          </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <Input
-              placeholder="Cari..."
+              placeholder="Apa yang ingin Anda cari?"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10"
+              className="h-14 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all pl-12"
             />
           </div>
         </div>
 
         {/* Category Filter */}
-        <div className="w-full lg:w-48">
+        <div className="w-full lg:w-48 space-y-2">
+          <label className="text-sm font-bold text-blue-900 dark:text-blue-100 px-1">Kategori</label>
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Kategori" />
+            <SelectTrigger className="h-14 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all">
+              <SelectValue placeholder="Semua Kategori" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl border-gray-200 dark:border-gray-800 shadow-2xl">
               {categories.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
+                <SelectItem key={category.value} value={category.value} className="rounded-lg py-3">
                   {category.label}
                 </SelectItem>
               ))}
@@ -75,14 +80,15 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
         </div>
 
         {/* Location Filter */}
-        <div className="w-full lg:w-48">
+        <div className="w-full lg:w-48 space-y-2">
+          <label className="text-sm font-bold text-blue-900 dark:text-blue-100 px-1">Lokasi</label>
           <Select value={selectedLocation} onValueChange={onLocationChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Lokasi" />
+            <SelectTrigger className="h-14 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all">
+              <SelectValue placeholder="Semua Lokasi" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl border-gray-200 dark:border-gray-800 shadow-2xl">
               {locations.map((location) => (
-                <SelectItem key={location.value} value={location.value}>
+                <SelectItem key={location.value} value={location.value} className="rounded-lg py-3">
                   {location.label}
                 </SelectItem>
               ))}
@@ -91,14 +97,15 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
         </div>
 
         {/* Sort Filter */}
-        <div className="w-full lg:w-48">
+        <div className="w-full lg:w-48 space-y-2">
+          <label className="text-sm font-bold text-blue-900 dark:text-blue-100 px-1">Urutkan</label>
           <Select value={sortBy} onValueChange={onSortChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Urutkan" />
+            <SelectTrigger className="h-14 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all">
+              <SelectValue placeholder="Default" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl border-gray-200 dark:border-gray-800 shadow-2xl">
               {sortOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value} className="rounded-lg py-3">
                   {option.label}
                 </SelectItem>
               ))}
@@ -107,22 +114,22 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex space-x-2">
+        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl">
           <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            variant="ghost"
             size="sm"
             onClick={() => onViewModeChange('grid')}
-            className="px-3"
+            className={`h-12 w-12 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600' : 'text-gray-400'}`}
           >
-            <Grid className="h-4 w-4" />
+            <Grid className="h-5 w-5" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant="ghost"
             size="sm"
             onClick={() => onViewModeChange('list')}
-            className="px-3"
+            className={`h-12 w-12 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600' : 'text-gray-400'}`}
           >
-            <List className="h-4 w-4" />
+            <List className="h-5 w-5" />
           </Button>
         </div>
       </div>

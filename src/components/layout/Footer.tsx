@@ -1,16 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube, Linkedin, ArrowRight, Send } from 'lucide-react';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export const Footer: React.FC = () => {
   const { getContentIn, getListIn } = useGeneralContent();
   const brandNameRaw = getContentIn('general-config', 'brand-name');
-  const brandName = brandNameRaw && brandNameRaw.trim() !== '' ? brandNameRaw : 'TraveGo';
+  const brandName = brandNameRaw && brandNameRaw.trim() !== '' ? brandNameRaw : 'TraveGO';
   const brandDescRaw = getContentIn('general-config', 'brand-description');
   const brandDesc = brandDescRaw && brandDescRaw.trim() !== ''
     ? brandDescRaw
-    : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+    : 'Partner perjalanan terpercaya Anda untuk eksplorasi Indonesia yang tak terlupakan dengan layanan premium.';
+  
   const socialList = getListIn('general-config', 'social-media') as { icon?: string; label?: string; sub_label?: string }[] | null;
   const socialIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     facebook: Facebook,
@@ -19,6 +22,7 @@ export const Footer: React.FC = () => {
     youtube: Youtube,
     linkedin: Linkedin,
   };
+  
   const contactList = getListIn('general-config', 'contact') as { icon?: string; label?: string; sub_label?: string }[] | null;
   const contactIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     phone: Phone,
@@ -30,74 +34,78 @@ export const Footer: React.FC = () => {
     location: MapPin,
     'map-pin': MapPin,
   };
+
   return (
-    <footer className="bg-gray-900 dark:bg-black text-white print:hidden">
-      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-12">
-        <div className="grid md:grid-cols-4 gap-8">
+    <footer className="bg-[#0f172a] text-white py-16 print:hidden">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Company Info */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <span className="text-xl font-bold">{brandName}</span>
-            </div>
-            <p className="text-gray-400 mb-4">{brandDesc}</p>
+          <div className="space-y-6">
+            <Link to="/" className="flex items-center space-x-2">
+              <span className="text-2xl font-bold tracking-tight">{brandName}</span>
+            </Link>
+            <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
+              {brandDesc}
+            </p>
             <div className="flex space-x-4">
-              {(socialList && socialList.length
-                ? socialList
-                : []
-              ).map((item, idx) => {
-                const IconComp = socialIconMap[(item.icon || '').toLowerCase()] || Facebook;
-                const url = item.sub_label && item.sub_label.trim() !== '' ? item.sub_label : '#';
-                return (
-                  <a key={idx} href={url} className="text-gray-400 hover:text-blue-400 transition-colors" aria-label={item.label || 'Social'}>
-                    <IconComp className="h-5 w-5" />
-                  </a>
-                );
-              })}
+              {[Instagram, Facebook, Twitter, Youtube].map((Icon, idx) => (
+                <a key={idx} href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Icon className="h-5 w-5" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Layanan */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <div className="space-y-2">
-              <Link to="/catalog" className="block text-gray-400 hover:text-white transition-colors">
-                Katalog
-              </Link>
-              <Link to="/services" className="block text-gray-400 hover:text-white transition-colors">
-                Layanan
-              </Link>
-              <Link to="/team" className="block text-gray-400 hover:text-white transition-colors">
-                Tim Kami
-              </Link>
-              <Link to="/find-order" className="block text-gray-400 hover:text-white transition-colors">
-                Lacak Pesanan
-              </Link>
-              <Link to="/contact" className="block text-gray-400 hover:text-white transition-colors">
-                Kontak
-              </Link>
-            </div>
+            <h3 className="text-lg font-semibold mb-6">Layanan</h3>
+            <ul className="space-y-4">
+              {['Armada', 'Paket Wisata', 'Sewa Kendaraan', 'Layanan Perusahaan'].map((item) => (
+                <li key={item} className="flex items-center text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3" />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Perusahaan */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Kontak</h3>
-            <div className="space-y-3">
-              {(contactList || []).map((item, idx) => {
-                const IconComp = contactIconMap[(item.icon || '').toLowerCase()] || MapPin;
-                const text = item.sub_label && item.sub_label.trim() !== '' ? item.sub_label : (item.label || '');
-                return (
-                  <div key={idx} className="flex items-center space-x-3">
-                    <IconComp className="h-4 w-4 text-blue-400" />
-                    <span className="text-gray-400">{text}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <h3 className="text-lg font-semibold mb-6">Perusahaan</h3>
+            <ul className="space-y-4">
+              {['Tentang Kami', 'Karir', 'Blog', 'FAQ'].map((item) => (
+                <li key={item} className="flex items-center text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Kontak */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6">Kontak</h3>
+            <ul className="space-y-4">
+              <li className="flex items-center text-gray-400 text-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 shrink-0" />
+                (021) 1234 5678
+              </li>
+              <li className="flex items-center text-gray-400 text-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 shrink-0" />
+                info@jelajahi.id
+              </li>
+              <li className="flex items-start text-gray-400 text-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 mt-1.5 shrink-0" />
+                Jl. Merdeka No. 10, Jakarta Pusat
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2025 {brandName}. All rights reserved.</p>
+        <div className="border-t border-gray-800 pt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            © 2024 Jelajahi Indonesia. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

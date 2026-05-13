@@ -62,20 +62,28 @@ export const ServicesPackages: React.FC = () => {
     }
   ];
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
+  const normalizeStatus = (status: string | number | null | undefined) => {
+    if (status === 0 || status === '0') return 'inactive';
+    if (status === 1 || status === '1') return 'active';
+    if (typeof status === 'string') return status;
+    return 'unknown';
+  };
+
+  const getStatusBadge = (status: string | number | null | undefined) => {
+    const normalizedStatus = normalizeStatus(status);
+    switch (normalizedStatus) {
       case 'active':
         return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">Aktif</Badge>;
       case 'inactive':
         return <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300">Tidak Aktif</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary">{normalizedStatus}</Badge>;
     }
   };
 
   const filteredPackages = packages.filter(pkg => {
     const matchesSearch = pkg.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || pkg.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || normalizeStatus(pkg.status) === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
@@ -174,7 +182,7 @@ export const ServicesPackages: React.FC = () => {
                           className="w-12 h-12 object-cover rounded-lg"
                         />
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{pkg.title}</p>
+                          <p className="font-bold text-gray-900 dark:text-white">{pkg.title}</p>
                           <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">{pkg.description}</p>
                         </div>
                       </div>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useCheckout } from '@/contexts/CheckoutContext';
+import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Calendar, Clock, Car, MapPin, Plus, Minus, X, CheckSquare, Square, Users, Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -242,6 +244,8 @@ export const ArmadaCheckout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
+  const { setCheckoutData } = useCheckout();
+  const { toast } = useToast();
   const { fleet_id, price_id } = location.state || {};
   
   const [fleetSummary, setFleetSummary] = useState<FleetSummaryData | null>(null);
@@ -470,18 +474,33 @@ export const ArmadaCheckout: React.FC = () => {
       } else if (response.data.status === 'success') {
         const orderId = response.data.data?.order_id || response.data.order_id;
         if (orderId) {
-          navigate(`/payment/armada/${orderId}`);
+          // Store in context
+          setCheckoutData(orderId, id || '');
+          // Navigate to special request page
+          navigate('/checkout/armada/special-request');
         } else {
           console.error('Order ID missing in success response');
-          alert('Terjadi kesalahan: ID pesanan tidak ditemukan.');
+          toast({
+            title: "Error",
+            description: "Terjadi kesalahan: ID pesanan tidak ditemukan.",
+            variant: "destructive"
+          });
         }
       } else {
         // You might want to use a toast here instead of alert
-        alert(response.data.message || 'Terjadi kesalahan saat membuat pesanan');
+        toast({
+          title: "Gagal",
+          description: response.data.message || 'Terjadi kesalahan saat membuat pesanan',
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Order creation failed:', error);
-      alert('Gagal membuat pesanan. Silakan coba lagi.');
+      toast({
+        title: "Error",
+        description: "Gagal membuat pesanan. Silakan coba lagi.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -845,7 +864,7 @@ export const ArmadaCheckout: React.FC = () => {
               {/* Submit Button */}
               <div className="flex justify-end">
                 <Button type="submit" size="lg" className="px-8" disabled={isSubmitting}>
-                  {isSubmitting ? 'Memproses...' : 'Pilih metode pembayaran'}
+                  {isSubmitting ? 'Memproses...' : 'Lanjutkan Pemesanan'}
                 </Button>
               </div>
             </form>

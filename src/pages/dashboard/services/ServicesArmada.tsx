@@ -104,9 +104,9 @@ export const ServicesArmada: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">Aktif</Badge>;
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100 hover:text-green-800 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/20 dark:hover:text-green-300">Aktif</Badge>;
       case 'inactive':
-        return <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300">Tidak Aktif</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100 hover:text-gray-800 dark:bg-gray-900/20 dark:text-gray-300 dark:hover:bg-gray-900/20 dark:hover:text-gray-300">Tidak Aktif</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -197,7 +197,6 @@ export const ServicesArmada: React.FC = () => {
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Nama</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Tipe</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Kapasitas</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Spesifikasi</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Aksi</th>
                 </tr>
@@ -214,6 +213,7 @@ export const ServicesArmada: React.FC = () => {
                         />
                         <div>
                           <p className="font-bold text-gray-900 dark:text-white">{item.name}</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-200 line-clamp-1">{item.body} - {item.engine}</p>
                           <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">{item.description}</p>
                         </div>
                       </div>
@@ -223,9 +223,6 @@ export const ServicesArmada: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">
                       <span className="text-sm text-gray-900 dark:text-white">{item.capacity}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-sm text-gray-900 dark:text-white">{item.body} - {item.engine}</span>
                     </td>
                     <td className="py-3 px-4">
                       {getStatusBadge(item.status)}

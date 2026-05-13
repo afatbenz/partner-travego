@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Star, Users, Calendar, Heart, Eye } from 'lucide-react';
+import { MapPin, Star, Users, Shield, Zap, ArrowRight, Heart } from 'lucide-react';
 
 interface ArmadaCardProps {
   armada: {
@@ -41,8 +41,8 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
     ? armada.pickupAreas.join(', ') 
     : armada.location;
 
-  const displayLocation = fullLocation.length > 50 
-    ? fullLocation.substring(0, 50) + '...' 
+  const displayLocation = fullLocation.length > 40 
+    ? fullLocation.substring(0, 40) + '...' 
     : fullLocation;
 
   // Split price into amount and unit
@@ -52,102 +52,104 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
 
   if (viewMode === 'list') {
     return (
-      <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300" style={{ height: '22rem' }}>
-        <div className="flex h-full">
-          {/* Image Section - Left Side */}
-          <div className="relative w-[32rem] flex-shrink-0 h-full">
+      <Card className="group overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl">
+        <div className="flex flex-col md:flex-row h-full">
+          {/* Image Section */}
+          <div className="relative w-full md:w-2/5 aspect-video md:aspect-auto overflow-hidden">
             <img
               src={armada.image}
               alt={armada.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             />
-            <div className="absolute top-3 left-3 flex gap-2">
-              <Badge className={`text-xs ${
-                armada.badge === 'Popular' ? 'bg-blue-600 hover:bg-blue-600' :
-                armada.badge === 'New' ? 'bg-green-600 hover:bg-green-600' :
-                armada.badge === 'Luxury' ? 'bg-purple-600 hover:bg-purple-600' :
-                armada.badge === 'Economical' ? 'bg-orange-600 hover:bg-orange-600' :
-                'bg-gray-600 hover:bg-gray-600'
-              }`}>
-                {armada.badge}
-              </Badge>
-              <Badge variant="destructive" className="text-xs">
-                {armada.discount}
-              </Badge>
+            <div className="absolute top-4 left-4 flex flex-col gap-2">
+              {armada.badge && (
+                <Badge className="bg-blue-600/90 backdrop-blur-md text-white border-none px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                  {armada.badge}
+                </Badge>
+              )}
+              {armada.discount && (
+                <Badge className="bg-orange-500/90 backdrop-blur-md text-white border-none px-3 py-1 rounded-full text-[10px] font-bold">
+                  {armada.discount}
+                </Badge>
+              )}
             </div>
-            <div className="absolute top-3 right-3 flex gap-2">
-              <Button size="sm" variant="secondary" className="h-8 w-8 p-0">
-                <Heart className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant="secondary" className="h-8 w-8 p-0">
-                <Eye className="h-4 w-4" />
-              </Button>
-            </div>
+            <button className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all duration-300">
+              <Heart className="h-5 w-5" />
+            </button>
           </div>
           
-          {/* Content Section - Right Side */}
-          <CardContent className="p-6 flex flex-col flex-1">
+          {/* Content Section */}
+          <CardContent className="p-6 md:p-8 flex flex-col flex-1">
             <div className="flex-1">
-              <h3 className="font-semibold text-xl mb-2 text-gray-900 dark:text-white">
-                {armada.name}
-              </h3>
-              
-              {/* Garis tipis di bawah judul */}
-              <div className="border-t border-gray-200 dark:border-gray-700 mb-4"></div>
-              
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                  <Users className="h-4 w-4 mr-2" />
-                  <span>{armada.capacity}</span>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                    {armada.name}
+                  </h3>
+                  <p className="text-blue-600 dark:text-blue-400 font-medium text-sm tracking-wide uppercase">{armada.type}</p>
                 </div>
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                  <MapPin className="h-4 w-4 mr-2" />
-                  <span title={fullLocation}>{displayLocation}</span>
+                <div className="flex items-center bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-2xl">
+                  <Star className="h-4 w-4 text-yellow-500 fill-current mr-1.5" />
+                  <span className="font-bold text-blue-900 dark:text-blue-100 text-sm">{armada.rating}</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current mr-2" />
-                  <span>{armada.rating} ({armada.reviews} reviews)</span>
+              </div>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 my-6">
+                <div className="flex items-center text-gray-600 dark:text-gray-400">
+                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl mr-3">
+                    <Users className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium">{armada.capacity}</span>
+                </div>
+                <div className="flex items-center text-gray-600 dark:text-gray-400">
+                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl mr-3">
+                    <MapPin className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium">{displayLocation}</span>
+                </div>
+                <div className="flex items-center text-gray-600 dark:text-gray-400">
+                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl mr-3">
+                    <Shield className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium">Full Insured</span>
                 </div>
               </div>
 
-              <div className="mb-4">
-                <div className="flex flex-wrap gap-2">
-                  {features.slice(0, 5).map((feature, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {feature}
-                    </Badge>
-                  ))}
-                  {features.length > 5 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{features.length - 5} lainnya
-                    </Badge>
-                  )}
-                </div>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {features.slice(0, 4).map((feature, index) => (
+                  <span key={index} className="text-[11px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                    {feature}
+                  </span>
+                ))}
               </div>
             </div>
 
-            <div className="mt-auto pt-2 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-              <div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Mulai dari</div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="text-center sm:text-left">
+                <p className="text-xs font-normal text-gray-400 uppercase tracking-widest mb-1">Price per trip</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {priceAmount}
                   </span>
-                  {priceUnit && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                      {priceUnit}
-                    </span>
-                  )}
+                  <span className="text-sm font-bold text-gray-400">
+                    {priceUnit}
+                  </span>
                 </div>
-                {armada.originalPrice && (
-                  <div className="text-sm text-gray-400 line-through">
-                    {armada.originalPrice}
-                  </div>
-                )}
               </div>
-              <Button onClick={handleDetailClick}>
-                Lihat Detail
-              </Button>
+              <div className="flex gap-3 w-full sm:w-auto">
+                <Button 
+                  onClick={handleDetailClick}
+                  className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 h-14 font-bold text-lg shadow-xl shadow-blue-600/20 transition-all hover:scale-105"
+                >
+                  Lihat Detail
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="h-14 w-14 rounded-2xl border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                >
+                  <Zap className="h-6 w-6 text-blue-600" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </div>
@@ -156,79 +158,88 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
   }
 
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-      <div className="relative overflow-hidden aspect-[4/3] md:aspect-auto md:h-48">
+    <Card className="group overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] h-full flex flex-col transform hover:-translate-y-2">
+      {/* Image Area */}
+      <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={armada.image}
           alt={armada.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
-        <div className="absolute top-3 left-3 flex gap-2">
-          <Badge className={`text-[10px] md:text-xs ${
-            armada.badge === 'Popular' ? 'bg-blue-600 hover:bg-blue-600' :
-            armada.badge === 'New' ? 'bg-green-600 hover:bg-green-600' :
-            armada.badge === 'Luxury' ? 'bg-purple-600 hover:bg-purple-600' :
-            armada.badge === 'Economical' ? 'bg-orange-600 hover:bg-orange-600' :
-            'bg-gray-600 hover:bg-gray-600'
-          }`}>
-            {armada.badge}
-          </Badge>
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          {armada.badge && (
+            <Badge className="bg-blue-600/90 backdrop-blur-md text-white border-none px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
+              {armada.badge}
+            </Badge>
+          )}
+          {armada.discount && (
+            <Badge className="bg-orange-500/90 backdrop-blur-md text-white border-none px-3 py-1 rounded-full text-[10px] font-bold">
+              {armada.discount}
+            </Badge>
+          )}
         </div>
+        <button className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all duration-300">
+          <Heart className="h-4 w-4" />
+        </button>
       </div>
-      <CardContent className="p-3 md:p-4 flex flex-col flex-1">
-        <h3 className="md:hidden font-semibold text-base mb-2 text-gray-900 dark:text-white" title={armada.name}>
-          {armada.name.length > 15 ? armada.name.substring(0, 15) + '...' : armada.name}
-        </h3>
-        <h3 className="hidden md:block font-semibold text-lg mb-2 text-gray-900 dark:text-white line-clamp-1" title={armada.name}>
-          {armada.name}
-        </h3>
+
+      <CardContent className="p-6 flex flex-col flex-1">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex-1 mr-2">
+            <h3 className="font-bold text-xl text-gray-900 dark:text-white line-clamp-1 group-hover:text-blue-600 transition-colors">
+              {armada.name}
+            </h3>
+            <p className="text-blue-600 dark:text-blue-400 font-bold text-[10px] tracking-widest uppercase mt-1">{armada.type}</p>
+          </div>
+          <div className="flex items-center bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-xl shrink-0">
+            <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
+            <span className="font-bold text-blue-900 dark:text-blue-100 text-xs">{armada.rating}</span>
+          </div>
+        </div>
         
-        <div className="space-y-1 md:space-y-2 mb-3 md:mb-4 flex-1">
-          <div className="flex items-center text-xs md:text-sm text-gray-600 dark:text-gray-300">
-            <Users className="h-3 w-3 md:h-4 md:w-4 mr-2 flex-shrink-0" />
-            <span>{armada.capacity}</span>
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="flex items-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+            <Users className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
+            <span className="text-[11px] font-bold truncate">{armada.capacity}</span>
           </div>
-          <div className="flex items-center text-xs md:text-sm text-gray-600 dark:text-gray-300">
-            <MapPin className="h-3 w-3 md:h-4 md:w-4 mr-2 flex-shrink-0" />
-            <span title={fullLocation}>{displayLocation}</span>
-          </div>
-          
-          {/* Facilities */}
-          <div className="flex flex-wrap gap-1 mt-2">
-            {features.slice(0, 3).map((feature, index) => (
-              <span key={index} className="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">
-                {feature}
-              </span>
-            ))}
-            {features.length > 3 && (
-              <span className="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300">
-                +{features.length - 3}
-              </span>
-            )}
+          <div className="flex items-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+            <MapPin className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
+            <span className="text-[11px] font-bold truncate">{armada.location}</span>
           </div>
         </div>
 
-        <div className="mt-auto pt-1 border-t border-gray-100 dark:border-gray-700">
-          <div className="mb-0">
-            <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Mulai dari</div>
-            <div className="flex items-baseline flex-wrap gap-1">
-              <span className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">
+        {/* Facilities - Minimalist Icons or text */}
+        <div className="flex flex-wrap gap-1.5 mb-6">
+          {features.slice(0, 3).map((feature, index) => (
+            <span key={index} className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tight bg-gray-50 dark:bg-gray-800/30 px-2 py-1 rounded-md">
+              {feature}
+            </span>
+          ))}
+          {features.length > 3 && (
+            <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+              +{features.length - 3}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Price</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {priceAmount}
               </span>
-              {priceUnit && (
-                <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  {priceUnit}
-                </span>
-              )}
-              {armada.originalPrice && (
-                <span className="text-[10px] md:text-xs text-gray-400 line-through ml-1">
-                  {armada.originalPrice}
-                </span>
-              )}
+              <span className="text-[10px] font-bold text-gray-400">
+                {priceUnit}
+              </span>
             </div>
           </div>
-          <Button className="w-full text-xs md:text-sm h-8 md:h-9 mt-2 md:mt-3" onClick={handleDetailClick}>
-            Lihat Detail
+          <Button 
+            onClick={handleDetailClick}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-11 px-5 py-2 font-normal shadow-lg shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+          >
+            Lihat
+            <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>

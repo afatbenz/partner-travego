@@ -130,31 +130,38 @@ export const Invoice: React.FC<InvoiceProps> = ({ order }) => {
           <thead>
             <tr className="border-b text-left">
               <th className="py-2 font-medium">Item</th>
+              <th className="py-2 w-16 text-center font-medium">Qty</th>
+              <th className="py-2 text-right font-medium">Harga Satuan</th>
               <th className="py-2 text-right font-medium">Harga</th>
             </tr>
           </thead>
           <tbody>
             {/* Main Unit */}
             <tr className="border-b border-gray-100">
-              <td className="py-2">
+              <td className="py-2 align-top">
                 <div className="font-medium">{order.fleet_name}</div>
-                <div className="text-xs text-gray-500">
-                  {order.quantity} Unit x {formatCurrency(order.price)}
-                </div>
               </td>
-              <td className="py-2 text-right align-top">
-                {formatCurrency(order.price * order.quantity)}
-              </td>
+              <td className="py-2 text-center align-top">{order.quantity}</td>
+              <td className="py-2 text-right align-top">{formatCurrency(order.price)}</td>
+              <td className="py-2 text-right align-top">{formatCurrency(order.price * order.quantity)}</td>
             </tr>
             {/* Addons */}
             {order.addon && order.addon.map((addon, index) => (
               <tr key={index} className="border-b border-gray-100">
                 <td className="py-2">{addon.addon_name}</td>
+                <td className="py-2 text-center">1</td>
+                <td className="py-2 text-right">{formatCurrency(addon.addon_price)}</td>
                 <td className="py-2 text-right">{formatCurrency(addon.addon_price)}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        <div className="flex justify-end mt-3">
+          <div className="w-1/2 flex justify-between items-center border-t border-gray-200 pt-3">
+            <span className="font-semibold">Total</span>
+            <span className="font-semibold">{formatCurrency(order.total_amount)}</span>
+          </div>
+        </div>
       </div>
 
       {/* Payment History */}
