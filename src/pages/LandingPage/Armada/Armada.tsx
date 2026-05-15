@@ -4,9 +4,7 @@ import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { FilterSection } from '@/components/common/FilterSection';
 import { Pagination } from '@/components/common/Pagination';
 import { http } from '@/lib/http';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Phone, MapPin, Star } from 'lucide-react';
+import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { useNavigate } from 'react-router-dom';
 
 interface Fleet {
@@ -37,6 +35,7 @@ interface FleetResponse {
 }
 
 const Armada = () => {
+  const { getContentByTag, getContentIn } = useGeneralContent();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -44,6 +43,7 @@ const Armada = () => {
   const [sortBy, setSortBy] = useState('default');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const armadaBannerImage = getContentIn('image-banner', 'fleet-banner') || getContentByTag('fleet-banner') || '';
 
   const [armadaData, setArmadaData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,14 +159,14 @@ const Armada = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Header Section with Cinematic Background */}
       <section className="relative min-h-[60vh] flex items-center pt-20 overflow-hidden">
         {/* Background Image with Overlay */}
         <div 
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: 'url(https://cdn.paradisotour.co.id/wp-content/uploads/2024/01/Kelebihan-Mobil-Hiace.jpg)',
+            backgroundImage: `url(${armadaBannerImage})`,
             backgroundPosition: 'center',
             backgroundSize: 'cover'
           }}
@@ -204,8 +204,8 @@ const Armada = () => {
         </div>
       </section>
 
-      {/* Search and Filter Section - Overlapping */}
-      <div className="relative z-20 -mt-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Search and Filter Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 pt-8 pb-4">
         <FilterSection
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -223,7 +223,7 @@ const Armada = () => {
         />
         
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-gray-300 px-4">
+          <p className="text-sm font-normal text-gray-600 dark:text-gray-300 px-4">
             Menampilkan {paginatedArmada.length} dari {sortedArmada.length} armada
           </p>
         </div>

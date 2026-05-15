@@ -139,7 +139,7 @@ export const Navbar: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              className={isHomePage && !isScrolled ? 'text-white hover:bg-white/20' : 'text-gray-900 dark:text-white'}
+              className={isHomePage && !isScrolled ? 'text-white hover:bg-white/20' : 'bg-white dark:bg-transparent dark:border-white text-gray-900 dark:text-white'}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
