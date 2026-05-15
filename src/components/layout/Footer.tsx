@@ -1,9 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube, Linkedin, ArrowRight, Send } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 export const Footer: React.FC = () => {
   const { getContentIn, getListIn } = useGeneralContent();
@@ -42,7 +40,7 @@ export const Footer: React.FC = () => {
           {/* Company Info */}
           <div className="space-y-6">
             <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold tracking-tight">{brandName}</span>
+              <span className="text-2xl font-bold tracking-tight text-yellow-200">{brandName}</span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
               {brandDesc}

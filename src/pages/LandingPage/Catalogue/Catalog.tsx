@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Phone } from 'lucide-react';
-import { InquirySection } from '@/components/common/InquirySection';
 import { CatalogCard } from '@/components/cards/CatalogCard';
 import { FilterSection } from '@/components/common/FilterSection';
 import { Pagination } from '@/components/common/Pagination';
-import { Badge } from '@/components/ui/badge';
+import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { Button } from '@/components/ui/button';
 
 export const Catalog: React.FC = () => {
+  const { getContentByTag, getContentIn } = useGeneralContent();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -15,6 +15,7 @@ export const Catalog: React.FC = () => {
   const [sortBy, setSortBy] = useState('default');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const catalogueBannerImage = getContentIn('image-banner', 'catalogue-banner') || getContentByTag('catalogue-banner') || '';
 
   const categories = [
     { value: 'all', label: 'Semua Kategori' },
@@ -112,8 +113,7 @@ export const Catalog: React.FC = () => {
   ];
 
   const filteredItems = catalogItems.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     const matchesLocation = selectedLocation === 'all' || item.location.toLowerCase() === selectedLocation;
     
@@ -146,14 +146,14 @@ export const Catalog: React.FC = () => {
   }, [searchQuery, selectedCategory, selectedLocation, sortBy]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Header Section with Cinematic Background */}
       <section className="relative min-h-[60vh] flex items-center pt-20 overflow-hidden">
         {/* Background Image with Overlay */}
         <div 
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=2000)',
+            backgroundImage: `url(${catalogueBannerImage})`,
             backgroundPosition: 'center',
             backgroundSize: 'cover'
           }}
@@ -165,7 +165,7 @@ export const Catalog: React.FC = () => {
           <div className="max-w-2xl animate-in fade-in slide-in-from-left duration-1000">
             <div className="space-y-4">
               <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
-                Temukan <span className="text-blue-400">Petualangan</span> <br />
+                Temukan <span className="text-orange-400">Petualangan</span> <br />
                 Sempurna Anda
               </h1>
               <p className="text-lg text-blue-50 font-light leading-relaxed">
@@ -191,8 +191,8 @@ export const Catalog: React.FC = () => {
         </div>
       </section>
 
-      {/* Search and Filter Section - Overlapping */}
-      <div className="relative z-20 -mt-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Search and Filter Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 pt-8 pb-4">
         <FilterSection
           searchTerm={searchQuery}
           onSearchChange={setSearchQuery}

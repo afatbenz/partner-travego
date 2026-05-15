@@ -11,7 +11,7 @@ export const ThemeToggle: React.FC = () => {
       variant="outline"
       size="icon"
       onClick={toggleTheme}
-      className="!w-auto !h-auto p-2 border-2 border-gray-100 dark:border-gray-300 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800/50"
+      className="!w-auto !h-auto p-2 border-1 border-gray-100 dark:border-gray-300 bg-transparent dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800/50"
     >
       {theme === 'dark' ? (
         <Sun className="h-5 w-5 text-yellow-500 dark:text-white" />

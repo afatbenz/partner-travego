@@ -12,12 +12,11 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useNavigate } from 'react-router-dom';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { http } from '@/lib/http';
+import hiacePremioImage from '@/images/hiace_premio.png';
 
 export interface FleetApiResponse {
   fleet_id: string;
@@ -52,9 +51,13 @@ export const Home: React.FC = () => {
   const { getContentByTag, getContentIn, getListIn } = useGeneralContent();
   const heroTitle = getContentIn('landing-page', 'hero-section') || getContentByTag('hero-section') || 'Lorem Ipsum Dolor Sit Amet';
   const heroSubTitle = getContentIn('landing-page', 'sub-hero-section') || getContentByTag('sub-hero-section') || 'Lorem Ipsum Dolor Sit Amet';
+  const heroBannerImage = getContentIn('hero-banner', 'main-banner') || getContentByTag('main-banner') || '';
+  
 
   const [fleets, setFleets] = useState<any[]>([]);
   const [loadingFleets, setLoadingFleets] = useState(true);
+  const [popularCatalogs, setPopularCatalogs] = useState<any[]>([]);
+  const [loadingCatalogs, setLoadingCatalogs] = useState(true);
 
   useEffect(() => {
     const fetchFleets = async () => {
@@ -98,6 +101,22 @@ export const Home: React.FC = () => {
     fetchFleets();
   }, []);
 
+  useEffect(() => {
+    const fetchPopularCatalogs = async () => {
+      try {
+        const res = await http.get<any[]>('/api/service/tour-packages');
+        if (res.data && Array.isArray(res.data.data)) {
+          setPopularCatalogs(res.data.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch popular catalogs:', err);
+      } finally {
+        setLoadingCatalogs(false);
+      }
+    };
+    fetchPopularCatalogs();
+  }, []);
+
   const [searchCity, setSearchCity] = useState('');
   const [cityInput, setCityInput] = useState('');
   const [serviceType, setServiceType] = useState('');
@@ -116,55 +135,10 @@ export const Home: React.FC = () => {
     city.toLowerCase().includes(cityInput.toLowerCase())
   );
 
-  // Debug logging
-
   const handleSearch = () => {
     console.log('Searching for:', { city: searchCity, service: serviceType });
     // Implement search logic here
   };
-
-  const popularCatalogs = [
-    {
-      id: 1,
-      title: 'Paket Wisata Bali 3D2N',
-      price: 'Rp 1.500.000',
-      image: 'https://images.pexels.com/photos/2474690/pexels-photo-2474690.jpeg?auto=compress&cs=tinysrgb&w=400',
-      description: 'Nikmati liburan ke Bali dengan paket lengkap hotel bintang 4, transportasi AC, dan tour guide profesional.',
-      rating: 4.8,
-      type: 'Paket Wisata',
-      location: 'Bali'
-    },
-    {
-      id: 2,
-      title: 'Rental Mobil Jakarta',
-      price: 'Rp 300.000',
-      image: 'https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=400',
-      description: 'Rental mobil premium dengan driver berpengalaman untuk perjalanan bisnis atau wisata di Jakarta.',
-      rating: 4.7,
-      type: 'Rental Mobil',
-      location: 'Jakarta'
-    },
-    {
-      id: 3,
-      title: 'Travel Jogja - Jakarta',
-      price: 'Rp 150.000',
-      image: 'https://images.pexels.com/photos/1139541/pexels-photo-1139541.jpeg?auto=compress&cs=tinysrgb&w=400',
-      description: 'Layanan travel antar kota dengan armada nyaman, jadwal fleksibel, dan fasilitas lengkap.',
-      rating: 4.9,
-      type: 'Travel',
-      location: 'Yogyakarta'
-    },
-    {
-      id: 4,
-      title: 'Paket Wisata Raja Ampat',
-      price: 'Rp 3.500.000',
-      image: 'https://images.pexels.com/photos/1007657/pexels-photo-1007657.jpeg?auto=compress&cs=tinysrgb&w=400',
-      description: 'Nikmati liburan ke Raja Ampat dengan paket lengkap hotel bintang 4, transportasi AC, dan tour guide profesional.',
-      rating: 4.9,
-      type: 'Paket Wisata',
-      location: 'Papua'
-    }
-  ];
 
   const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     shield: Shield,
@@ -195,7 +169,7 @@ export const Home: React.FC = () => {
         <div 
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=2000)',
+            backgroundImage: `url(${heroBannerImage})`,
             backgroundPosition: 'center',
             backgroundSize: 'cover'
           }}
@@ -210,7 +184,7 @@ export const Home: React.FC = () => {
               <div className="space-y-4">
 
                 <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-white leading-[1.1]">
-                  Jelajahi <span className="text-blue-400">Indonesia</span> <br />
+                  Jelajahi <span className="text-orange-400">Indonesia</span> <br />
                   Bersama Kami
                 </h1>
                 <p className="text-lg md:text-xl text-blue-50 max-w-xl leading-relaxed font-light">
@@ -259,9 +233,9 @@ export const Home: React.FC = () => {
             {/* Right Content - Vehicle Images */}
             <div className="hidden lg:block relative h-[500px] animate-in fade-in zoom-in duration-1000">
               {/* Bus Image */}
-              <div className="absolute top-0 right-0 w-[550px] transform hover:scale-105 transition-transform duration-500 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+              <div className="absolute top-0 right-0 w-[350px] transform hover:scale-105 transition-transform duration-500 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <img 
-                  src="https://ik.imagekit.io/tvlk/rental-asset/dg7n7-678/rental/car/5576729221596705609/f6b8b1a5-8e4a-4e8c-8e6d-5a3e1b7c8d9e.png" 
+                  src={hiacePremioImage} 
                   alt="Bus Pariwisata" 
                   className="w-full h-auto object-contain"
                 />
@@ -269,9 +243,9 @@ export const Home: React.FC = () => {
               {/* Hiace Image - Overlapping */}
               <div className="absolute -bottom-10 -left-10 w-[400px] transform hover:scale-110 transition-transform duration-500 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <img 
-                  src="https://baze.co.id/wp-content/uploads/2021/03/PREMIO-CR1-1.jpg" 
+                  src={hiacePremioImage} 
                   alt="Toyota Hiace" 
-                  className="w-full h-auto object-contain rounded-2xl shadow-2xl border-4 border-white/10"
+                  className="w-full h-auto object-contain rounded-2xl shadow-2xl"
                 />
               </div>
             </div>
@@ -425,67 +399,73 @@ export const Home: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {popularCatalogs.slice(0, popularCatalogs.length >= 6 ? 6 : 3).map((item, idx) => (
-            <Card key={item.id} className="group overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] h-full flex flex-col transform hover:-translate-y-4 animate-in fade-in slide-in-from-bottom duration-1000" style={{ animationDelay: `${idx * 150}ms` }}>
-              <div className="relative aspect-[4/5] overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                  
-                  <div className="absolute top-4 left-4">
-                    <Badge className="bg-white/20 backdrop-blur-md text-white border-white/30 px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase">
-                      {item.type}
-                    </Badge>
-                  </div>
-                  
-                  <div className="absolute bottom-6 left-6 right-6 text-white">
-                    <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="h-4 w-4 text-orange-500" />
-                      <span className="text-sm font-normal tracking-wide">{item.location}</span>
+            {loadingCatalogs ? (
+              <div className="col-span-full text-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                <p className="text-gray-500 font-bold">Memuat Paket Wisata...</p>
+              </div>
+            ) : popularCatalogs.length > 0 ? (
+              popularCatalogs.slice(0, 6).map((item, idx) => (
+                <Card key={item.package_id} className="group overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] h-full flex flex-col transform hover:-translate-y-4 animate-in fade-in slide-in-from-bottom duration-1000" style={{ animationDelay: `${idx * 150}ms` }}>
+                  <div className="relative aspect-[4/5] overflow-hidden">
+                    <img
+                      src={item.thumbnail}
+                      alt={item.package_name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-white/20 backdrop-blur-md text-white border-white/30 px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase">
+                        {item.type ?? 'Tour Package'}
+                      </Badge>
                     </div>
-                    <h3 className="text-2xl font-bold leading-tight line-clamp-2">
-                      {item.title}
-                    </h3>
-                  </div>
-                </div>
-
-                <CardContent className="p-8 flex flex-col flex-1">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-xl">
-                      <Star className="h-4 w-4 text-orange-500 fill-current mr-1.5" />
-                      <span className="font-normal text-orange-600 dark:text-orange-400 text-sm">{item.rating}</span>
-                    </div>
-                    <div className="flex items-center text-gray-400 font-normal text-xs uppercase tracking-widest">
-                      <Clock className="h-4 w-4 mr-2 text-blue-600" />
-                      3 Hari 2 Malam
+                    <div className="absolute bottom-6 left-6 right-6 text-white">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="h-4 w-4 text-orange-500" />
+                        <span className="text-sm font-normal tracking-wide">{item.location}</span>
+                      </div>
+                      <h3 className="text-2xl font-bold leading-tight line-clamp-2">
+                        {item.package_name}
+                      </h3>
                     </div>
                   </div>
-                  
-                  <p className="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-2 mb-8 leading-relaxed">
-                    {item.description}
-                  </p>
-                  
-                  <div className="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-normal text-gray-400 uppercase tracking-widest mb-1">Mulai Dari</p>
-                      <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {item.price}
-                      </span>
+                  <CardContent className="p-8 flex flex-col flex-1">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-xl">
+                        <Star className="h-4 w-4 text-orange-500 fill-current mr-1.5" />
+                        <span className="font-normal text-orange-600 dark:text-orange-400 text-sm">{item.rating ?? '-'}</span>
+                      </div>
+                      <div className="flex items-center text-gray-400 font-normal text-xs uppercase tracking-widest">
+                        <Clock className="h-4 w-4 mr-2 text-blue-600" />
+                        3 Hari 2 Malam
+                      </div>
                     </div>
-                    <Button 
-                      onClick={() => navigate(`/detail/catalog/${item.id}`)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-10 px-6 font-medium shadow-lg shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
-                    >
-                      Detail
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-2 mb-8 leading-relaxed">
+                      {item.package_description}
+                    </p>
+                    <div className="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] font-normal text-gray-400 uppercase tracking-widest mb-1">Mulai Dari</p>
+                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          {item.price}
+                        </span>
+                      </div>
+                      <Button
+                        onClick={() => navigate(`/detail/catalog/${item.package_id}`)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-10 px-6 font-medium shadow-lg shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                      >
+                        Detail
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">Belum ada paket wisata tersedia.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -80,7 +80,7 @@ export const CatalogCard: React.FC<CatalogCardProps> = ({ item, viewMode = 'grid
                 </div>
                 <div className="flex items-center bg-orange-50 dark:bg-orange-900/30 px-3 py-1.5 rounded-2xl">
                   <Star className="h-4 w-4 text-orange-500 fill-current mr-1.5" />
-                  <span className="font-bold text-orange-900 dark:text-orange-100 text-sm">{item.rating}</span>
+                  <span className="font-normal text-orange-900 dark:text-orange-100 text-sm">{item.rating}</span>
                 </div>
               </div>
               
