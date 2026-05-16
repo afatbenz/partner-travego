@@ -22,6 +22,7 @@ export interface FleetApiResponse {
   fleet_id: string;
   fleet_name: string;
   fleet_type: string;
+  fleet_type_label: string;
   capacity: number;
   production_year: number;
   engine: string;
@@ -52,6 +53,7 @@ export const Home: React.FC = () => {
   const heroTitle = getContentIn('landing-page', 'hero-section') || getContentByTag('hero-section') || 'Lorem Ipsum Dolor Sit Amet';
   const heroSubTitle = getContentIn('landing-page', 'sub-hero-section') || getContentByTag('sub-hero-section') || 'Lorem Ipsum Dolor Sit Amet';
   const heroBannerImage = getContentIn('hero-banner', 'main-banner') || getContentByTag('main-banner') || '';
+  const brandName = getContentIn('landing-page', 'brand-name') || getContentByTag('brand-name') || 'TravelPro';
   
 
   const [fleets, setFleets] = useState<any[]>([]);
@@ -70,7 +72,7 @@ export const Home: React.FC = () => {
             return {
               id: fleet.fleet_id,
               name: fleet.fleet_name,
-              type: fleet.fleet_type,
+              type: fleet.fleet_type_label,
               capacity: `${fleet.capacity} Penumpang`,
               price: `Rp ${fleet.price.toLocaleString('id-ID')}/${displayUom}`,
               originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
@@ -86,7 +88,7 @@ export const Home: React.FC = () => {
               fuel: 'Bensin', // Default value
               year: fleet.production_year.toString(),
               productionYear: fleet.production_year,
-              badge: fleet.discount_value ? 'Discount' : 'New',
+              badge: `${fleet.production_year}`,
               discount: fleet.discount_value ? `-${fleet.discount_value}%` : ''
             };
           });
@@ -350,7 +352,7 @@ export const Home: React.FC = () => {
           <div className="text-center mb-20 space-y-4 animate-in fade-in slide-in-from-bottom duration-1000">
             <span className="text-blue-600 font-bold tracking-widest uppercase text-sm">Keunggulan Kami</span>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
-              Kenapa Pilih <span className="text-blue-600">TravelPro?</span>
+              Kenapa Pilih <span className="text-blue-600">{brandName}?</span>
             </h2>
             <div className="h-1.5 w-24 bg-blue-600 mx-auto rounded-full" />
           </div>
@@ -422,7 +424,7 @@ export const Home: React.FC = () => {
                     <div className="absolute bottom-6 left-6 right-6 text-white">
                       <div className="flex items-center gap-2 mb-2">
                         <MapPin className="h-4 w-4 text-orange-500" />
-                        <span className="text-sm font-normal tracking-wide">{item.location}</span>
+                        <span className="text-sm font-normal tracking-wide">{item.destinations.length > 30 ? item.destinations.slice(0, 30) + '...' : item.destinations}</span>
                       </div>
                       <h3 className="text-2xl font-bold leading-tight line-clamp-2">
                         {item.package_name}

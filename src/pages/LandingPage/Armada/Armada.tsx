@@ -11,6 +11,7 @@ interface Fleet {
   fleet_id: string;
   fleet_name: string;
   fleet_type: string;
+  fleet_type_label: string;
   capacity: number;
   production_year: number;
   engine: string;
@@ -59,7 +60,7 @@ const Armada = () => {
             return {
               id: fleet.fleet_id,
               name: fleet.fleet_name,
-              type: fleet.fleet_type,
+              type: fleet.fleet_type_label,
               capacity: `${fleet.capacity} Penumpang`,
               price: `Rp ${fleet.price.toLocaleString('id-ID')}/${displayUom}`,
               originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
