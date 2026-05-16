@@ -32,6 +32,7 @@ interface ArmadaCardProps {
 export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid' }) => {
   const navigate = useNavigate();
   const features = armada.features || [];
+  console.log({armada})
 
   const handleDetailClick = () => {
     navigate(`/detail/armada/${armada.id}`);
@@ -61,18 +62,6 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
               alt={armada.name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             />
-            <div className="absolute top-4 left-4 flex flex-col gap-2">
-              {armada.badge && (
-                <Badge className="bg-blue-600/90 backdrop-blur-md text-white border-none px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
-                  {armada.badge}
-                </Badge>
-              )}
-              {armada.discount && (
-                <Badge className="bg-orange-500/90 backdrop-blur-md text-white border-none px-3 py-1 rounded-full text-[10px] font-bold">
-                  {armada.discount}
-                </Badge>
-              )}
-            </div>
             <button className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all duration-300">
               <Heart className="h-5 w-5" />
             </button>
@@ -86,7 +75,7 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
                     {armada.name}
                   </h3>
-                  <p className="text-blue-600 dark:text-blue-400 font-medium text-sm tracking-wide uppercase">{armada.type}</p>
+                  <p className="text-blue-600 dark:text-blue-400 font-normal text-sm tracking-wide uppercase">{armada.type}</p>
                 </div>
                 <div className="flex items-center bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-2xl">
                   <Star className="h-4 w-4 text-yellow-500 fill-current mr-1.5" />
@@ -166,19 +155,7 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
           alt={armada.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
-        <div className="absolute top-4 left-4 flex flex-col gap-2">
-          {armada.badge && (
-            <Badge className="bg-blue-600/90 backdrop-blur-md text-white border-none px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
-              {armada.badge}
-            </Badge>
-          )}
-          {armada.discount && (
-            <Badge className="bg-orange-500/90 backdrop-blur-md text-white border-none px-3 py-1 rounded-full text-[10px] font-bold">
-              {armada.discount}
-            </Badge>
-          )}
-        </div>
-        <button className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-all duration-300">
+        <button className="absolute top-4 right-4 p-2 bg-white/20 rounded-full text-white hover:bg-white hover:text-red-500 transition-all duration-300">
           <Heart className="h-4 w-4" />
         </button>
       </div>
