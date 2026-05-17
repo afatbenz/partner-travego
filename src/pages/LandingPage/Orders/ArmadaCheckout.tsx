@@ -80,9 +80,11 @@ interface CitySearchSelectProps {
   onSelect: (city: City) => void;
   placeholder?: string;
   required?: boolean;
+  excludeId?: string;
+  priorityCities?: { id: string; name: string }[];
 }
 
-const CitySearchSelect: React.FC<CitySearchSelectProps> = ({ value, onSelect, placeholder, required }) => {
+const CitySearchSelect: React.FC<CitySearchSelectProps> = ({ value, onSelect, placeholder, required, excludeId, priorityCities }) => {
   const [open, setOpen] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(false);
@@ -114,6 +116,14 @@ const CitySearchSelect: React.FC<CitySearchSelectProps> = ({ value, onSelect, pl
     return () => clearTimeout(timeoutId);
   }, [search]);
 
+  // Filter out excluded ID and priority cities from the main list to avoid duplicates
+  const filteredCities = Array.isArray(cities) 
+    ? cities.filter(city => 
+        String(city.id) !== String(excludeId) && 
+        !priorityCities?.some(pc => String(pc.id) === String(city.id))
+      )
+    : [];
+
   return (
     <div className="w-full relative">
       <Popover open={open} onOpenChange={setOpen}>
@@ -143,25 +153,51 @@ const CitySearchSelect: React.FC<CitySearchSelectProps> = ({ value, onSelect, pl
                 ) : (
                     <>
                         <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>
-                        <CommandGroup>
-                        {Array.isArray(cities) && cities.map((city) => (
+                        
+                        {/* Priority Cities Group */}
+                        {priorityCities && priorityCities.length > 0 && (
+                          <CommandGroup heading="Rekomendasi Kota">
+                            {priorityCities.map((city) => (
+                              <CommandItem
+                                key={`priority-${city.id}`}
+                                value={city.name}
+                                onSelect={() => {
+                                  onSelect({ id: city.id, name: city.name, province: '', province_id: '' });
+                                  setOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    value === city.name ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {city.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+
+                        {/* All Cities Group */}
+                        <CommandGroup heading={priorityCities && priorityCities.length > 0 ? "Semua Kota" : ""}>
+                          {filteredCities.map((city) => (
                             <CommandItem
-                            key={city.id}
-                            value={city.name}
-                            onSelect={() => {
+                              key={city.id}
+                              value={city.name}
+                              onSelect={() => {
                                 onSelect(city);
                                 setOpen(false);
-                            }}
+                              }}
                             >
-                            <Check
+                              <Check
                                 className={cn(
-                                "mr-2 h-4 w-4",
-                                value === city.name ? "opacity-100" : "opacity-0"
+                                  "mr-2 h-4 w-4",
+                                  value === city.name ? "opacity-100" : "opacity-0"
                                 )}
-                            />
-                            {city.name}
+                              />
+                              {city.name}
                             </CommandItem>
-                        ))}
+                          ))}
                         </CommandGroup>
                     </>
                 )}
@@ -255,6 +291,8 @@ export const ArmadaCheckout: React.FC = () => {
   const [loadingAddons, setLoadingAddons] = useState(false);
   const [activePriceId, setActivePriceId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   const [formData, setFormData] = useState({
     // Nama dan kontak pemesan
@@ -262,14 +300,18 @@ export const ArmadaCheckout: React.FC = () => {
     email: '',
     phone: '',
     address: '',
+    city_id: '',
+    city_name: '',
     
     // Tanggal dan jam
     pickupDate: '',
     pickupTime: '',
     returnDate: '',
+    returnTime: '',
     
     // Titik penjemputan
     pickupCity: '',
+    pickupCityName: '',
     pickupLocation: '',
     pickupAddress: '',
     
@@ -364,20 +406,71 @@ export const ArmadaCheckout: React.FC = () => {
     if (formData.pickupDate && fleetSummary?.duration) {
       const pickup = new Date(formData.pickupDate);
       const returnDate = new Date(pickup);
-      returnDate.setDate(pickup.getDate() + fleetSummary.duration);
+      returnDate.setDate(pickup.getDate() + (fleetSummary.duration > 1 ? fleetSummary.duration : 0));
+      
+      const newReturnDate = returnDate.toISOString().split('T')[0];
       
       setFormData(prev => ({
         ...prev,
-        returnDate: returnDate.toISOString().split('T')[0]
+        returnDate: newReturnDate,
+        returnTime: fleetSummary.duration === 1 ? '23:59' : prev.returnTime
       }));
     }
   }, [formData.pickupDate, fleetSummary]);
 
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (!id || !formData.pickupDate || !formData.pickupTime || !fleetSummary) return;
+
+      const duration = fleetSummary.duration || 1;
+      let start_date = `${formData.pickupDate} ${formData.pickupTime}`;
+      let end_date = "";
+
+      if (duration === 1) {
+        end_date = `${formData.pickupDate} 23:59`;
+      } else {
+        if (!formData.returnDate || !formData.returnTime) return;
+        end_date = `${formData.returnDate} ${formData.returnTime}`;
+      }
+
+      setCheckingAvailability(true);
+      try {
+        const response = await http.post<any>('/api/service/fleet/availibility', {
+          fleet_id: id,
+          start_date,
+          end_date
+        });
+
+        if (response.data.status === 'success') {
+          const available = response.data.data.available;
+          setIsAvailable(available);
+          if (!available) {
+            toast({
+              title: "Armada tidak tersedia",
+              description: "Coba armada lain atau tanggal lain",
+              variant: "destructive"
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check availability:', error);
+      } finally {
+        setCheckingAvailability(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      checkAvailability();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.pickupDate, formData.pickupTime, formData.returnDate, formData.returnTime, fleetSummary, id]);
+
   const handleToggleAddon = (addon: FleetAddon) => {
     setSelectedAddons(prev => {
-      const exists = prev.find(a => a.uuid === addon.uuid);
+      const exists = prev.find(a => (a.addon_id || a.uuid) === (addon.addon_id || addon.uuid));
       if (exists) {
-        return prev.filter(a => a.uuid !== addon.uuid);
+        return prev.filter(a => (a.addon_id || a.uuid) !== (addon.addon_id || addon.uuid));
       } else {
         return [...prev, addon];
       }
@@ -386,6 +479,30 @@ export const ArmadaCheckout: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'email') {
+      // Logic: if all digits, set to phone. If looks like email, set to email.
+      const isDigits = /^\d+$/.test(value);
+      if (isDigits) {
+        setFormData(prev => ({
+          ...prev,
+          email: '',
+          phone: value
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          email: value,
+          // If it was previously a phone number (all digits) and now isn't, 
+          // we might want to keep phone or clear it. 
+          // But the task says "if inputan semua angka maka dianggap input form phone, jika formatnya email maka dianggap input form email"
+          // This implies a shared field or smart detection.
+          // Let's stick to the simplest interpretation: value updates the specific logic.
+        }));
+      }
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -581,35 +698,20 @@ export const ArmadaCheckout: React.FC = () => {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Email *
+                        Email / Nomor Telepon *
                       </label>
                       <Input
                         name="email"
-                        type="email"
-                        value={formData.email}
+                        value={formData.email || formData.phone}
                         onChange={handleInputChange}
-                        placeholder="contoh@email.com"
+                        placeholder="Email atau No Telepon"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Nomor Telepon *
-                      </label>
-                      <Input
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="08xxxxxxxxxx"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Alamat
+                        Alamat *
                       </label>
                       <Input
                         name="address"
@@ -618,6 +720,19 @@ export const ArmadaCheckout: React.FC = () => {
                         placeholder="Alamat lengkap"
                       />
                     </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Kota *
+                      </label>
+                      <CitySearchSelect
+                        value={formData.city_name}
+                        onSelect={(city) => setFormData(prev => ({ ...prev, city_id: city.id, city_name: city.name }))}
+                        placeholder="Pilih Kota"
+                        required
+                      />
+                    </div>
+
                   </div>
                 </CardContent>
               </Card>
@@ -657,7 +772,68 @@ export const ArmadaCheckout: React.FC = () => {
                         required
                       />
                     </div>
+
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <MapPin className="inline h-4 w-4 mr-2" />
+                        Lokasi Penjemputan *
+                      </label>
+                      <Input
+                        name="pickupLocation"
+                        value={formData.pickupLocation}
+                        onChange={handleInputChange}
+                        placeholder="Contoh: Hotel Grand Indonesia, Jakarta"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <MapPin className="inline h-4 w-4 mr-2" />
+                        Kota Penjemputan
+                      </label>
+                      <CitySearchSelect 
+                        value={formData.pickupCityName} 
+                        onSelect={(city) => setFormData(prev => ({ ...prev, pickupCity: city.id, pickupCityName: city.name }))}
+                        priorityCities={data.pickup_points?.map(p => ({ id: String(p.city_id), name: p.city_name })) || []}
+                        placeholder="Pilih Kota Penjemputan"
+                        required
+                      />
+                    </div>  
                   </div>
+
+                  {fleetSummary?.duration > 1 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Calendar className="inline h-4 w-4 mr-2" />
+                          Tanggal Kembali *
+                        </label>
+                        <Input
+                          name="returnDate"
+                          type="date"
+                          value={formData.returnDate}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Clock className="inline h-4 w-4 mr-2" />
+                          Jam Kembali *
+                        </label>
+                        <Input
+                          name="returnTime"
+                          type="time"
+                          value={formData.returnTime}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
                   
                   {formData.pickupDate && (
                     <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -681,49 +857,11 @@ export const ArmadaCheckout: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* 3. Titik Penjemputan */}
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                    3. Titik Penjemputan
-                  </h2>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <MapPin className="inline h-4 w-4 mr-2" />
-                        Kota Penjemputan (sesuai pickup area armada yang dipilih) *
-                      </label>
-                      <SearchableSelect 
-                        value={formData.pickupCity} 
-                        onChange={(value) => setFormData(prev => ({ ...prev, pickupCity: value }))}
-                        options={data.pickup_points?.map(p => ({ value: String(p.city_id), label: p.city_name })) || []}
-                        placeholder="Pilih Kota"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <MapPin className="inline h-4 w-4 mr-2" />
-                        Lokasi Penjemputan *
-                      </label>
-                      <Input
-                        name="pickupLocation"
-                        value={formData.pickupLocation}
-                        onChange={handleInputChange}
-                        placeholder="Contoh: Hotel Grand Indonesia, Jakarta"
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* 4. Tujuan */}
               <Card>
                 <CardContent className="p-6">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                    4. Tujuan
+                    3. Tujuan
                   </h2>
                   
                   <div className="space-y-4">
@@ -739,7 +877,7 @@ export const ArmadaCheckout: React.FC = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeDestination(index)}
-                                className="h-6 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                className="h-6 px-2 bg-transparent border-gray-300 hover:border-gray-400 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                               >
                                 <X className="h-3 w-3 mr-1" />
                                 Hapus
@@ -755,7 +893,7 @@ export const ArmadaCheckout: React.FC = () => {
                                     required
                                 />
                             </div>
-                            {fleetSummary?.rent_type !== 1 && fleetSummary?.rent_type !== 3 && (
+                            {/* {fleetSummary?.rent_type !== 1 && fleetSummary?.rent_type !== 3 && ( */}
                               <div>
                                   <CitySearchSelect
                                       value={destination.city_name}
@@ -764,7 +902,7 @@ export const ArmadaCheckout: React.FC = () => {
                                       required
                                   />
                               </div>
-                            )}
+                            {/* )} */}
                         </div>
                       </div>
                     ))}
@@ -773,7 +911,7 @@ export const ArmadaCheckout: React.FC = () => {
                       type="button"
                       variant="outline"
                       onClick={addDestination}
-                      className="w-full mt-4"
+                      className="w-full mt-4 bg-blue-500 rounded-2xl text-white hover:bg-blue-600 hover:text-white transition-all duration-500 hover:scale-105"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Tambah Tujuan
@@ -833,14 +971,14 @@ export const ArmadaCheckout: React.FC = () => {
                           <div 
                             key={addon.uuid} 
                             className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                              selectedAddons.find(a => a.uuid === addon.uuid)
+                              selectedAddons.find(a => (a.addon_id || a.uuid) === (addon.addon_id || addon.uuid))
                                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                 : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
                             }`}
                             onClick={() => handleToggleAddon(addon)}
                           >
                             <div className="flex-shrink-0">
-                              {selectedAddons.find(a => a.uuid === addon.uuid) ? (
+                              {selectedAddons.find(a => (a.addon_id || a.uuid) === (addon.addon_id || addon.uuid)) ? (
                                 <CheckSquare className="h-5 w-5 text-blue-600" />
                               ) : (
                                 <Square className="h-5 w-5 text-gray-400" />
@@ -863,8 +1001,13 @@ export const ArmadaCheckout: React.FC = () => {
 
               {/* Submit Button */}
               <div className="flex justify-end">
-                <Button type="submit" size="lg" className="px-8" disabled={isSubmitting}>
-                  {isSubmitting ? 'Memproses...' : 'Lanjutkan Pemesanan'}
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="px-8 w-full rounded-2xl bg-blue-500 hover:bg-blue-600 transition-all" 
+                  disabled={isSubmitting || !isAvailable || checkingAvailability}
+                >
+                  {isSubmitting ? 'Memproses...' : checkingAvailability ? 'Mengecek Ketersediaan...' : !isAvailable ? 'Armada Tidak Tersedia' : 'Lanjutkan Pemesanan'}
                 </Button>
               </div>
             </form>

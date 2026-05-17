@@ -18,7 +18,7 @@ export const CTASection: React.FC<CTASectionProps> = ({
   className = ""
 }) => {
   return (
-    <section className={`py-20 bg-white dark:bg-gray-950 ${className}`}>
+    <section className={`pt-10 pb-20 bg-white dark:bg-gray-950 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative bg-blue-600 rounded-2xl overflow-hidden p-8 md:p-16 text-center">
           <div className="absolute inset-0 opacity-10 pointer-events-none">

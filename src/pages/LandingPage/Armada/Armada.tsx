@@ -13,6 +13,7 @@ interface Fleet {
   fleet_type: string;
   fleet_type_label: string;
   capacity: number;
+  capacities: string;
   production_year: number;
   engine: string;
   body: string;
@@ -55,14 +56,13 @@ const Armada = () => {
         const res = await http.get<FleetResponse>('/api/service/fleet');
         if (res.data && Array.isArray(res.data.data)) {
           const mappedFleets = res.data.data.map((fleet) => {
-            const displayUom = fleet.duration ? `${fleet.duration} ${fleet.uom}` : fleet.uom;
             
             return {
               id: fleet.fleet_id,
               name: fleet.fleet_name,
               type: fleet.fleet_type_label,
-              capacity: `${fleet.capacity} Penumpang`,
-              price: `Rp ${fleet.price.toLocaleString('id-ID')}/${displayUom}`,
+              capacity: `${fleet.capacities} Penumpang`,
+              price: `Rp ${fleet.price.toLocaleString('id-ID')}/${fleet.uom}`,
               originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
               image: fleet.thumbnail,
               rating: 5.0, // Default value as API doesn't provide rating
@@ -70,7 +70,7 @@ const Armada = () => {
               features: fleet.facilities && fleet.facilities.length > 0 
                 ? fleet.facilities.map(f => f.facility) 
                 : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
-              location: 'Jakarta', // Default fallback
+              location: `${fleet.cities?.[0]} ${fleet.cities?.length > 1 ? `(+ ${fleet.cities?.length - 1} kota lainnya)` : ''}`,
               pickupAreas: fleet.cities || [],
               transmission: 'Manual', // Default value
               fuel: 'Bensin', // Default value

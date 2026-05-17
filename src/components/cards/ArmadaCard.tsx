@@ -174,12 +174,12 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
           </div>
         </div>
         
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="flex items-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+        <div className="grid grid-cols-1 gap-3 mb-6">
+          <div className="flex items-center text-gray-500 dark:text-gray-400 dark:bg-gray-800/50 rounded-2xl dark:border-gray-700/50">
             <Users className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
             <span className="text-[11px] font-bold truncate">{armada.capacity}</span>
           </div>
-          <div className="flex items-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+          <div className="flex items-center text-gray-500 dark:text-gray-400 dark:bg-gray-800/50 rounded-2xl dark:border-gray-700/50">
             <MapPin className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
             <span className="text-[11px] font-bold truncate">{armada.location}</span>
           </div>
