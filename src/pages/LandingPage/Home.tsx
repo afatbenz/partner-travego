@@ -4,10 +4,9 @@ import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { CTASection } from '@/components/common/CTASection';
-import { CatalogPackageCard } from '@/components/common/CatalogPackageCard';
+import { TourPackageList } from '@/components/common/TourPackageList';
+import { useTourPackages } from '@/hooks/useTourPackages';
 import {
   Carousel,
   CarouselContent,
@@ -17,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { http } from '@/lib/http';
 import hiacePremioImage from '@/images/hiace_premio.png';
+import grantourImage from '@/images/grantour.png';
 
 export interface FleetApiResponse {
   fleet_id: string;
@@ -24,6 +24,7 @@ export interface FleetApiResponse {
   fleet_type: string;
   fleet_type_label: string;
   capacity: number;
+  capacities: string;
   production_year: number;
   engine: string;
   body: string;
@@ -58,8 +59,7 @@ export const Home: React.FC = () => {
 
   const [fleets, setFleets] = useState<any[]>([]);
   const [loadingFleets, setLoadingFleets] = useState(true);
-  const [popularCatalogs, setPopularCatalogs] = useState<any[]>([]);
-  const [loadingCatalogs, setLoadingCatalogs] = useState(true);
+  const { items: tourPackages, loading: loadingCatalogs } = useTourPackages();
 
   useEffect(() => {
     const fetchFleets = async () => {
@@ -73,7 +73,7 @@ export const Home: React.FC = () => {
               id: fleet.fleet_id,
               name: fleet.fleet_name,
               type: fleet.fleet_type_label,
-              capacity: `${fleet.capacity} Penumpang`,
+              capacity: `${fleet.capacities} Penumpang`,
               price: `Rp ${fleet.price.toLocaleString('id-ID')}/${displayUom}`,
               originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
               image: fleet.thumbnail,
@@ -88,7 +88,7 @@ export const Home: React.FC = () => {
               fuel: 'Bensin', // Default value
               year: fleet.production_year.toString(),
               productionYear: fleet.production_year,
-              badge: `${fleet.production_year}`,
+              badge: `-${fleet.production_year}%`,
               discount: fleet.discount_value ? `-${fleet.discount_value}%` : ''
             };
           });
@@ -101,22 +101,6 @@ export const Home: React.FC = () => {
       }
     };
     fetchFleets();
-  }, []);
-
-  useEffect(() => {
-    const fetchPopularCatalogs = async () => {
-      try {
-        const res = await http.get<any[]>('/api/service/tour-packages');
-        if (res.data && Array.isArray(res.data.data)) {
-          setPopularCatalogs(res.data.data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch popular catalogs:', err);
-      } finally {
-        setLoadingCatalogs(false);
-      }
-    };
-    fetchPopularCatalogs();
   }, []);
 
   const [searchCity, setSearchCity] = useState('');
@@ -245,7 +229,7 @@ export const Home: React.FC = () => {
               {/* Hiace Image - Overlapping */}
               <div className="absolute -bottom-10 -left-10 w-[400px] transform hover:scale-110 transition-transform duration-500 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <img 
-                  src={hiacePremioImage} 
+                  src={grantourImage} 
                   alt="Toyota Hiace" 
                   className="w-full h-auto object-contain rounded-2xl shadow-2xl"
                 />
@@ -401,120 +385,17 @@ export const Home: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {loadingCatalogs ? (
-              <div className="col-span-full text-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                <p className="text-gray-500 font-bold">Memuat Paket Wisata...</p>
-              </div>
-            ) : popularCatalogs.length > 0 ? (
-              popularCatalogs.slice(0, 6).map((item, idx) => (
-                <Card key={item.package_id} className="group overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] h-full flex flex-col transform hover:-translate-y-4 animate-in fade-in slide-in-from-bottom duration-1000" style={{ animationDelay: `${idx * 150}ms` }}>
-                  <div className="relative aspect-[4/5] overflow-hidden">
-                    <img
-                      src={item.thumbnail}
-                      alt={item.package_name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-white/20 backdrop-blur-md text-white border-white/30 px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase">
-                        {item.type ?? 'Tour Package'}
-                      </Badge>
-                    </div>
-                    <div className="absolute bottom-6 left-6 right-6 text-white">
-                      <div className="flex items-center gap-2 mb-2">
-                        <MapPin className="h-4 w-4 text-orange-500" />
-                        <span className="text-sm font-normal tracking-wide">{item.destinations.length > 30 ? item.destinations.slice(0, 30) + '...' : item.destinations}</span>
-                      </div>
-                      <h3 className="text-2xl font-bold leading-tight line-clamp-2">
-                        {item.package_name}
-                      </h3>
-                    </div>
-                  </div>
-                  <CardContent className="p-8 flex flex-col flex-1">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-xl">
-                        <Star className="h-4 w-4 text-orange-500 fill-current mr-1.5" />
-                        <span className="font-normal text-orange-600 dark:text-orange-400 text-sm">{item.rating ?? '-'}</span>
-                      </div>
-                      <div className="flex items-center text-gray-400 font-normal text-xs uppercase tracking-widest">
-                        <Clock className="h-4 w-4 mr-2 text-blue-600" />
-                        3 Hari 2 Malam
-                      </div>
-                    </div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-2 mb-8 leading-relaxed">
-                      {item.package_description}
-                    </p>
-                    <div className="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] font-normal text-gray-400 uppercase tracking-widest mb-1">Mulai Dari</p>
-                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                          {item.price}
-                        </span>
-                      </div>
-                      <Button
-                        onClick={() => navigate(`/detail/catalog/${item.package_id}`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-10 px-6 font-medium shadow-lg shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
-                      >
-                        Detail
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-500">Belum ada paket wisata tersedia.</p>
-              </div>
-            )}
+            <TourPackageList
+              items={tourPackages}
+              loading={loadingCatalogs}
+              limit={6}
+              viewMode="grid"
+            />
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-white dark:bg-gray-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative bg-blue-600 rounded-2xl overflow-hidden p-8 md:p-16 text-center">
-            {/* Background Wave Pattern (Simulated with CSS/SVG) */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none">
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M0 50 Q 25 40 50 50 T 100 50 V 100 H 0 Z" fill="white" />
-                <path d="M0 60 Q 25 50 50 60 T 100 60 V 100 H 0 Z" fill="white" opacity="0.5" />
-              </svg>
-            </div>
-
-            <div className="relative z-10 space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold text-white">
-                Siap Memulai Perjalanan Anda?
-              </h2>
-              <p className="text-blue-50 text-lg opacity-90">
-                Hubungi kami sekarang dan dapatkan penawaran terbaik!
-              </p>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                <Button 
-                  size="lg"
-                  className="w-full sm:w-auto bg-white text-blue-600 hover:bg-gray-100 rounded-xl px-8 h-12 font-normal flex items-center gap-2"
-                  onClick={() => window.open('https://wa.me/62812345678', '_blank')}
-                >
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA" className="h-5 w-5" />
-                  WhatsApp Kami
-                </Button>
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto border-white text-white bg-transparent hover:bg-black/20 hover:border-white hover:text-white rounded-xl px-8 h-12 font-normal flex items-center gap-2"
-                  onClick={() => window.location.href = 'tel:02112345678'}
-                >
-                  <Phone className="h-5 w-5" />
-                  Hubungi Kami
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CTASection />
     </div>
   );
 };

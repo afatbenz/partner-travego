@@ -34,6 +34,7 @@ interface FleetMeta {
   fleet_type: string;
   fleet_name: string;
   capacity: number;
+  capacities: number[];
   engine: string;
   body: string;
   description: string;
@@ -113,7 +114,7 @@ const PricingCard: React.FC<{
   onCustomOrder,
 }) => (
   <>
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border border-gray-100">
+    <div className="bg-white rounded-[2.5rem] shadow-lg p-10 mb-6 border border-gray-100">
       <div className="mb-6">
         <div className="text-sm text-gray-500 mb-1">Mulai dari</div>
         <div className="text-3xl font-bold text-blue-600">{formattedPrice}</div>
@@ -126,7 +127,7 @@ const PricingCard: React.FC<{
 
       {fleet.pricing.length > 0 && (
         <div className="mb-6 space-y-3">
-          <h4 className="font-semibold text-gray-900 text-sm">Pilihan Durasi:</h4>
+          <h4 className="font-semibold text-gray-900 text-sm">Pilihan Varian Durasi:</h4>
           {(showAllPricing ? fleet.pricing : fleet.pricing.slice(0, 5)).map((pkg, idx) => {
             const isSelected = selectedPricing === pkg;
             return (
@@ -173,7 +174,7 @@ const PricingCard: React.FC<{
           onClick={onOrderNow}
           disabled={!selectedPricing}
         >
-          {selectedPricing ? 'Pesan Sekarang' : 'Pilih Durasi'}
+          {selectedPricing ? 'Pesan Sekarang' : 'Pilih Varian Durasi'}
         </Button>
         <Button variant="outline" className="w-full py-6 rounded-2xl border-blue-600 hover:border-blue-800 transition-all hover:scale-105" onClick={onCustomOrder}>
           Ajukan Custom Order
@@ -317,7 +318,7 @@ export const ArmadaDetail: React.FC = () => {
   const specItems = [
     { icon: Cog, label: 'Mesin', value: fleet.meta.engine },
     { icon: Car, label: 'Body', value: fleet.meta.body },
-    { icon: Users, label: 'Kapasitas', value: `${fleet.meta.capacity} Seats` },
+    { icon: Users, label: 'Kapasitas', value: `${fleet.meta.capacities} Penumpang` },
     { icon: Car, label: 'Tipe', value: fleetTypeLabel },
     ...(fleet.meta.transmission
       ? [{ icon: Gauge, label: 'Transmisi', value: fleet.meta.transmission }]
@@ -379,7 +380,7 @@ export const ArmadaDetail: React.FC = () => {
                 </div>
                 <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10">
                   <Users className="h-4 w-4 mr-2" />
-                  <span>{fleet.meta.capacity} Penumpang</span>
+                  <span>{fleet.meta.capacities} Penumpang</span>
                 </div>
                 {fleet.meta.production_year && (
                   <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10">
@@ -451,7 +452,7 @@ export const ArmadaDetail: React.FC = () => {
                     <Carousel
                       setApi={setCarouselApi}
                       opts={{ startIndex: 0, loop: allImages.length > 1 }}
-                      className="w-full"
+                      className="w-full h-auto"
                     >
                       <CarouselContent>
                         {allImages.map((image, index) => (
@@ -481,8 +482,7 @@ export const ArmadaDetail: React.FC = () => {
 
                   {fleet.images.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-600">Galeri Foto</p>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div className="flex gap-2 overflow-x-auto pb-1 mt-4">
                         {fleet.images.map((img, index) => {
                           const imageIndex = allImages.indexOf(img.path_file);
                           const activeIndex = imageIndex >= 0 ? imageIndex : index + 1;
@@ -492,7 +492,7 @@ export const ArmadaDetail: React.FC = () => {
                               key={img.uuid}
                               type="button"
                               onClick={() => handleThumbnailClick(activeIndex)}
-                              className={`relative flex-shrink-0 w-20 h-16 sm:w-24 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                              className={`relative flex-shrink-0 w-30 h-16 sm:w-30 sm:h-20 rounded-lg overflow-hidden border-2 transition-all p-0 ${
                                 isActive
                                   ? 'border-blue-600 ring-2 ring-blue-200'
                                   : 'border-transparent opacity-70 hover:opacity-100'
@@ -511,13 +511,19 @@ export const ArmadaDetail: React.FC = () => {
                   )}
 
                   <div className='mt-8 bg-white rounded-lg border border-gray-100 p-6 shadow-sm'>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Deskripsi Armada</h2>
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="h-1 w-12 bg-blue-600 rounded-full" />
+                      <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Deskripsi Armada</h2>
+                    </div>
 
                       <div className="prose prose-lg max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: fleet.meta.description }}/>
 
                       {fleet.pickup.length > 0 && (
-                        <div className="mt-8">
-                          <h3 className="text-xl font-bold text-gray-900 mb-4">Area Penjemputan</h3>
+                        <div className="mt-8 mb-5">
+                          <div className="flex items-center gap-3 mb-5">
+                            <div className="h-1 w-12 bg-blue-600 rounded-full" />
+                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Area Penjemputan</h2>
+                          </div>
                           <div className="flex flex-wrap gap-2">
                             {fleet.pickup.map((area) => (
                               <Badge
@@ -530,6 +536,7 @@ export const ArmadaDetail: React.FC = () => {
                               </Badge>
                             ))}
                           </div>
+                          <p className="text-xs mt-2 italic text-gray-400/90">*Penjemputan di luar area kemungkinan akan ada biaya tambahan. Hubungi admin untuk informasi lebih lanjut.</p>
                         </div>
                       )}
 
@@ -581,7 +588,7 @@ export const ArmadaDetail: React.FC = () => {
                       <PricingCard {...pricingCardProps} />
                     {/* Addon Section */}
                     {fleet.addon.length > 0 && (
-                      <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
+                      <div className="bg-white rounded-[2.5rem] p-6 border border-gray-100">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Add-on Tersedia</h3>
                         <div className="flex flex-wrap gap-2">
                           {fleet.addon.map((addon, index) => (
