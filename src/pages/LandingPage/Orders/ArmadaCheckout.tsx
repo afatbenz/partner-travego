@@ -293,12 +293,14 @@ export const ArmadaCheckout: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [totalAvailable, setTotalAvailable] = useState<number>(0);
 
   const [formData, setFormData] = useState({
     // Nama dan kontak pemesan
     fullName: '',
     email: '',
     phone: '',
+    company_name: '',
     address: '',
     city_id: '',
     city_name: '',
@@ -315,8 +317,8 @@ export const ArmadaCheckout: React.FC = () => {
     pickupLocation: '',
     pickupAddress: '',
     
-    // Tujuan
-    destinations: [{ location: '', city_id: '', city_name: '' }],
+    // Rencana Perjalanan
+    itinerary: [{ day: 1, events: [{ location: '', city_id: '', city_name: '' }] }],
     
     // Jumlah Armada
     armadaCount: 1
@@ -371,6 +373,16 @@ export const ArmadaCheckout: React.FC = () => {
           });
           if (response.data.status === 'success') {
             setFleetSummary(response.data.data);
+            
+            // Initialize itinerary based on duration
+            const duration = response.data.data.duration || 1;
+            setFormData(prev => ({
+              ...prev,
+              itinerary: Array.from({ length: duration }, (_, i) => ({
+                day: i + 1,
+                events: [{ location: '', city_id: '', city_name: '' }]
+              }))
+            }));
           }
         }
       } catch (error) {
@@ -444,6 +456,11 @@ export const ArmadaCheckout: React.FC = () => {
         if (response.data.status === 'success') {
           const available = response.data.data.available;
           setIsAvailable(available);
+          
+          // Find total_available from response.data.data.fleets[0].total_available
+          const availableCount = response.data.data.fleets?.[0]?.total_available || 0;
+          setTotalAvailable(availableCount);
+
           if (!available) {
             toast({
               title: "Armada tidak tersedia",
@@ -466,6 +483,19 @@ export const ArmadaCheckout: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [formData.pickupDate, formData.pickupTime, formData.returnDate, formData.returnTime, fleetSummary, id]);
 
+  useEffect(() => {
+    if (totalAvailable > 0 && formData.armadaCount > totalAvailable) {
+      setFormData(prev => ({
+        ...prev,
+        armadaCount: totalAvailable
+      }));
+      toast({
+        title: "Penyesuaian Jumlah Armada",
+        description: `Jumlah armada disesuaikan ke maksimal ${totalAvailable} yang tersedia.`,
+      });
+    }
+  }, [totalAvailable, formData.armadaCount]);
+
   const handleToggleAddon = (addon: FleetAddon) => {
     setSelectedAddons(prev => {
       const exists = prev.find(a => (a.addon_id || a.uuid) === (addon.addon_id || addon.uuid));
@@ -477,32 +507,42 @@ export const ArmadaCheckout: React.FC = () => {
     });
   };
 
+  useEffect(() => {
+    const fetchCustomerAvailability = async () => {
+      if (formData.email && formData.phone) {
+        try {
+          const response = await http.post<any>('/api/service/customer/availibility', {
+            email: formData.email,
+            'no.telepon': formData.phone
+          });
+
+          if (response.data?.data && Object.keys(response.data.data).length > 0) {
+            const customerData = response.data.data;
+            setFormData(prev => ({
+              ...prev,
+              company_name: customerData.company_name || prev.company_name,
+              address: customerData.customer_address || prev.address,
+              city_id: customerData.city_id || prev.city_id,
+              city_name: customerData.city_name || prev.city_name
+            }));
+          }
+        } catch (error) {
+          // Silent error as requested
+          console.error('Failed to fetch customer availability:', error);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      fetchCustomerAvailability();
+    }, 1000); // Wait for user to stop typing
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.email, formData.phone]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    if (name === 'email') {
-      // Logic: if all digits, set to phone. If looks like email, set to email.
-      const isDigits = /^\d+$/.test(value);
-      if (isDigits) {
-        setFormData(prev => ({
-          ...prev,
-          email: '',
-          phone: value
-        }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          email: value,
-          // If it was previously a phone number (all digits) and now isn't, 
-          // we might want to keep phone or clear it. 
-          // But the task says "if inputan semua angka maka dianggap input form phone, jika formatnya email maka dianggap input form email"
-          // This implies a shared field or smart detection.
-          // Let's stick to the simplest interpretation: value updates the specific logic.
-        }));
-      }
-      return;
-    }
-
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -510,48 +550,65 @@ export const ArmadaCheckout: React.FC = () => {
   };
 
   const handleNumberChange = (name: string, value: number) => {
+    let finalValue = Math.max(1, value);
+    if (name === 'armadaCount' && isAvailable && totalAvailable > 0) {
+      finalValue = Math.min(finalValue, totalAvailable);
+    }
     setFormData(prev => ({
       ...prev,
-      [name]: Math.max(1, value)
+      [name]: finalValue
     }));
   };
 
-  const handleDestinationChange = (index: number, field: string, value: any) => {
-    const newDestinations = [...formData.destinations];
-    newDestinations[index] = { ...newDestinations[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      destinations: newDestinations
-    }));
+  const handleEventChange = (dayIndex: number, eventIndex: number, field: string, value: any) => {
+    const newItinerary = [...formData.itinerary];
+    newItinerary[dayIndex].events[eventIndex] = { 
+      ...newItinerary[dayIndex].events[eventIndex], 
+      [field]: value 
+    };
+    setFormData(prev => ({ ...prev, itinerary: newItinerary }));
   };
 
-  const handleCitySelect = (index: number, city: City) => {
-    const newDestinations = [...formData.destinations];
-    newDestinations[index] = { 
-        ...newDestinations[index], 
+  const handleItineraryCitySelect = (dayIndex: number, eventIndex: number, city: City) => {
+    const newItinerary = [...formData.itinerary];
+    newItinerary[dayIndex].events[eventIndex] = { 
+        ...newItinerary[dayIndex].events[eventIndex], 
         city_id: city.id,
         city_name: city.name
     };
+    setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+  };
+
+  const addEvent = (dayIndex: number) => {
+    const newItinerary = [...formData.itinerary];
+    newItinerary[dayIndex].events.push({ location: '', city_id: '', city_name: '' });
+    setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+  };
+
+  const removeEvent = (dayIndex: number, eventIndex: number) => {
+    const newItinerary = [...formData.itinerary];
+    if (newItinerary[dayIndex].events.length > 1) {
+      newItinerary[dayIndex].events = newItinerary[dayIndex].events.filter((_, i) => i !== eventIndex);
+      setFormData(prev => ({ ...prev, itinerary: newItinerary }));
+    }
+  };
+
+  const addDay = () => {
     setFormData(prev => ({
       ...prev,
-      destinations: newDestinations
+      itinerary: [
+        ...prev.itinerary, 
+        { day: prev.itinerary.length + 1, events: [{ location: '', city_id: '', city_name: '' }] }
+      ]
     }));
   };
 
-  const addDestination = () => {
-    setFormData(prev => ({
-      ...prev,
-      destinations: [...prev.destinations, { location: '', city_id: '', city_name: '' }]
-    }));
-  };
-
-  const removeDestination = (index: number) => {
-    if (formData.destinations.length > 1) {
-      const newDestinations = formData.destinations.filter((_, i) => i !== index);
-      setFormData(prev => ({
-        ...prev,
-        destinations: newDestinations
-      }));
+  const removeDay = (dayIndex: number) => {
+    if (formData.itinerary.length > 1) {
+      const newItinerary = formData.itinerary
+        .filter((_, i) => i !== dayIndex)
+        .map((day, idx) => ({ ...day, day: idx + 1 }));
+      setFormData(prev => ({ ...prev, itinerary: newItinerary }));
     }
   };
 
@@ -568,15 +625,21 @@ export const ArmadaCheckout: React.FC = () => {
         fullname: formData.fullName,
         email: formData.email,
         phone: formData.phone,
+        company_name: formData.company_name,
         address: formData.address,
+        city_id: formData.city_id,
+        order_type: 1,
         start_date: `${formData.pickupDate} ${formData.pickupTime}`,
         end_date: `${formData.returnDate} ${formData.pickupTime}`,
         pickup_city_id: formData.pickupCity,
         pickup_location: formData.pickupLocation,
-        destinations: formData.destinations.map(d => ({
-          location: d.location,
-          city_id: d.city_id
-        })),
+        destinations: formData.itinerary.flatMap(day => 
+          day.events.map(event => ({
+            location: event.location,
+            city_id: event.city_id,
+            daynum: day.day
+          }))
+        ),
         qty: formData.armadaCount,
         addons: selectedAddons.map(a => a.addon_id || a.uuid)
       };
@@ -585,18 +648,30 @@ export const ArmadaCheckout: React.FC = () => {
       console.log('Order create response:', response);
 
       const token = response.data?.token || response.data?.data?.token;
+      const orderId = response.data.data?.order_id || response.data.order_id;
+      const finalId = token || orderId;
 
-      if (token) {
-        navigate(`/payment/armada/${token}`);
-      } else if (response.data.status === 'success') {
-        const orderId = response.data.data?.order_id || response.data.order_id;
-        if (orderId) {
-          // Store in context
-          setCheckoutData(orderId, id || '');
-          // Navigate to special request page
-          navigate('/checkout/armada/special-request');
+      if (response.data.status === 'success' || token) {
+        if (finalId) {
+          // Store in context if it's an orderId
+          if (orderId) setCheckoutData(orderId, id || '');
+          
+          // Navigate to success page
+          navigate(`/order/success/armada/${encodeURIComponent(finalId)}`, {
+            state: {
+              orderData: {
+                id: orderId || finalId,
+                item: fleetSummary?.fleet_name,
+                date: new Date().toLocaleDateString('id-ID', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+                })
+              }
+            }
+          });
         } else {
-          console.error('Order ID missing in success response');
+          console.error('Order ID and Token missing in success response');
           toast({
             title: "Error",
             description: "Terjadi kesalahan: ID pesanan tidak ditemukan.",
@@ -604,7 +679,6 @@ export const ArmadaCheckout: React.FC = () => {
           });
         }
       } else {
-        // You might want to use a toast here instead of alert
         toast({
           title: "Gagal",
           description: response.data.message || 'Terjadi kesalahan saat membuat pesanan',
@@ -698,14 +772,39 @@ export const ArmadaCheckout: React.FC = () => {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Email / Nomor Telepon *
+                        Email *
                       </label>
                       <Input
                         name="email"
-                        value={formData.email || formData.phone}
+                        value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="Email atau No Telepon"
+                        placeholder="Masukkan email"
                         required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Nomor Telepon *
+                      </label>
+                      <Input
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="Masukkan nomor telepon"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Instansi / Organisasi
+                      </label>
+                      <Input
+                        name="company_name"
+                        value={formData.company_name}
+                        onChange={handleInputChange}
+                        placeholder="Masukkan nama instansi atau organisasi"
                       />
                     </div>
 
@@ -857,65 +956,72 @@ export const ArmadaCheckout: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* 4. Tujuan */}
+              {/* 3. Rencana Perjalanan */}
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                    3. Tujuan
-                  </h2>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      3. Rencana Perjalanan
+                    </h2>
+                  </div>
                   
-                  <div className="space-y-4">
-                    {formData.destinations.map((destination, index) => (
-                      <div key={index} className="space-y-2">
-                         <div className="flex justify-between items-center">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Tujuan {index + 1} *
-                            </label>
-                            {formData.destinations.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeDestination(index)}
-                                className="h-6 px-2 bg-transparent border-gray-300 hover:border-gray-400 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                              >
-                                <X className="h-3 w-3 mr-1" />
-                                Hapus
-                              </Button>
-                            )}
-                         </div>
-                        <div className={`grid grid-cols-1 ${fleetSummary?.rent_type === 1 || fleetSummary?.rent_type === 3 ? '' : 'md:grid-cols-2'} gap-4`}>
-                            <div>
-                                <Input
-                                    value={destination.location}
-                                    onChange={(e) => handleDestinationChange(index, 'location', e.target.value)}
-                                    placeholder="Detail Lokasi (misal: Hotel Aston)"
-                                    required
-                                />
-                            </div>
-                            {/* {fleetSummary?.rent_type !== 1 && fleetSummary?.rent_type !== 3 && ( */}
-                              <div>
-                                  <CitySearchSelect
-                                      value={destination.city_name}
-                                      onSelect={(city) => handleCitySelect(index, city)}
-                                      placeholder="Pilih Kota"
-                                      required
-                                  />
+                  <div className="space-y-8">
+                    {formData.itinerary.map((day, dayIndex) => (
+                      <div key={dayIndex} className="p-4 border rounded-xl bg-gray-50/50 dark:bg-gray-800/50 space-y-4">
+                        <div className="flex justify-between items-center border-b pb-2 mb-4">
+                          <h3 className="font-bold text-blue-600 dark:text-blue-400">Hari {day.day}</h3>
+                        </div>
+
+                        <div className="space-y-6">
+                          {day.events.map((event, eventIndex) => (
+                            <div key={eventIndex} className="space-y-3 relative">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-gray-500">Tujuan {eventIndex + 1}</span>
+                                {day.events.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeEvent(dayIndex, eventIndex)}
+                                    className="bg-transparent border-red border-slate-400 text-red hover:text-red-500 h-6 px-1"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                )}
                               </div>
-                            {/* )} */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <Input
+                                    value={event.location}
+                                    onChange={(e) => handleEventChange(dayIndex, eventIndex, 'location', e.target.value)}
+                                    placeholder="Detail Lokasi (misal: Pantai Kuta)"
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  <CitySearchSelect
+                                    value={event.city_name}
+                                    onSelect={(city) => handleItineraryCitySelect(dayIndex, eventIndex, city)}
+                                    placeholder="Pilih Kota"
+                                    required
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => addEvent(dayIndex)}
+                            className="w-full border-dashed border-2xl bg-blue-500 text-white hover:border-blue-300 hover:bg-blue-600 hover:text-white transition-all py-4"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Tambah Tujuan di Hari {day.day}
+                          </Button>
                         </div>
                       </div>
                     ))}
-                    
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={addDestination}
-                      className="w-full mt-4 bg-blue-500 rounded-2xl text-white hover:bg-blue-600 hover:text-white transition-all duration-500 hover:scale-105"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Tambah Tujuan
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -933,7 +1039,7 @@ export const ArmadaCheckout: React.FC = () => {
                         <Car className="inline h-4 w-4 mr-2" />
                         Jumlah Armada *
                       </label>
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center justify-center space-x-4">
                         <Button
                           type="button"
                           variant="outline"
@@ -955,8 +1061,13 @@ export const ArmadaCheckout: React.FC = () => {
                         </Button>
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        Kapasitas: {data.capacity} Orang
+                        Ketersediaan armada: {totalAvailable} unit
                       </p>
+                      {totalAvailable > 0 && formData.armadaCount >= totalAvailable && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                          * Jumlah tidak bisa melebihi unit yang tersedia
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -1097,22 +1208,29 @@ export const ArmadaCheckout: React.FC = () => {
                   </div>
                   
                   {/* Destinations */}
-                  {formData.destinations.some(dest => dest.city_name || dest.location) && (
+                  {formData.itinerary.some(day => day.events.some(event => event.city_name || event.location)) && (
                     <div className="mt-4">
                       <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                        Tujuan:
+                        Rencana Perjalanan:
                       </h4>
-                      <div className="space-y-1">
-                        {formData.destinations
-                          .filter(dest => dest.city_name || dest.location)
-                          .map((destination, index) => (
-                            <div key={index} className="flex items-start text-xs text-gray-600 dark:text-gray-300">
-                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2 mt-1.5 flex-shrink-0"></div>
-                              <span>
-                                {destination.location && <span className="font-medium">{destination.location}</span>}
-                                {destination.location && destination.city_name && <span>, </span>}
-                                {destination.city_name && <span>{destination.city_name}</span>}
-                              </span>
+                      <div className="space-y-4">
+                        {formData.itinerary
+                          .filter(day => day.events.some(event => event.city_name || event.location))
+                          .map((day, dayIdx) => (
+                            <div key={dayIdx} className="space-y-1">
+                              <span className="text-xs font-bold text-blue-600">Hari {day.day}</span>
+                              {day.events
+                                .filter(event => event.city_name || event.location)
+                                .map((event, eventIdx) => (
+                                  <div key={eventIdx} className="flex items-start text-xs text-gray-600 dark:text-gray-300 ml-2">
+                                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2 mt-1.5 flex-shrink-0"></div>
+                                    <span>
+                                      {event.location && <span className="font-medium">{event.location}</span>}
+                                      {event.location && event.city_name && <span>, </span>}
+                                      {event.city_name && <span>{event.city_name}</span>}
+                                    </span>
+                                  </div>
+                                ))}
                             </div>
                           ))}
                       </div>

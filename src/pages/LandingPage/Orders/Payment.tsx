@@ -1,12 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, QrCode, CheckCircle, ChevronDown, Tag } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  CreditCard, 
+  QrCode, 
+  CheckCircle, 
+  ChevronDown, 
+  Tag, 
+  ShieldCheck, 
+  Info, 
+  Lock, 
+  ArrowRight, 
+  FileText, 
+  Headset, 
+  MessageCircle,
+  Ticket,
+  Calendar,
+  Hash,
+  Bus,
+  Check,
+  ChevronRight,
+  Shield,
+  Download
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { http } from '@/lib/http';
+import { cn } from '@/lib/utils';
 
 interface OrderData {
   id: string;
@@ -24,6 +47,7 @@ interface OrderData {
   pickup: { 
     pickup_location: string; 
     pickup_city: string;
+    city_label?: string;
     start_date: string;
     end_date: string;
   };
@@ -47,7 +71,6 @@ export const Payment: React.FC = () => {
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Payment methods state
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [transferMethods, setTransferMethods] = useState<PaymentMethod[]>([]);
   const [qrisMethods, setQrisMethods] = useState<PaymentMethod[]>([]);
@@ -68,32 +91,30 @@ export const Payment: React.FC = () => {
         if (response.data.status === 'success') {
           const data = response.data.data;
           
-          // Helper to format currency
           const formatCurrency = (amount: number) => {
             return `Rp ${amount.toLocaleString('id-ID')}`;
           };
 
-          // Calculate deadline (example: 24 hours from order time)
-           const orderDate = new Date(data.order_date);
-           const deadlineDate = new Date(orderDate.getTime() + 24 * 60 * 60 * 1000);
+          const orderDate = new Date(data.order_date);
+          const deadlineDate = new Date(orderDate.getTime() + 24 * 60 * 60 * 1000);
 
-           setOrderData({
-             id: data.order_id,
-             price_id: data.price_id,
-             type: 'armada',
-             title: data.fleet_name,
-             price: formatCurrency(data.price),
-             totalPrice: formatCurrency(data.total_amount),
-             rawTotalAmount: data.total_amount,
-             participants: data.quantity,
-             orderDate: data.order_date,
-             paymentDeadline: deadlineDate.toISOString(),
-             duration: data.duration,
-             durationUom: data.duration_uom || 'Jam',
-             pickup: data.pickup,
-             destination: data.destination,
-             addon: data.addon
-           });
+          setOrderData({
+            id: data.order_id,
+            price_id: data.price_id,
+            type: 'armada',
+            title: data.fleet_name,
+            price: formatCurrency(data.price),
+            totalPrice: formatCurrency(data.total_amount),
+            rawTotalAmount: data.total_amount,
+            participants: data.quantity,
+            orderDate: data.order_date,
+            paymentDeadline: deadlineDate.toISOString(),
+            duration: data.duration,
+            durationUom: data.duration_uom || 'Jam',
+            pickup: data.pickup,
+            destination: data.destination,
+            addon: data.addon
+          });
         }
       } catch (error) {
         console.error('Failed to fetch order detail:', error);
@@ -113,7 +134,6 @@ export const Payment: React.FC = () => {
           if (Array.isArray(data)) {
             transfer = data; 
           } else {
-            // Assume data structure matches the requirement: split into transfer and qris
             transfer = Array.isArray(data.transfer) ? data.transfer : [];
             qris = Array.isArray(data.qris) ? data.qris : [];
           }
@@ -177,17 +197,16 @@ export const Payment: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string, withTime: boolean = false) => {
+    if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleString('id-ID', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).replace('pukul ', '').replace('Pukul ', '');
+      ...(withTime ? { hour: '2-digit', minute: '2-digit', hour12: false } : {})
+    });
   };
 
   const formatCurrency = (amount: number) => {
@@ -198,6 +217,10 @@ export const Payment: React.FC = () => {
     if (!orderData) return 0;
     
     let baseAmount = orderData.rawTotalAmount;
+    if (paymentType === 'dp') {
+      baseAmount = Math.round(baseAmount * (dpPercentage / 100));
+    }
+
     if (appliedPromo) {
       baseAmount -= appliedPromo.amount;
     }
@@ -209,10 +232,7 @@ export const Payment: React.FC = () => {
 
   const handleApplyPromo = () => {
     if (!promoCode) return;
-    
     setPromoError('');
-    
-    // Mock validation logic
     const code = promoCode.toUpperCase();
     if (code === 'HEMAT100') {
       setAppliedPromo({ code: 'HEMAT100', amount: 100000 });
@@ -225,343 +245,323 @@ export const Payment: React.FC = () => {
     }
   };
 
+  const handleDownloadDetailPDF = async () => {
+    if (!orderData?.id) return;
+    try {
+      const response = await http.post('/api/services/print-management/fleet/order', 
+        { order_id: orderData.id },
+        { responseType: 'blob' }
+      );
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Detail-Pesanan-${orderData.id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download PDF:', error);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#295BFF] mb-4"></div>
+          <p className="text-slate-500 font-medium animate-pulse">Menyiapkan pembayaran...</p>
+        </div>
       </div>
     );
   }
 
   if (!orderData) {
      return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Data Pesanan Tidak Ditemukan</h2>
-            <Button onClick={() => navigate('/')}>Kembali ke Beranda</Button>
+        <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 text-center">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+              <FileText className="w-10 h-10 text-slate-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Data Pesanan Tidak Ditemukan</h2>
+            <Button onClick={() => navigate('/')} className="bg-[#295BFF] hover:bg-blue-600 rounded-2xl px-8 py-6 h-auto font-bold shadow-lg shadow-blue-500/20">Kembali ke Beranda</Button>
         </div>
      )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4">
-          <div className="flex items-center">
+    <div className="min-h-screen bg-[#F8FAFC] pb-20 overflow-x-hidden">
+      {/* TOP HEADER SECTION */}
+      <section className="relative pt-24 pb-8 overflow-hidden bg-gradient-to-b from-white to-blue-50/30">
+        <div className="absolute inset-0 z-0 opacity-40">
+          <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-blue-200/40 rounded-full blur-[100px] animate-pulse"></div>
+          <div className="absolute bottom-[-20%] left-[-10%] w-[300px] h-[300px] bg-indigo-100/40 rounded-full blur-[80px]"></div>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+          <div className="flex flex-col space-y-6">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-              className="mr-4 bg-transparent hover:bg-transparent"
+              className="group w-fit -ml-2 text-slate-500 hover:text-[#295BFF] hover:bg-white/80 transition-all rounded-full pr-4"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
+              <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
+              <span className="text-sm font-medium">Kembali ke Detail Pesanan</span>
             </Button>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Pembayaran
-            </h1>
+
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-1">
+                <h1 className="text-3xl md:text-4xl font-black text-[#111827] tracking-tight">Selesaikan Pembayaran</h1>
+                <p className="text-[#6B7280] font-medium text-sm md:text-base">Pastikan detail pesanan dan metode pembayaran sudah benar.</p>
+              </div>
+
+              {/* Mini step indicator */}
+              <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm p-1.5 rounded-2xl border border-white/50 shadow-sm self-start md:self-auto">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50/50">
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold">
+                    <Check className="w-3 h-3" />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detail Pesanan</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-200" />
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#295BFF]/5 border border-[#295BFF]/10">
+                  <div className="w-5 h-5 rounded-full bg-[#295BFF] flex items-center justify-center text-[10px] text-white font-bold shadow-lg shadow-blue-500/30">2</div>
+                  <span className="text-[10px] font-bold text-[#295BFF] uppercase tracking-wider">Pembayaran</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-200" />
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl">
+                  <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-bold">3</div>
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Selesai</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Payment Section */}
-          <div className="lg:col-span-2">
-            {/* Order Summary */}
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Ringkasan Pesanan
-                </h2>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">Nomor Pesanan</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{orderData.id}</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">Tanggal Pesanan</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {formatDate(orderData.orderDate)}
-                    </span>
-                  </div>
+      {/* MAIN LAYOUT */}
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8">
+          
+          {/* LEFT COLUMN */}
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            
+            {/* SECTION — PAYMENT TYPE */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#295BFF]/10 rounded-xl">
+                  <CreditCard className="w-5 h-5 text-[#295BFF]" />
+                </div>
+                <h2 className="text-xl font-bold text-[#111827]">Pilih Tipe Pembayaran</h2>
+              </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">Item</span>
-                    <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
-                      {orderData.title}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">
-                      {type === 'armada' ? 'Jumlah Armada' : 'Jumlah Peserta'}
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {orderData.participants} {type === 'armada' ? 'Unit' : 'orang'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">Durasi Sewa</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {orderData.duration} {orderData.durationUom}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">Harga per {type === 'catalog' ? 'pax' : 'hari'}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {orderData.price}
-                    </span>
-                  </div>
-
-                  {/* Detailed Order Info Collapsible */}
-                  <Collapsible className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                    <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors bg-white dark:bg-gray-800 p-2 rounded-md">
-                        <span>Detail Lainnya</span>
-                        <ChevronDown className="h-4 w-4" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-4 space-y-4">
-                         {/* Pickup Info Moved Here */}
-                         {orderData.pickup && (
-                            <div className="text-sm">
-                                <p className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Info Penjemputan</p>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-400">Lokasi</span>
-                                        <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
-                                            {orderData.pickup.pickup_location}, {orderData.pickup.pickup_city}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-400">Tanggal Penjemputan</span>
-                                        <span className="font-medium text-gray-900 dark:text-white">
-                                            {formatDate(orderData.pickup.start_date)}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-400">Tanggal Kembali</span>
-                                        <span className="font-medium text-gray-900 dark:text-white">
-                                            {formatDate(orderData.pickup.end_date)}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                         )}
-
-                         {/* Destination */}
-                         {orderData.destination && orderData.destination.length > 0 && (
-                            <div className="text-sm">
-                                <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Tujuan</p>
-                                <ul className="list-disc list-inside text-gray-600 dark:text-gray-400">
-                                    {orderData.destination.map((dest, idx) => (
-                                        <li key={idx}>{dest.location}, {dest.city}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                         )}
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  {/* Addon Info */}
-                  {orderData.addon && orderData.addon.length > 0 && (
-                    <>
-                        <div className="mt-4 mb-2">
-                            <span className="font-semibold text-gray-900 dark:text-white">Add-on</span>
-                        </div>
-                        {orderData.addon.map((addon, idx) => (
-                            <div key={idx} className="flex justify-between mt-2">
-                            <span className="text-gray-600 dark:text-gray-300">{addon.addon_name}</span>
-                            <span className="font-medium text-gray-900 dark:text-white">
-                                {formatCurrency(addon.addon_price)}
-                            </span>
-                            </div>
-                        ))}
-                    </>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div 
+                  onClick={() => setPaymentType('full')}
+                  className={cn(
+                    "relative p-6 rounded-2xl border transition-all duration-300 group hover:-translate-y-1 cursor-pointer",
+                    paymentType === 'full' 
+                      ? "border-[#295BFF] bg-blue-50/50 shadow-[0_0_20px_rgba(41,91,255,0.15)] ring-1 ring-[#295BFF]" 
+                      : "border-[#E5E7EB] bg-white hover:border-[#295BFF]/50 hover:shadow-md"
                   )}
-                  
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                    <div className="flex justify-between text-lg font-semibold">
-                      <span className="text-gray-900 dark:text-white">Total Tagihan</span>
-                      <span className="text-gray-900 dark:text-white">
-                        {orderData.totalPrice}
+                >
+                  {paymentType === 'full' && (
+                    <div className="absolute top-4 right-4 w-6 h-6 bg-[#295BFF] rounded-full flex items-center justify-center animate-in zoom-in duration-300 shadow-lg shadow-blue-500/30">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  )}
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300",
+                    paymentType === 'full' ? "bg-[#295BFF] text-white shadow-lg shadow-blue-500/20" : "bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-[#295BFF]"
+                  )}>
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-[#111827] mb-1">Bayar Penuh</h3>
+                  <p className="text-sm text-[#6B7280] font-medium">Lunasi pembayaran sekarang</p>
+                </div>
+
+                <div 
+                  onClick={() => setPaymentType('dp')}
+                  className={cn(
+                    "relative p-6 rounded-2xl border transition-all duration-300 group hover:-translate-y-1 cursor-pointer",
+                    paymentType === 'dp' 
+                      ? "border-[#295BFF] bg-blue-50/50 shadow-[0_0_20px_rgba(41,91,255,0.15)] ring-1 ring-[#295BFF]" 
+                      : "border-[#E5E7EB] bg-white hover:border-[#295BFF]/50 hover:shadow-md"
+                  )}
+                >
+                  {paymentType === 'dp' && (
+                    <div className="absolute top-4 right-4 w-6 h-6 bg-[#295BFF] rounded-full flex items-center justify-center animate-in zoom-in duration-300 shadow-lg shadow-blue-500/30">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  )}
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300",
+                    paymentType === 'dp' ? "bg-[#295BFF] text-white shadow-lg shadow-blue-500/20" : "bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-[#295BFF]"
+                  )}>
+                    <CreditCard className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-[#111827] mb-1">Bayar DP</h3>
+                  <p className="text-sm text-[#6B7280] font-medium">Bayar uang muka terlebih dahulu</p>
+                </div>
+              </div>
+
+              {paymentType === 'dp' && (
+                <div className="p-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm animate-in slide-in-from-top-4 duration-500">
+                  <label className="block text-xs font-bold text-[#6B7280] uppercase tracking-widest mb-4">
+                    Pilih Persentase DP
+                  </label>
+                  <div className="grid grid-cols-4 gap-3">
+                    {[10, 25, 50, 75].map((percent) => (
+                      <Button
+                        key={percent}
+                        variant={dpPercentage === percent ? "default" : "outline"}
+                        onClick={() => setDpPercentage(percent)}
+                        className={cn(
+                          "rounded-xl h-11 font-bold transition-all",
+                          dpPercentage === percent 
+                            ? "bg-[#295BFF] hover:bg-blue-600 shadow-lg shadow-blue-500/20 border-[#295BFF]" 
+                            : "border-[#E5E7EB] text-[#6B7280] hover:bg-blue-50 hover:text-[#295BFF] hover:border-[#295BFF]/30"
+                        )}
+                      >
+                        {percent}%
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="mt-6 p-5 bg-blue-50/30 rounded-xl border border-blue-100/50 space-y-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-[#6B7280] font-medium">Nominal DP ({dpPercentage}%)</span>
+                      <span className="font-bold text-[#111827]">
+                        {formatCurrency(Math.round((orderData?.rawTotalAmount || 0) * (dpPercentage / 100)))}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm pt-3 border-t border-blue-100/50">
+                      <span className="text-[#6B7280] font-medium">Sisa Pembayaran</span>
+                      <span className="font-bold text-[#295BFF]">
+                        {formatCurrency(Math.round((orderData?.rawTotalAmount || 0) * ((100 - dpPercentage) / 100)))}
                       </span>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </section>
 
-            {/* Payment Type Selection */}
-            <Card className="mb-6">
-                <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                        Pilih Tipe Pembayaran
-                    </h2>
-                    
-                    <div className="space-y-4">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div 
-                                className={`flex-1 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                                    paymentType === 'full' 
-                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
-                                }`}
-                                onClick={() => setPaymentType('full')}
-                            >
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">Bayar Penuh</h3>
-                                    {paymentType === 'full' && <CheckCircle className="h-5 w-5 text-blue-600" />}
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
-                                    Lunasi pembayaran sekarang
-                                </p>
-                            </div>
+            {/* SECTION — PROMO CODE */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#295BFF]/10 rounded-xl">
+                  <Ticket className="w-5 h-5 text-[#295BFF]" />
+                </div>
+                <h2 className="text-xl font-bold text-[#111827]">Kode Promo</h2>
+              </div>
 
-                            <div 
-                                className={`flex-1 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                                    paymentType === 'dp' 
-                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
-                                }`}
-                                onClick={() => setPaymentType('dp')}
-                            >
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">Bayar Sebagian (DP)</h3>
-                                    {paymentType === 'dp' && <CheckCircle className="h-5 w-5 text-blue-600" />}
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
-                                    Bayar uang muka terlebih dahulu
-                                </p>
-                            </div>
-                        </div>
-
-                        {paymentType === 'dp' && (
-                            <div className="animate-in fade-in slide-in-from-top-2 pt-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                    Pilih Persentase DP
-                                </label>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {[10, 25, 50, 75].map((percent) => (
-                                        <Button
-                                            key={percent}
-                                            variant={dpPercentage === percent ? "default" : "outline"}
-                                            onClick={() => setDpPercentage(percent)}
-                                            className={dpPercentage === percent ? "bg-blue-600 hover:bg-blue-700" : ""}
-                                        >
-                                            {percent}%
-                                        </Button>
-                                    ))}
-                                </div>
-                                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-gray-600 dark:text-gray-400">Nominal DP ({dpPercentage}%)</span>
-                                        <span className="font-bold text-gray-900 dark:text-white">
-                                            {formatCurrency(Math.round((orderData?.rawTotalAmount || 0) * (dpPercentage / 100)))}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm mt-2">
-                                        <span className="text-gray-600 dark:text-gray-400">Sisa Pembayaran</span>
-                                        <span className="font-bold text-gray-900 dark:text-white">
-                                            {formatCurrency(Math.round((orderData?.rawTotalAmount || 0) * ((100 - dpPercentage) / 100)))}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+              <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm">
+                <div className="flex gap-3">
+                  <div className="relative flex-1">
+                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6B7280]" />
+                    <Input
+                      placeholder="Masukkan kode promo (ex: HEMAT100)"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      className="pl-12 h-12 rounded-xl border-[#E5E7EB] bg-slate-50/50 focus:bg-white focus:border-[#295BFF] focus:ring-1 focus:ring-[#295BFF] transition-all font-medium"
+                      disabled={!!appliedPromo}
+                    />
+                  </div>
+                  {appliedPromo ? (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setAppliedPromo(null);
+                        setPromoCode('');
+                      }}
+                      className="h-12 px-6 rounded-xl border-red-100 text-red-500 hover:bg-red-50 font-bold"
+                    >
+                      Hapus
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={handleApplyPromo}
+                      className="h-12 px-8 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold transition-all active:scale-95"
+                    >
+                      Terapkan
+                    </Button>
+                  )}
+                </div>
+                {promoError && (
+                  <p className="text-sm text-red-500 mt-3 font-medium flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                    <Info className="w-4 h-4" />
+                    {promoError}
+                  </p>
+                )}
+                {appliedPromo && (
+                  <div className="mt-4 p-4 bg-green-50 rounded-xl flex justify-between items-center border border-green-100 animate-in slide-in-from-top-2">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-500 rounded-lg">
+                        <Check className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-sm text-green-700 font-bold">
+                        Promo diterapkan: <span className="underline">{appliedPromo.code}</span>
+                      </span>
                     </div>
-                </CardContent>
-            </Card>
+                    <span className="font-bold text-green-600">
+                      -{formatCurrency(appliedPromo.amount)}
+                    </span>
+                  </div>
+                )}
+                <p className="text-xs text-[#6B7280] mt-4 font-medium italic">
+                  Gunakan kode promo untuk mendapatkan potongan harga menarik.
+                </p>
+              </div>
+            </section>
 
-            {/* Promo Code Selection */}
-            <Card className="mb-6">
-                <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                        Kode Promo
-                    </h2>
-                    <div className="flex space-x-2">
-                        <div className="relative flex-1">
-                            <Tag className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                            <Input
-                                placeholder="Masukkan kode promo (ex: HEMAT100)"
-                                value={promoCode}
-                                onChange={(e) => setPromoCode(e.target.value)}
-                                className="pl-9"
-                                disabled={!!appliedPromo}
-                            />
-                        </div>
-                        {appliedPromo ? (
-                             <Button variant="outline" onClick={() => {
-                                 setAppliedPromo(null);
-                                 setPromoCode('');
-                             }}>
-                                 Hapus
-                             </Button>
-                        ) : (
-                             <Button onClick={handleApplyPromo}>
-                                 Terapkan
-                             </Button>
-                        )}
-                    </div>
-                    {promoError && (
-                        <p className="text-sm text-red-500 mt-2">{promoError}</p>
-                    )}
-                    {appliedPromo && (
-                        <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg flex justify-between items-center animate-in fade-in slide-in-from-top-2">
-                            <span className="text-sm text-green-700 dark:text-green-300">
-                                Promo diterapkan: {appliedPromo.code}
-                            </span>
-                            <span className="font-bold text-green-600 dark:text-green-400">
-                                -{formatCurrency(appliedPromo.amount)}
-                            </span>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+            {/* SECTION — PAYMENT METHODS */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#295BFF]/10 rounded-xl">
+                  <QrCode className="w-5 h-5 text-[#295BFF]" />
+                </div>
+                <h2 className="text-xl font-bold text-[#111827]">Metode Pembayaran</h2>
+              </div>
 
-            {/* Payment Method Selection */}
-            <Card className="mb-6 animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                  Pilih Metode Pembayaran
-                </h2>
-                
+              <div className="space-y-8">
                 {paymentMethods.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="space-y-8">
                     {/* Transfer Bank Section */}
                     {transferMethods.length > 0 && (
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
-                          Transfer Bank
-                        </h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <h3 className="text-[10px] font-bold text-[#6B7280] uppercase tracking-[0.15em]">
+                            Transfer Bank (Verifikasi Otomatis)
+                          </h3>
+                          <div className="h-px flex-1 bg-[#E5E7EB]"></div>
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {transferMethods.map((method) => (
                             <div
                               key={method.id}
-                              className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                                selectedPayment && selectedPayment.bank_name === method.bank_name
-                                  ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-sm'
-                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
-                              }`}
+                              className={cn(
+                                "relative p-5 rounded-2xl border transition-all duration-300 group hover:-translate-y-1 flex items-center gap-4 cursor-pointer",
+                                selectedPayment?.bank_account_id === method.bank_account_id
+                                  ? "border-[#295BFF] bg-blue-50/50 shadow-[0_0_20px_rgba(41,91,255,0.1)] ring-1 ring-[#295BFF]"
+                                  : "border-[#E5E7EB] bg-white hover:border-[#295BFF]/30 hover:shadow-md"
+                              )}
                               onClick={() => setSelectedPayment(method)}
                             >
-                              {selectedPayment && selectedPayment.bank_name === method.bank_name && (
-                                <div className="absolute top-2 right-2">
-                                  <CheckCircle className="h-5 w-5 text-blue-600 fill-white" />
+                              {selectedPayment?.bank_account_id === method.bank_account_id && (
+                                <div className="absolute top-4 right-4 w-6 h-6 bg-[#295BFF] rounded-full flex items-center justify-center animate-in zoom-in duration-300 shadow-lg shadow-blue-500/30">
+                                  <Check className="w-3.5 h-3.5 text-white" />
                                 </div>
                               )}
-                              <div className="flex items-center">
+                              <div className="w-16 h-12 bg-slate-50 rounded-xl flex items-center justify-center p-2 group-hover:bg-white transition-colors border border-transparent group-hover:border-slate-100">
                                 {method.icon ? (
-                                   <img src={method.icon} alt={method.bank_name} className="h-6 w-auto mr-3 object-contain" />
+                                   <img src={method.icon} alt={method.bank_name} className="max-h-full max-w-full object-contain" />
                                 ) : (
-                                   <CreditCard className="h-6 w-6 text-blue-600 mr-3" />
+                                   <CreditCard className="w-6 h-6 text-[#295BFF]" />
                                 )}
-                                <h3 className="font-semibold text-gray-900 dark:text-white">
-                                  {method.bank_name}
-                                </h3>
+                              </div>
+                              <div className="space-y-0.5">
+                                <h4 className="font-bold text-[#111827] leading-none">{method.bank_name}</h4>
+                                <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider mt-1">Verifikasi Otomatis</p>
                               </div>
                             </div>
                           ))}
@@ -571,35 +571,40 @@ export const Payment: React.FC = () => {
 
                     {/* QRIS Section */}
                     {qrisMethods.length > 0 && (
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
-                          QRIS
-                        </h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <h3 className="text-[10px] font-bold text-[#6B7280] uppercase tracking-[0.15em]">
+                            QRIS (Gopay, OVO, ShopeePay, Dana)
+                          </h3>
+                          <div className="h-px flex-1 bg-[#E5E7EB]"></div>
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {qrisMethods.map((method) => (
                             <div
                               key={method.id}
-                              className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                                selectedPayment && selectedPayment.bank_name === method.bank_name
-                                  ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-sm'
-                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
-                              }`}
+                              className={cn(
+                                "relative p-5 rounded-2xl border transition-all duration-300 group hover:-translate-y-1 flex items-center gap-4 cursor-pointer",
+                                selectedPayment?.bank_account_id === method.bank_account_id
+                                  ? "border-[#295BFF] bg-blue-50/50 shadow-[0_0_20px_rgba(41,91,255,0.1)] ring-1 ring-[#295BFF]"
+                                  : "border-[#E5E7EB] bg-white hover:border-[#295BFF]/30 hover:shadow-md"
+                              )}
                               onClick={() => setSelectedPayment(method)}
                             >
-                              {selectedPayment && selectedPayment.bank_name === method.bank_name && (
-                                <div className="absolute top-2 right-2">
-                                  <CheckCircle className="h-5 w-5 text-blue-600 fill-white" />
+                              {selectedPayment?.bank_account_id === method.bank_account_id && (
+                                <div className="absolute top-4 right-4 w-6 h-6 bg-[#295BFF] rounded-full flex items-center justify-center animate-in zoom-in duration-300 shadow-lg shadow-blue-500/30">
+                                  <Check className="w-3.5 h-3.5 text-white" />
                                 </div>
                               )}
-                              <div className="flex items-center">
+                              <div className="w-16 h-12 bg-slate-50 rounded-xl flex items-center justify-center p-2 group-hover:bg-white transition-colors border border-transparent group-hover:border-slate-100">
                                 {method.icon ? (
-                                   <img src={method.icon} alt={method.bank_name} className="h-6 w-auto mr-3 object-contain" />
+                                   <img src={method.icon} alt={method.bank_name} className="max-h-full max-w-full object-contain" />
                                 ) : (
-                                   <QrCode className="h-6 w-6 text-blue-600 mr-3" />
+                                   <QrCode className="w-6 h-6 text-[#295BFF]" />
                                 )}
-                                <h3 className="font-semibold text-gray-900 dark:text-white">
-                                  {method.bank_name}
-                                </h3>
+                              </div>
+                              <div className="space-y-0.5">
+                                <h4 className="font-bold text-[#111827] leading-none">{method.bank_name}</h4>
+                                <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider mt-1">Instant Verif</p>
                               </div>
                             </div>
                           ))}
@@ -608,31 +613,201 @@ export const Payment: React.FC = () => {
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    Metode pembayaran saat ini tidak tersedia
+                  <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-dashed border-[#E5E7EB]">
+                    <Info className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                    <p className="text-[#6B7280] font-medium">Metode pembayaran saat ini tidak tersedia</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </section>
 
-            {/* Continue Payment Button */}
-            <div className="mt-8 flex justify-end">
-              <Button 
-                size="lg" 
-                onClick={handleProcessPayment}
-                disabled={loading || !selectedPayment}
-                className="w-full md:w-auto"
-              >
-                {loading ? 'Memproses...' : 'Lanjutkan Pembayaran'}
-              </Button>
+            {/* SECTION — SECURITY INFO */}
+            <section className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 rounded-2xl p-6 relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/20 rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500"></div>
+               <div className="relative z-10 flex flex-col md:flex-row items-center gap-5 text-center md:text-left">
+                  <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <Shield className="w-7 h-7 text-[#295BFF]" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <h3 className="text-base font-bold text-[#111827]">Semua transaksi aman & terenkripsi</h3>
+                    <p className="text-[#6B7280] text-sm font-medium">Kami menggunakan sistem keamanan berstandar tinggi untuk melindungi data Anda.</p>
+                  </div>
+               </div>
+            </section>
+          </div>
+
+          {/* RIGHT COLUMN - SIDEBAR */}
+          <div className="relative">
+            <div className="lg:sticky lg:top-24 space-y-6">
+              
+              {/* STICKY SUMMARY CARD */}
+              <Card className="bg-white border border-[#E5E7EB] rounded-3xl shadow-sm overflow-hidden">
+                <CardContent className="p-6 md:p-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold text-[#111827]">Ringkasan Pesanan</h2>
+                      <Badge variant="outline" className="rounded-full border-[#E5E7EB] text-[#6B7280] font-medium py-1">
+                        #{orderData.id}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <Bus className="w-6 h-6 text-[#295BFF]" />
+                        </div>
+                        <div className="flex-1">
+                           <p className="text-sm font-bold text-[#111827] leading-tight mb-1">{orderData.title}</p>
+                           <p className="text-[11px] text-[#6B7280] font-medium uppercase tracking-wider">
+                              {orderData.participants} Unit • {orderData.duration} {orderData.durationUom}
+                           </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 py-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-[#6B7280]">Tanggal Pesanan</span>
+                          <span className="font-bold text-[#111827]">{formatDate(orderData.orderDate)}</span>
+                        </div>
+                        
+                        {/* Detailed Info */}
+                        <Collapsible className="bg-slate-50/50 rounded-xl overflow-hidden border border-slate-100/50">
+                          <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2.5 text-xs font-bold text-[#6B7280] hover:text-[#295BFF] transition-all uppercase tracking-wider">
+                              <span>Detail Perjalanan</span>
+                              <ChevronDown className="h-4 w-4" />
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="px-4 pb-4 space-y-4 animate-in slide-in-from-top-2">
+                               {orderData.pickup && (
+                                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                                      <p className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">Penjemputan</p>
+                                      <p className="text-xs font-bold text-[#111827] leading-tight">
+                                        {orderData.pickup.pickup_location}, {orderData.pickup.city_label || orderData.pickup.pickup_city}
+                                      </p>
+                                      <p className="text-[10px] text-[#6B7280] font-medium">
+                                        {formatDate(orderData.pickup.start_date, true)}
+                                      </p>
+                                  </div>
+                               )}
+
+                               {orderData.destination && orderData.destination.length > 0 && (
+                                  <div className="space-y-2 pt-3 border-t border-slate-100">
+                                      <p className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">Tujuan</p>
+                                      <ul className="space-y-2">
+                                          {orderData.destination.map((dest, idx) => (
+                                              <li key={idx} className="text-xs font-bold text-[#111827] flex items-start gap-2">
+                                                <div className="w-1 h-1 rounded-full bg-[#295BFF] mt-1.5 flex-shrink-0"></div>
+                                                {dest.location}, {dest.city}
+                                              </li>
+                                          ))}
+                                      </ul>
+                                  </div>
+                               )}
+                          </CollapsibleContent>
+                        </Collapsible>
+
+                        {orderData.addon && orderData.addon.length > 0 && (
+                          <div className="space-y-2 pt-2">
+                            <p className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">Add-on</p>
+                            {orderData.addon.map((addon, idx) => (
+                              <div key={idx} className="flex justify-between items-center text-sm">
+                                <span className="text-[#6B7280]">{addon.addon_name}</span>
+                                <span className="font-bold text-[#111827]">{formatCurrency(addon.addon_price)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-6 border-t border-[#E5E7EB]">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+                          {paymentType === 'dp' ? `Nominal DP (${dpPercentage}%)` : 'Total Tagihan'}
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-bold text-[#295BFF] tracking-tight">
+                            {formatCurrency(getPaymentAmount())}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payment Status Alert */}
+                    <div className="bg-blue-50/80 border border-blue-100/50 rounded-2xl p-4 flex items-start gap-3">
+                      <Info className="h-5 w-5 text-[#295BFF] flex-shrink-0 mt-0.5" />
+                      <p className="text-[#295BFF] text-xs leading-relaxed font-normal">
+                        Pembayaran belum dilakukan. Silakan selesaikan pembayaran sebelum pesanan otomatis dibatalkan.
+                      </p>
+                    </div>
+
+                    {/* CTA BUTTONS */}
+                      <div className="space-y-3">
+                        <Button 
+                          size="lg" 
+                          onClick={handleProcessPayment}
+                          disabled={loading || !selectedPayment}
+                          className="w-full bg-gradient-to-r from-[#295BFF] to-[#4F7FFF] hover:shadow-lg hover:shadow-blue-500/30 text-white font-bold h-14 rounded-2xl transition-all hover:-translate-y-0.5 active:translate-y-0 group"
+                        >
+                          <Lock className="w-4 h-4 mr-2" />
+                          Lanjutkan Pembayaran
+                          <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </Button>
+                        
+                        <Button 
+                          variant="outline" 
+                          onClick={handleDownloadDetailPDF}
+                          className="w-full border-[#E5E7EB] text-[#111827] font-bold h-14 rounded-2xl hover:bg-slate-50 transition-all"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Detail Pesanan PDF
+                        </Button>
+
+                        <Button 
+                          variant="outline" 
+                          onClick={() => window.print()}
+                          className="w-full border-[#E5E7EB] text-[#111827] font-bold h-14 rounded-2xl hover:bg-slate-50 transition-all"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Download Invoice (PDF)
+                        </Button>
+                      </div>
+
+                    {/* SAFE PAYMENT BADGE */}
+                    <div className="flex items-center justify-center gap-2 p-3 bg-green-50 rounded-2xl border border-green-100/50">
+                      <ShieldCheck className="w-4 h-4 text-green-600" />
+                      <span className="text-[10px] font-bold text-green-700 uppercase tracking-wider">Pembayaran Aman & Terenkripsi</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* BOTTOM HELP SECTION */}
+              <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-3xl p-6 text-white relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#295BFF]/10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-500"></div>
+                <div className="relative z-10 space-y-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center">
+                      <Headset className="w-6 h-6 text-[#295BFF]" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold">Butuh bantuan?</h3>
+                      <p className="text-xs text-slate-400">Tim CS kami siap membantu.</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost"
+                    className="w-full bg-white hover:bg-slate-50 text-[#0F172A] rounded-2xl font-bold h-12 shadow-sm transition-all hover:shadow-md"
+                    onClick={() => window.open('https://wa.me/6281234567890', '_blank')}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4 text-green-500" />
+                    Hubungi WhatsApp
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="lg:col-span-1">
-            {/* Sidebar content removed as requested or left empty */}
-          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
