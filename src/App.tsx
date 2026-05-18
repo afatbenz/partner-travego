@@ -36,6 +36,8 @@ import { ArmadaCheckout } from '@/pages/LandingPage/Orders/ArmadaCheckout';
 import { ItineraryRequest } from '@/pages/LandingPage/Orders/ItineraryRequest';
 import { Payment } from '@/pages/LandingPage/Orders/Payment';
 import { PurchaseArmada } from '@/pages/LandingPage/Orders/PurchaseArmada';
+import { OrderSuccess } from '@/pages/LandingPage/Orders/OrderSuccess';
+import { OrderDetailPage } from '@/pages/LandingPage/Orders/OrderDetailPage';
 import { MyProfile } from '@/pages/LandingPage/Profile/MyProfile';
 import { Welcome } from '@/pages/LandingPage/Utilities/Welcome';
 import FindOrder from '@/pages/LandingPage/Orders/FindOrder';
@@ -166,6 +168,16 @@ function App() {
           <Route path="/purchase/armada/:id" element={
             <PublicLayout>
               <PurchaseArmada />
+            </PublicLayout>
+          } />
+          <Route path="/order/success/:type/:id" element={
+            <PublicLayout>
+              <OrderSuccess />
+            </PublicLayout>
+          } />
+          <Route path="/order/detail/:type/:id" element={
+            <PublicLayout>
+              <OrderDetailPage />
             </PublicLayout>
           } />
           <Route path="/myprofile" element={
