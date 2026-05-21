@@ -23,9 +23,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { http } from '@/lib/http';
+import { http, API_BASE_URL } from '@/lib/http';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import Swal from '@/lib/swal';
 
 interface OrderDetailData {
   order_id: string;
@@ -117,32 +118,65 @@ export const OrderDetailPage: React.FC = () => {
     if (!orderData?.order_id || isPrinting) return;
     
     setIsPrinting(true);
-    try {
-      const response = await http.post('/api/services/print-management/fleet/order', 
-        { order_id: orderData.order_id },
-        { responseType: 'blob' }
-      );
-      
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      
-      // Delay 2 seconds before opening in new tab
-      setTimeout(() => {
-        window.open(url, '_blank');
-        setIsPrinting(false);
-        
-        // Revoke URL after some time to free up memory
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
-      }, 2000);
+    const resolvedId = orderData.order_id;
+    const url = `${API_BASE_URL}/api/services/print-management/fleet/order`;
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    const toFileUrl = (path: string) => {
+      if (path.startsWith('http')) return path;
+      const base = API_BASE_URL.replace(/\/$/, '');
+      return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
 
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/pdf, application/octet-stream, application/json',
+          'Content-Type': 'application/json',
+          'api-key': import.meta.env.VITE_API_KEY || '',
+        },
+        body: JSON.stringify({ order_id: resolvedId }),
+      });
+
+      const contentType = (res.headers.get('content-type') ?? '').toLowerCase();
+      if (!res.ok) throw new Error('PRINT_FAILED');
+
+      if (contentType.includes('application/json')) {
+        const json = (await res.json().catch(() => null)) as unknown;
+        const record = (v: unknown): Record<string, unknown> =>
+          v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
+        const root = record(json);
+        const dataNode = record(root.data);
+        const urlCandidate =
+          String(dataNode.url ?? dataNode.file_url ?? dataNode.fileUrl ?? dataNode.path ?? dataNode.file ?? root.url ?? root.path ?? '').trim();
+        
+        if (urlCandidate) {
+          const finalUrl = toFileUrl(urlCandidate);
+          // Wait 2 seconds after getting response
+          await wait(2000);
+          window.open(finalUrl, '_blank', 'noopener,noreferrer');
+          setIsPrinting(false);
+          return;
+        }
+        
+        await Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Surat pesanan berhasil digenerate.' });
+        setIsPrinting(false);
+        return;
+      }
+
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Wait 2 seconds after getting response
+      await wait(2000);
+      window.open(blobUrl, '_blank', 'noopener,noreferrer');
+      
+      setIsPrinting(false);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
     } catch (error) {
       console.error('Failed to print order:', error);
       setIsPrinting(false);
-      toast({
-        title: "Error",
-        description: "Terjadi kesalahan saat mencoba mencetak order.",
-        variant: "destructive"
-      });
+      await Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat mengunduh PDF.' });
     }
   };
 
@@ -254,7 +288,7 @@ export const OrderDetailPage: React.FC = () => {
                   {isPrinting ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generate File PDF....
+                      Generate dokumen pesanan ....
                     </>
                   ) : (
                     <>
@@ -573,26 +607,6 @@ export const OrderDetailPage: React.FC = () => {
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
-
-              {/* DOWNLOAD CARD */}
-              <Card className="bg-[#295BFF] border-0 rounded-[32px] p-1 shadow-lg shadow-blue-500/20 overflow-hidden group">
-                <Button 
-                  variant="ghost" 
-                  className="w-full h-auto p-6 bg-[#295BFF] hover:bg-[#295BFF] text-white flex items-center justify-between transition-all"
-                  onClick={() => window.print()}
-                >
-                  <div className="flex items-center gap-4 text-left">
-                    <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md transition-transform group-hover:rotate-12">
-                      <FileText className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-base leading-tight">E-Invoice PDF</p>
-                      <p className="text-xs text-white/70 font-normal">Download rincian pesanan Anda</p>
-                    </div>
-                  </div>
-                  <Download className="w-5 h-5 text-white/50 group-hover:text-white transition-all" />
-                </Button>
               </Card>
             </div>
           </div>
