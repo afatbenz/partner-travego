@@ -16,6 +16,24 @@ export default defineConfig({
     sourcemap: false,
   },
   server: {
+    port: 5174,
     sourcemapIgnoreList: (sourcePath) => sourcePath.includes('node_modules'),
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+  preview: {
+    port: 5174,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
 });
