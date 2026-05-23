@@ -118,12 +118,24 @@ const PaymentStatus: React.FC<{ status: string; orderId: string }> = ({ status, 
         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">ID Pesanan</p>
         <p className="text-lg font-bold text-slate-900">#{orderId}</p>
       </div>
-      <Button 
-        onClick={() => navigate(`/order/detail/armada/${id}`)} 
-        className="bg-[#295BFF] hover:bg-blue-600 text-white font-bold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-blue-500/20"
-      >
-        Lihat Pesanan Saya
-      </Button>
+      <div className="flex flex-col gap-3 w-full max-w-sm">
+        <Button 
+          onClick={() => navigate(`/order/detail/armada/${id}`)} 
+          className="bg-[#295BFF] hover:bg-blue-600 text-white font-bold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-blue-500/20"
+        >
+          <FileText className="w-5 h-5 mr-2" />
+          Lihat Pesanan Saya
+        </Button>
+        {status === PAYMENT_STATUS.SUCCESS && (
+          <Button 
+            onClick={() => navigate(`/order-review?token=${id}`)} 
+            className="bg-white border-green-600 hover:bg-green-600 text-green-600 font-bold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-green-500/20"
+          >
+            <MessageCircle className="w-5 h-5 mr-2" />
+            Beri Ulasan
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
@@ -610,12 +622,20 @@ export const Payment: React.FC = () => {
                       Pembayaran untuk order <span className="text-[#295BFF] font-bold">#{orderData.id}</span> telah lunas. Terimakasih
                     </p>
                   </div>
-                  <div className="pt-4">
+                  <div className="pt-4 flex flex-col gap-3 max-w-sm mx-auto">
                     <Button 
                       onClick={() => navigate(`/order/detail/armada/${id}`)} 
-                      className="bg-[#295BFF] hover:bg-blue-600 text-white font-bold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-blue-500/20"
+                      className="bg-[#295BFF] hover:bg-blue-600 text-white font-bold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-blue-500/20 w-full"
                     >
+                      <FileText className="w-5 h-5 mr-2" />
                       Lihat Pesanan Saya
+                    </Button>
+                    <Button 
+                      onClick={() => navigate(`/order-review?token=${id}`)} 
+                      className="bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-green-500/20 w-full"
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      Beri Ulasan
                     </Button>
                   </div>
                 </section>
@@ -631,8 +651,8 @@ export const Payment: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Opsi Bayar Penuh & DP hanya tampil jika status bukan 4 */}
-                      {orderData.payment_status !== 4 && (
+                      {/* Opsi Bayar Penuh & DP hanya tampil jika status = 1 dan payment_status = 2 dan tidak ada sisa pembayaran yang sedang dicicil (asumsi logic) */}
+                      {orderData.status === 1 && orderData.payment_status === 2 && !orderData.remaining_amount && (
                         <>
                           <div 
                             onClick={() => setPaymentType('full')}
@@ -685,56 +705,57 @@ export const Payment: React.FC = () => {
                       )}
 
                       {/* Opsi Pelunasan & Cicilan */}
-                      <div 
-                        onClick={() => setPaymentType('repayment')}
-                        className={cn(
-                          "relative p-6 rounded-2xl border transition-all duration-300 group hover:-translate-y-1 cursor-pointer",
-                          paymentType === 'repayment' 
-                            ? "border-[#295BFF] bg-blue-50/50 shadow-[0_0_20px_rgba(41,91,255,0.15)] ring-1 ring-[#295BFF]" 
-                            : cn(
-                                "border-[#E5E7EB] bg-white",
-                                orderData.payment_status === 4 ? "hover:border-[#295BFF]/50 hover:shadow-md" : "opacity-50 cursor-not-allowed"
-                              )
-                        )}
-                      >
-                        {paymentType === 'repayment' && (
-                          <div className="absolute top-4 right-4 w-6 h-6 bg-[#295BFF] rounded-full flex items-center justify-center animate-in zoom-in duration-300 shadow-lg shadow-blue-500/30">
-                            <Check className="w-3.5 h-3.5 text-white" />
+                      {orderData.status === 1 && orderData.payment_status === 4 && orderData.remaining_amount !== undefined && (
+                        <>
+                          <div 
+                            onClick={() => setPaymentType('repayment')}
+                            className={cn(
+                              "relative p-6 rounded-2xl border transition-all duration-300 group hover:-translate-y-1 cursor-pointer",
+                              paymentType === 'repayment' 
+                                ? "border-[#295BFF] bg-blue-50/50 shadow-[0_0_20px_rgba(41,91,255,0.15)] ring-1 ring-[#295BFF]" 
+                                : "border-[#E5E7EB] bg-white hover:border-[#295BFF]/50 hover:shadow-md"
+                            )}
+                          >
+                            {paymentType === 'repayment' && (
+                              <div className="absolute top-4 right-4 w-6 h-6 bg-[#295BFF] rounded-full flex items-center justify-center animate-in zoom-in duration-300 shadow-lg shadow-blue-500/30">
+                                <Check className="w-3.5 h-3.5 text-white" />
+                              </div>
+                            )}
+                            <div className={cn(
+                              "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300",
+                              paymentType === 'repayment' ? "bg-[#295BFF] text-white shadow-lg shadow-blue-500/20" : "bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-[#295BFF]"
+                            )}>
+                              <ShieldCheck className="w-6 h-6" />
+                            </div>
+                            <h3 className="font-bold text-[#111827] mb-1">Pelunasan</h3>
+                            <p className="text-sm text-[#6B7280] font-medium">Lunasi sisa pembayaran</p>
                           </div>
-                        )}
-                        <div className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300",
-                          paymentType === 'repayment' ? "bg-[#295BFF] text-white shadow-lg shadow-blue-500/20" : "bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-[#295BFF]"
-                        )}>
-                          <ShieldCheck className="w-6 h-6" />
-                        </div>
-                        <h3 className="font-bold text-[#111827] mb-1">Pelunasan</h3>
-                        <p className="text-sm text-[#6B7280] font-medium">Lunasi sisa pembayaran</p>
-                      </div>
 
-                      <div 
-                        onClick={() => setPaymentType('installment')}
-                        className={cn(
-                          "relative p-6 rounded-2xl border transition-all duration-300 group hover:-translate-y-1 cursor-pointer",
-                          paymentType === 'installment' 
-                            ? "border-[#295BFF] bg-blue-50/50 shadow-[0_0_20px_rgba(41,91,255,0.15)] ring-1 ring-[#295BFF]" 
-                            : "border-[#E5E7EB] bg-white hover:border-[#295BFF]/50 hover:shadow-md"
-                        )}
-                      >
-                        {paymentType === 'installment' && (
-                          <div className="absolute top-4 right-4 w-6 h-6 bg-[#295BFF] rounded-full flex items-center justify-center animate-in zoom-in duration-300 shadow-lg shadow-blue-500/30">
-                            <Check className="w-3.5 h-3.5 text-white" />
+                          <div 
+                            onClick={() => setPaymentType('installment')}
+                            className={cn(
+                              "relative p-6 rounded-2xl border transition-all duration-300 group hover:-translate-y-1 cursor-pointer",
+                              paymentType === 'installment' 
+                                ? "border-[#295BFF] bg-blue-50/50 shadow-[0_0_20px_rgba(41,91,255,0.15)] ring-1 ring-[#295BFF]" 
+                                : "border-[#E5E7EB] bg-white hover:border-[#295BFF]/50 hover:shadow-md"
+                            )}
+                          >
+                            {paymentType === 'installment' && (
+                              <div className="absolute top-4 right-4 w-6 h-6 bg-[#295BFF] rounded-full flex items-center justify-center animate-in zoom-in duration-300 shadow-lg shadow-blue-500/30">
+                                <Check className="w-3.5 h-3.5 text-white" />
+                              </div>
+                            )}
+                            <div className={cn(
+                              "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300",
+                              paymentType === 'installment' ? "bg-[#295BFF] text-white shadow-lg shadow-blue-500/20" : "bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-[#295BFF]"
+                            )}>
+                              <Calendar className="w-6 h-6" />
+                            </div>
+                            <h3 className="font-bold text-[#111827] mb-1">Bayar Cicilan</h3>
+                            <p className="text-sm text-[#6B7280] font-medium">Bayar dengan nominal tertentu</p>
                           </div>
-                        )}
-                        <div className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300",
-                          paymentType === 'installment' ? "bg-[#295BFF] text-white shadow-lg shadow-blue-500/20" : "bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-[#295BFF]"
-                        )}>
-                          <Calendar className="w-6 h-6" />
-                        </div>
-                        <h3 className="font-bold text-[#111827] mb-1">Bayar Cicilan</h3>
-                        <p className="text-sm text-[#6B7280] font-medium">Bayar dengan nominal tertentu</p>
-                      </div>
+                        </>
+                      )}
                     </div>
 
                     {paymentType === 'dp' && (

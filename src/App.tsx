@@ -38,6 +38,7 @@ import { Payment } from '@/pages/LandingPage/Orders/Payment';
 import { PurchaseArmada } from '@/pages/LandingPage/Orders/PurchaseArmada';
 import { OrderSuccess } from '@/pages/LandingPage/Orders/OrderSuccess';
 import { OrderDetailPage } from '@/pages/LandingPage/Orders/OrderDetailPage';
+import { OrderReviewPage } from '@/pages/LandingPage/Orders/OrderReviewPage';
 import { MyProfile } from '@/pages/LandingPage/Profile/MyProfile';
 import { Welcome } from '@/pages/LandingPage/Utilities/Welcome';
 import FindOrder from '@/pages/LandingPage/Orders/FindOrder';
@@ -178,6 +179,11 @@ function App() {
           <Route path="/order/detail/:type/:id" element={
             <PublicLayout>
               <OrderDetailPage />
+            </PublicLayout>
+          } />
+          <Route path="/order-review" element={
+            <PublicLayout>
+              <OrderReviewPage />
             </PublicLayout>
           } />
           <Route path="/myprofile" element={

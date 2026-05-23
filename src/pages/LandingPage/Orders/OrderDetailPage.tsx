@@ -587,13 +587,23 @@ export const OrderDetailPage: React.FC = () => {
 
                   {/* CTA BUTTONS */}
                   <div className="space-y-4">
-                    {orderData.status === 1 && [2, 3, 4].includes(orderData.payment_status) && (
+                    {orderData.status === 1 && [2, 4].includes(orderData.payment_status) && (
                       <Button 
                         onClick={() => navigate(`/payment/${type}/${orderData.token || id}`)}
                         className="w-full bg-gradient-to-br from-[#295BFF] to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-7 rounded-2xl shadow-xl shadow-blue-500/25 transition-all hover:-translate-y-1 active:scale-[0.98] group"
                       >
                         Lanjutkan Pembayaran
                         <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                      </Button>
+                    )}
+
+                    {orderData.status === 1 && orderData.payment_status === 1 && (
+                      <Button 
+                        onClick={() => navigate(`/order-review?token=${orderData.token || id}`)}
+                        className="w-full bg-gradient-to-br from-[#295BFF] to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-7 rounded-2xl shadow-xl shadow-blue-500/25 transition-all hover:-translate-y-1 active:scale-[0.98] group"
+                      >
+                        Beri Ulasan
+                        <MessageCircle className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                       </Button>
                     )}
                     
