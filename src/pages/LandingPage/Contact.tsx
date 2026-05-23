@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MapPin,
   Phone,
@@ -23,11 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-
-const WHATSAPP_URL = 'https://wa.me/6281234567890';
-const CALL_CENTER = 'tel:1500888';
-const GOOGLE_MAPS_URL =
-  'https://maps.app.goo.gl/anWRTSRBCZhdr8qX9';
+import { http } from '@/lib/http';
 
 const inputClass =
   'h-14 rounded-2xl border border-[#E5E7EB] bg-slate-50 focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-[#295BFF] transition-all duration-300';
@@ -100,25 +96,48 @@ export const Contact: React.FC = () => {
     message: '',
   });
 
+  const [contactData, setContactData] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await http.get('/api/content');
+        if (res.data?.data?.contact) {
+          setContactData(res.data.data.contact);
+        }
+      } catch (err) {
+        console.error('Failed to fetch contact content', err);
+      }
+    };
+    fetchContent();
+  }, []);
+
   const contactInfo = [
     {
       icon: MapPin,
       title: 'Alamat',
-      details: ['Jl. Sudirman Kav. 45', 'Jakarta Pusat 10210', 'Indonesia'],
+      details: [
+        contactData?.company_address || 'Jl. Sudirman Kav. 45',
+        [contactData?.company_city, contactData?.company_province].filter(Boolean).join(', ') || 'Jakarta Pusat',
+        `${contactData?.company_postal_code || '10210'} Indonesia`,
+      ],
     },
     {
       icon: Phone,
       title: 'Telepon',
-      details: ['+62 21 1234 5678', '+62 21 8765 4321', 'WhatsApp: +62 812 3456 7890'],
+      details:
+        contactData?.company_phone === contactData?.company_whatsapp
+          ? [contactData?.company_phone || '+62 21 1234 5678']
+          : [
+              contactData?.company_phone || '+62 21 1234 5678',
+              `WhatsApp: ${contactData?.company_whatsapp || '+62 812 3456 7890'}`,
+            ],
     },
     {
       icon: Mail,
       title: 'Email',
-      details: [
-        'info@calistaprimawisata.com',
-        'booking@calistaprimawisata.com',
-        'support@calistaprimawisata.com',
-      ],
+      details: [contactData?.company_email || 'info@calistaprimawisata.com'],
     },
     {
       icon: Clock,
@@ -140,17 +159,68 @@ export const Contact: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    
+    if (val) {
+      if (val.startsWith('0')) {
+        val = '62' + val.substring(1);
+      } else if (!val.startsWith('62') && val !== '6') {
+        val = '62' + val;
+      }
+    }
+    
+    setFormData((prev) => ({ ...prev, phone: val }));
+  };
+
   const handleServiceChange = (value: string) => {
     setFormData((prev) => ({ ...prev, service: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    try {
+      setIsSubmitting(true);
+      await http.post('/api/messages/submit', {
+        customer_name: formData.name,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        message_type: formData.service,
+        message: formData.message,
+      });
+      setFormData({ name: '', email: '', phone: '', service: '', message: '' });
+    } catch (err) {
+      console.error('Failed to submit form', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setFormData({ name: '', email: '', phone: '', service: '', message: '' });
+  };
+
+  const getWhatsAppUrl = () => {
+    const wa = contactData?.company_whatsapp || '6281234567890';
+    return `https://wa.me/${wa.replace(/\D/g, '')}`;
+  };
+
+  const getCallCenterUrl = () => {
+    return `tel:${contactData?.company_phone || '1500888'}`;
+  };
+
+  const getMapsUrl = () => {
+    if (contactData?.company_lat && contactData?.company_lng) {
+      return `https://maps.google.com/maps?q=${contactData.company_lat},${contactData.company_lng}&z=15&output=embed`;
+    }
+    return 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.3593106055664!2d106.60919578311777!3d-6.216256577712491!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69fff576a8ccc7%3A0xe8e0076ce8948f2c!2sSEWA%20HIACE%20%26%20ELF%20TANGERANG%20(Calista%20Prima%20Wisata)!5e0!3m2!1sid!2sid!4v1779378425135!5m2!1sid!2sid';
+  };
+
+  const getMapsExternalUrl = () => {
+    if (contactData?.company_lat && contactData?.company_lng) {
+      return `https://maps.google.com/?q=${contactData.company_lat},${contactData.company_lng}`;
+    }
+    return 'https://maps.app.goo.gl/anWRTSRBCZhdr8qX9';
   };
 
   return (
@@ -261,7 +331,7 @@ export const Contact: React.FC = () => {
               </h3>
               <Button
                 type="button"
-                onClick={() => window.open(WHATSAPP_URL, '_blank')}
+                onClick={() => window.open(getWhatsAppUrl(), '_blank')}
                 className="w-full h-14 justify-start rounded-2xl bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg shadow-green-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-green-500/30"
               >
                 <MessageCircle className="mr-3 h-5 w-5" />
@@ -270,11 +340,11 @@ export const Contact: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => (window.location.href = CALL_CENTER)}
+                onClick={() => (window.location.href = getCallCenterUrl())}
                 className="w-full h-14 justify-start rounded-2xl border-[#E5E7EB] font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF] hover:shadow-md hover:shadow-blue-500/10"
               >
                 <Phone className="mr-3 h-5 w-5" />
-                Call Center: 1500-888
+                Call Center: {contactData?.company_phone || '1500-888'}
               </Button>
             </div>
           </aside>
@@ -339,9 +409,9 @@ export const Contact: React.FC = () => {
                       name="phone"
                       type="tel"
                       required
-                      placeholder="+62 812 3456 7890"
+                      placeholder="6281234567890"
                       value={formData.phone}
-                      onChange={handleInputChange}
+                      onChange={handlePhoneChange}
                       className={inputClass}
                     />
                   </div>
@@ -354,11 +424,11 @@ export const Contact: React.FC = () => {
                         <SelectValue placeholder="Pilih layanan" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="rental">Rental Mobil</SelectItem>
-                        <SelectItem value="travel">Travel Antar Kota</SelectItem>
-                        <SelectItem value="paket">Paket Wisata</SelectItem>
-                        <SelectItem value="airport">Airport Transfer</SelectItem>
-                        <SelectItem value="other">Lainnya</SelectItem>
+                        <SelectItem value="MSG001">Rental Mobil</SelectItem>
+                        <SelectItem value="MSG002">Travel Antar Kota</SelectItem>
+                        <SelectItem value="MSG003">Paket Wisata</SelectItem>
+                        <SelectItem value="MSG004">Airport Transfer</SelectItem>
+                        <SelectItem value="MSG005">Lainnya</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -412,7 +482,7 @@ export const Contact: React.FC = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => window.open(GOOGLE_MAPS_URL, '_blank')}
+                  onClick={() => window.open(getMapsExternalUrl(), '_blank')}
                   className="h-11 rounded-2xl border-[#E5E7EB] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:border-[#295BFF] hover:text-[#295BFF]"
                 >
                   <ExternalLink className="mr-2 h-4 w-4" />
@@ -421,16 +491,26 @@ export const Contact: React.FC = () => {
               </div>
 
               <div className="relative aspect-[16/9] md:aspect-[21/9] bg-gradient-to-br from-slate-100 to-blue-50">
-              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.3593106055664!2d106.60919578311777!3d-6.216256577712491!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69fff576a8ccc7%3A0xe8e0076ce8948f2c!2sSEWA%20HIACE%20%26%20ELF%20TANGERANG%20(Calista%20Prima%20Wisata)!5e0!3m2!1sid!2sid!4v1779378425135!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <iframe
+                  title="Google Maps - Lokasi Kantor"
+                  src={getMapsUrl()}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="w-full h-full"
+                />
                 <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-white/95 backdrop-blur-md rounded-2xl border border-[#E5E7EB] p-4 shadow-xl transition-all duration-300 hover:-translate-y-1">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 bg-[#295BFF] rounded-xl flex items-center justify-center flex-shrink-0">
                       <MapPin className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#0F172A] text-sm">Kantor Pusat</p>
+                      <p className="font-semibold text-[#0F172A] text-sm">{contactData?.company_address_label || 'Kantor Pusat'}</p>
                       <p className="text-xs text-[#6B7280] mt-0.5">
-                        Jl. Sudirman Kav. 45, Jakarta Pusat 10210
+                        {contactData?.company_address || 'Jl. Sudirman Kav. 45, Jakarta Pusat 10210'}
                       </p>
                     </div>
                   </div>
@@ -459,7 +539,7 @@ export const Contact: React.FC = () => {
             </div>
             <Button
               type="button"
-              onClick={() => window.open(WHATSAPP_URL, '_blank')}
+              onClick={() => window.open(getWhatsAppUrl(), '_blank')}
               className="w-full md:w-auto h-14 px-10 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-semibold shadow-lg shadow-green-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-green-500/40 group"
             >
               <MessageCircle className="mr-2 h-5 w-5" />
