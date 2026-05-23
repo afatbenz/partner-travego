@@ -25,13 +25,13 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 ${className}`}>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tulis Ulasan Anda</h3>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 ${className}`}>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Tulis Ulasan Anda</h3>
       
       <form onSubmit={handleSubmit}>
         {/* Rating Selection */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Rating
           </label>
           <div className="flex space-x-1">
@@ -40,13 +40,13 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
                 key={rating}
                 type="button"
                 onClick={() => setSelectedRating(rating)}
-                className="focus:outline-none bg-transparent p-1 rounded"
+                className="focus:outline-none bg-transparent p-0.5 rounded"
               >
                 <Star
-                  className={`h-6 w-6 transition-colors ${
+                  className={`h-6 w-6 transition-colors bg-transparent ${
                     rating <= selectedRating
-                      ? 'text-yellow-400 fill-current'
-                      : 'text-gray-300 dark:text-gray-600 hover:text-yellow-300 dark:hover:text-yellow-500'
+                      ? 'text-orange-500 fill-current'
+                      : 'text-gray-300 dark:text-gray-600 hover:text-orange-500 dark:hover:text-orange-500'
                   }`}
                 />
               </button>
@@ -55,15 +55,15 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
         </div>
         
         {/* Review Text */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Ulasan Anda
           </label>
           <Textarea
             placeholder="Bagikan pengalaman Anda menggunakan layanan ini..."
             value={reviewText}
             onChange={(e) => setReviewText(e.target.value)}
-            className="min-h-[100px]"
+            className="min-h-[80px]"
           />
         </div>
         
