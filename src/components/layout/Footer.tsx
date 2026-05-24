@@ -1,10 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
+import { http } from '@/lib/http';
+import { formatPhoneNumber } from '@/lib/utils';
 
 export const Footer: React.FC = () => {
   const { getContentIn, getListIn } = useGeneralContent();
+  const [contactData, setContactData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await http.get('/api/content');
+        if (res.data?.data?.contact) {
+          setContactData(res.data.data.contact);
+        }
+      } catch (err) {
+        console.error('Failed to fetch contact content', err);
+      }
+    };
+    fetchContent();
+  }, []);
+
   const brandNameRaw = getContentIn('general-config', 'brand-name');
   const brandName = brandNameRaw && brandNameRaw.trim() !== '' ? brandNameRaw : 'TraveGO';
   const brandDescRaw = getContentIn('general-config', 'brand-description');
@@ -71,7 +89,7 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-6">Perusahaan</h3>
             <ul className="space-y-4">
-              {['Tentang Kami', 'Karir', 'Blog', 'FAQ'].map((item) => (
+              {['Tentang Kami', 'Lacak Pesanan'].map((item) => (
                 <li key={item} className="flex items-center text-gray-400 hover:text-white transition-colors cursor-pointer text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3" />
                   {item}
@@ -86,15 +104,17 @@ export const Footer: React.FC = () => {
             <ul className="space-y-4">
               <li className="flex items-center text-gray-400 text-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 shrink-0" />
-                (021) 1234 5678
+                {contactData?.company_phone === contactData?.company_whatsapp
+                  ? formatPhoneNumber(contactData?.company_whatsapp) 
+                  : formatPhoneNumber(contactData?.company_phone)}
               </li>
               <li className="flex items-center text-gray-400 text-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 shrink-0" />
-                info@jelajahi.id
+                {contactData?.company_email_cs || contactData?.company_email || 'info@jelajahi.id'}
               </li>
               <li className="flex items-start text-gray-400 text-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 mt-1.5 shrink-0" />
-                Jl. Merdeka No. 10, Jakarta Pusat
+                {[contactData?.company_address, contactData?.company_city, contactData?.company_province].filter(Boolean).join(', ') || 'Jl. Merdeka No. 10, Jakarta Pusat'}
               </li>
             </ul>
           </div>

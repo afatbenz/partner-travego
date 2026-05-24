@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, formatPhoneNumber } from '@/lib/utils';
 import { http } from '@/lib/http';
 
 const inputClass =
@@ -128,25 +128,16 @@ export const Contact: React.FC = () => {
       title: 'Telepon',
       details:
         contactData?.company_phone === contactData?.company_whatsapp
-          ? [contactData?.company_phone || '+62 21 1234 5678']
+          ? [formatPhoneNumber(contactData?.company_phone)]
           : [
-              contactData?.company_phone || '+62 21 1234 5678',
-              `WhatsApp: ${contactData?.company_whatsapp || '+62 812 3456 7890'}`,
+              formatPhoneNumber(contactData?.company_phone),
+              `${formatPhoneNumber(contactData?.company_whatsapp)} (whatsapp)`,
             ],
     },
     {
       icon: Mail,
       title: 'Email',
       details: [contactData?.company_email || 'info@calistaprimawisata.com'],
-    },
-    {
-      icon: Clock,
-      title: 'Jam Operasional',
-      details: [
-        'Senin - Jumat: 08:00 - 18:00',
-        'Sabtu: 08:00 - 16:00',
-        'Minggu: 09:00 - 15:00',
-      ],
     },
   ];
 
@@ -344,7 +335,7 @@ export const Contact: React.FC = () => {
                 className="w-full h-14 justify-start rounded-2xl border-[#E5E7EB] font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF] hover:shadow-md hover:shadow-blue-500/10"
               >
                 <Phone className="mr-3 h-5 w-5" />
-                Call Center: {contactData?.company_phone || '1500-888'}
+                Call Center: {formatPhoneNumber(contactData?.company_phone) || '1500-888'}
               </Button>
             </div>
           </aside>

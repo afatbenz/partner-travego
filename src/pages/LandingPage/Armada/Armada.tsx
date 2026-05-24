@@ -27,6 +27,8 @@ interface Fleet {
   price: number;
   facilities?: { facility: string }[];
   cities?: string[];
+  rating?: number;
+  reviews?: { star: number; review: string }[];
 }
 
 interface FleetResponse {
@@ -65,8 +67,8 @@ const Armada = () => {
               price: `Rp ${fleet.price.toLocaleString('id-ID')}/${fleet.uom}`,
               originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
               image: fleet.thumbnail,
-              rating: 5.0, // Default value as API doesn't provide rating
-              reviews: 0, // Default value
+              rating: fleet.rating || 0.0, // Default value as API doesn't provide rating
+              reviews: fleet.reviews ? fleet.reviews.length : 0, // Default value
               features: fleet.facilities && fleet.facilities.length > 0 
                 ? fleet.facilities.map(f => f.facility) 
                 : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
