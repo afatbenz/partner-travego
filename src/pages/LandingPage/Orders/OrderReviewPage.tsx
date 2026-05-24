@@ -35,7 +35,7 @@ export const OrderReviewPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await http.post('/api/services/order/review/submit', {
+      const response = await http.post('/api/service/review/submit', {
         star: rating,
         review: review,
         token: token

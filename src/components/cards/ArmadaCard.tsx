@@ -120,7 +120,7 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
                   <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {priceAmount}
                   </span>
-                  <span className="text-sm font-bold text-gray-400">
+                  <span className="text-sm font-normal text-gray-400">
                     {priceUnit}
                   </span>
                 </div>
@@ -170,30 +170,30 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
           </div>
           <div className="flex items-center bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-xl shrink-0">
             <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
-            <span className="font-bold text-blue-900 dark:text-blue-100 text-xs">{armada.rating}</span>
+            <span className="font-normal text-blue-900 dark:text-blue-100 text-xs">{armada.rating} ({armada.reviews?.length || 0})</span>
           </div>
         </div>
         
         <div className="grid grid-cols-1 gap-3 mb-6">
           <div className="flex items-center text-gray-500 dark:text-gray-400 dark:bg-gray-800/50 rounded-2xl dark:border-gray-700/50">
             <Users className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
-            <span className="text-[11px] font-bold truncate">{armada.capacity}</span>
+            <span className="text-[11px] font-semibold truncate">{armada.capacity}</span>
           </div>
           <div className="flex items-center text-gray-500 dark:text-gray-400 dark:bg-gray-800/50 rounded-2xl dark:border-gray-700/50">
             <MapPin className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
-            <span className="text-[11px] font-bold truncate">{armada.location}</span>
+            <span className="text-[11px] font-semibold truncate">{armada.location}</span>
           </div>
         </div>
 
         {/* Facilities - Minimalist Icons or text */}
         <div className="flex flex-wrap gap-1.5 mb-6">
           {features.slice(0, 3).map((feature, index) => (
-            <span key={index} className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tight bg-gray-50 dark:bg-gray-800/30 px-2 py-1 rounded-md">
+            <span key={index} className="text-[9px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight bg-gray-50 dark:bg-gray-800/30 px-2 py-1 rounded-md">
               {feature}
             </span>
           ))}
           {features.length > 3 && (
-            <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+            <span className="text-[9px] font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
               +{features.length - 3}
             </span>
           )}
@@ -206,7 +206,7 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
               <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {priceAmount}
               </span>
-              <span className="text-[10px] font-bold text-gray-400">
+              <span className="text-[10px] font-normal text-gray-500">
                 {priceUnit}
               </span>
             </div>

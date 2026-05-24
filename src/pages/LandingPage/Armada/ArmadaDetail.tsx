@@ -45,6 +45,8 @@ interface FleetMeta {
   fuel_type?: string;
   fleet_type_label?: string;
   fuel_type_label?: string;
+  rating?: number;
+  total_ulasan?: number;
 }
 
 interface FleetPickup {
@@ -76,6 +78,8 @@ interface FleetImage {
 }
 
 interface FleetDetailData {
+  rating: number;
+  reviews: any;
   meta: FleetMeta;
   facilities: string[];
   pickup: FleetPickup[];
@@ -309,8 +313,8 @@ export const ArmadaDetail: React.FC = () => {
   const priceUom = lowestPriceItem ? lowestPriceItem.uom : 'hari';
   const formattedPrice = `Rp ${lowestPrice.toLocaleString('id-ID')}`;
 
-  const rating = 5.0;
-  const reviews = 0;
+  const rating = fleet.meta.rating || 0.0;
+  const reviews = fleet.meta.total_ulasan || 0;
 
   const fleetTypeLabel = fleet.meta.fleet_type_label ?? fleet.meta.fleet_type;
   const fuelLabel = fleet.meta.fuel_type_label ?? fleet.meta.fuel_type;
@@ -365,10 +369,6 @@ export const ArmadaDetail: React.FC = () => {
             </Button>
 
             <div className="max-w-3xl">
-              <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-4 py-1 text-sm mb-6">
-                Armada Premium
-              </div>
-
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 {fleet.meta.fleet_name}
               </h1>
@@ -382,11 +382,6 @@ export const ArmadaDetail: React.FC = () => {
                   <Users className="h-4 w-4 mr-2" />
                   <span>{fleet.meta.capacities} Penumpang</span>
                 </div>
-                {fleet.meta.production_year && (
-                  <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10">
-                    {fleet.meta.production_year}
-                  </div>
-                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-6 text-white/90">
@@ -580,6 +575,47 @@ export const ArmadaDetail: React.FC = () => {
                         </div>
                       </div>
                   </div>
+
+                  <div className='mt-8 rounded-lg border border-gray-100 p-6'>
+                    <h3 className="text-lg font-bold text-gray-900">Ulasan</h3>
+                    <p className="text-sm text-gray-500 mb-5">Lihat ulasan dari pelanggan ({fleet.meta.rating}/{fleet.reviews.length} ulasan)</p>
+                    {fleet.reviews && fleet.reviews.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                        {fleet.reviews.map((reviewItem: any, index: number) => {
+                          const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                          const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
+                          
+                          return (
+                            <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h4 className="font-bold text-gray-900">{reviewItem.customer_name}</h4>
+                                  <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
+                                </div>
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= reviewItem.star
+                                          ? 'text-orange-500 fill-orange-500'
+                                          : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-gray-700 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
+                        <p className="text-gray-500">Belum ada ulasan untuk armada ini.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                   <div className='lg:col-span-1'>
@@ -610,17 +646,6 @@ export const ArmadaDetail: React.FC = () => {
             <div className="lg:col-span-1">
             
             </div>
-          </div>
-        </div>
-      </section>
-
-   
-
-      <section className="py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Ulasan</h2>
-          <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
-            <p className="text-gray-500">Belum ada ulasan untuk armada ini.</p>
           </div>
         </div>
       </section>

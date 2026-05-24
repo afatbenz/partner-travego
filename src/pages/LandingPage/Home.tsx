@@ -39,6 +39,9 @@ export interface FleetApiResponse {
   duration?: number;
   facilities?: { facility: string }[];
   cities?: string[];
+  rating?: number;
+  reviews?: number;
+  
 }
 
 export interface FleetResponse {
@@ -77,12 +80,12 @@ export const Home: React.FC = () => {
               price: `Rp ${fleet.price.toLocaleString('id-ID')}/${displayUom}`,
               originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
               image: fleet.thumbnail,
-              rating: 5.0, // Default value as API doesn't provide rating
-              reviews: 0, // Default value
+              rating: fleet.rating || 0, // Default value as API doesn't provide rating
+              reviews: fleet.reviews || 0, // Default value
               features: fleet.facilities && fleet.facilities.length > 0 
                 ? fleet.facilities.map(f => f.facility) 
                 : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
-              location: 'Jakarta', // Default fallback
+              location: `${fleet.cities?.[0]} ${fleet.cities?.length > 1 ? `(+ ${fleet.cities?.length - 1} kota lainnya)` : ''}`,
               pickupAreas: fleet.cities || [],
               transmission: 'Manual', // Default value
               fuel: 'Bensin', // Default value
