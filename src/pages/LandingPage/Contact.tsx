@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { cn, formatPhoneNumber } from '@/lib/utils';
 import { http } from '@/lib/http';
+import { useToast } from '@/hooks/use-toast';
 
 const inputClass =
   'h-14 rounded-2xl border border-[#E5E7EB] bg-slate-50 focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-[#295BFF] transition-all duration-300';
@@ -88,6 +89,7 @@ function SupportIllustration() {
 }
 
 export const Contact: React.FC = () => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -180,8 +182,18 @@ export const Contact: React.FC = () => {
         message: formData.message,
       });
       setFormData({ name: '', email: '', phone: '', service: '', message: '' });
+      toast({
+        title: 'Pesan Terkirim',
+        description: 'Terima kasih, tim kami akan segera menghubungi Anda.',
+        variant: 'default',
+      });
     } catch (err) {
       console.error('Failed to submit form', err);
+      toast({
+        title: 'Gagal Mengirim',
+        description: 'Terjadi kesalahan saat mengirim pesan. Silakan coba lagi nanti.',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -443,10 +455,11 @@ export const Contact: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button
                     type="submit"
-                    className="flex-1 h-14 rounded-2xl bg-gradient-to-r from-[#295BFF] to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/35"
+                    disabled={isSubmitting}
+                    className="flex-1 h-14 rounded-2xl bg-gradient-to-r from-[#295BFF] to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/35 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     <Send className="mr-2 h-5 w-5" />
-                    Kirim Pesan
+                    {isSubmitting ? 'Mengirim...' : 'Kirim Pesan'}
                   </Button>
                   <Button
                     type="button"
