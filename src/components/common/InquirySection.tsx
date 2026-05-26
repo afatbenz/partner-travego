@@ -2,23 +2,27 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Headphones, Zap, BadgeCheck, MessageCircle, Send } from 'lucide-react';
+import { Headphones, Zap, BadgeCheck, MessageCircle, Send, Loader2 } from 'lucide-react';
+import { http } from '@/lib/http';
 
 interface InquirySectionProps {
   title?: string;
   subtitle?: string;
+  messageType?: string;
 }
 
 export const InquirySection: React.FC<InquirySectionProps> = ({
   title = "Belum Menemukan\nyang Sesuai?",
-  subtitle = "Tenang, hubungi kami untuk mendapatkan penawaran armada terbaik sesuai kebutuhan perjalanan Anda."
+  subtitle = "Tenang, hubungi kami untuk mendapatkan penawaran armada terbaik sesuai kebutuhan perjalanan Anda.",
+  messageType = "MSG005"
 }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    requirement: ''
+    customer_name: '',
+    customer_email: '',
+    customer_phone: '',
+    message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -28,9 +32,22 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Inquiry form submitted:', formData);
+    try {
+      setIsSubmitting(true);
+      await http.post('/api/messages/submit', {
+        ...formData,
+        message_type: messageType
+      });
+      setFormData({ customer_name: '', customer_email: '', customer_phone: '', message: '' });
+      // Here you might want to show a success toast/alert
+    } catch (err) {
+      console.error('Failed to submit inquiry:', err);
+      // Here you might want to show an error toast/alert
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const features = [
@@ -107,10 +124,10 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
                   </label>
                   <Input
                     id="inquiryName"
-                    name="name"
+                    name="customer_name"
                     type="text"
                     placeholder="Masukkan nama lengkap"
-                    value={formData.name}
+                    value={formData.customer_name}
                     onChange={handleInputChange}
                     className="h-[52px] bg-white/10 border-white/15 rounded-xl text-white placeholder:text-blue-200/50 focus:bg-white/15 focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all duration-300"
                     required
@@ -124,10 +141,10 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
                     </label>
                     <Input
                       id="inquiryEmail"
-                      name="email"
+                      name="customer_email"
                       type="email"
                       placeholder="contoh@email.com"
-                      value={formData.email}
+                      value={formData.customer_email}
                       onChange={handleInputChange}
                       className="h-[52px] bg-white/10 border-white/15 rounded-xl text-white placeholder:text-blue-200/50 focus:bg-white/15 focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all duration-300"
                       required
@@ -140,10 +157,10 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
                     </label>
                     <Input
                       id="inquiryPhone"
-                      name="phone"
+                      name="customer_phone"
                       type="tel"
                       placeholder="08xxxxxxxxxx"
-                      value={formData.phone}
+                      value={formData.customer_phone}
                       onChange={handleInputChange}
                       className="h-[52px] bg-white/10 border-white/15 rounded-xl text-white placeholder:text-blue-200/50 focus:bg-white/15 focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all duration-300"
                       required
@@ -157,9 +174,9 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
                   </label>
                   <Textarea
                     id="inquiryRequirement"
-                    name="requirement"
+                    name="message"
                     placeholder="Jelaskan kebutuhan perjalanan Anda..."
-                    value={formData.requirement}
+                    value={formData.message}
                     onChange={handleInputChange}
                     className="min-h-[100px] bg-white/10 border-white/15 rounded-xl text-white placeholder:text-blue-200/50 focus:bg-white/15 focus:border-white/30 focus:ring-2 focus:ring-white/20 transition-all duration-300 resize-none"
                     required
@@ -168,10 +185,15 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
 
                 <Button
                   type="submit"
-                  className="w-full h-[52px] bg-white hover:bg-blue-50 text-[#295BFF] font-semibold rounded-xl shadow-lg shadow-black/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-2"
+                  disabled={isSubmitting}
+                  className="w-full h-[52px] bg-white hover:bg-blue-50 text-[#295BFF] font-semibold rounded-xl shadow-lg shadow-black/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <Send className="h-4 w-4" />
-                  Kirim Permintaan
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  {isSubmitting ? 'Mengirim...' : 'Kirim Permintaan'}
                 </Button>
 
                 <p className="text-xs text-blue-200/70 text-center pt-1">
