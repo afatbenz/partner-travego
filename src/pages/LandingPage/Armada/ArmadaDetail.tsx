@@ -14,10 +14,19 @@ import {
   Cog,
   Fuel,
   Gauge,
+  Calendar as CalendarIcon,
+  ChevronsUpDown,
+  Check
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { id as idLocale } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ImagePopup } from '@/components/common/ImagePopup';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 import {
   Carousel,
   CarouselContent,
@@ -94,10 +103,154 @@ interface FleetDetailResponse {
   data: FleetDetailData;
 }
 
+const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: string, serviceTypes: string[], cityId: number | string) => void }) => {
+  const [open, setOpen] = useState(false);
+  const [cities, setCities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  
+  useEffect(() => {
+    const fetchCities = async () => {
+      setLoading(true);
+      try {
+        const response = await http.get<any>('/api/general/preferences/cities');
+        if (response.data?.status === 'success' || response.status === 200) {
+             setCities(response.data?.data || response.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch cities", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCities();
+  }, []);
+
+  const filteredCities = cities.filter(city => {
+    const name = city.city_label || city.city_name || city.name || '';
+    return name.toLowerCase().includes(search.toLowerCase());
+  });
+
+  return (
+    <div className="w-full">
+      <label className="block text-sm font-semibold text-gray-900 mb-2">Pilih Tujuan <span className="text-red-500">*</span></label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn(
+              "w-full justify-between font-normal bg-white border-blue-200 hover:bg-blue-50/50 p-3 h-auto rounded-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all",
+              !value && "text-gray-400"
+            )}
+          >
+            {value ? value : <span>Pilih Tujuan</span>}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-2xl shadow-xl border-blue-100 bg-white" align="start">
+          <Command shouldFilter={false} className="bg-white rounded-2xl">
+            <CommandInput 
+              placeholder="Cari kota..." 
+              className="border-none focus:ring-0" 
+              value={search}
+              onValueChange={setSearch}
+            />
+            <CommandList>
+              {loading ? (
+                <div className="py-6 text-center text-sm text-gray-500">Memuat kota...</div>
+              ) : (
+                <>
+                  {filteredCities.length === 0 && <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>}
+                  <CommandGroup>
+                    {filteredCities.map((city, idx) => {
+                      const cityName = city.city_label || city.city_name || city.name;
+                      const cityId = city.city_id || city.id || idx;
+                      return (
+                        <CommandItem
+                          key={cityId}
+                          value={cityName}
+                          onSelect={() => {
+                            onSelect(cityName, city.service_types || [], cityId);
+                            setOpen(false);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4 text-blue-600",
+                              value === cityName ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {cityName}
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+};
+
+const CustomDatePicker = ({ date, setDate, label, placeholder, optional, minDate }: any) => {
+  const [open, setOpen] = useState(false);
+  
+  return (
+    <div className="w-full">
+      <label className="block text-sm font-semibold text-gray-900 mb-2">
+        {label} {!optional && <span className="text-red-500">*</span>}
+        {optional && <span className="text-gray-400 font-normal"> (Opsional)</span>}
+      </label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant={"outline"}
+            className={cn(
+              "w-full justify-start text-left font-normal bg-white border-blue-200 hover:bg-blue-50/50 p-3 h-auto rounded-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all",
+              !date && "text-gray-400"
+            )}
+          >
+            <CalendarIcon className="mr-3 h-5 w-5 text-blue-500" />
+            {date ? format(new Date(date), "dd MMMM yyyy", { locale: idLocale }) : <span>{placeholder}</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0 rounded-2xl border-blue-100 shadow-xl" align="start">
+          <Calendar
+            mode="single"
+            selected={date ? new Date(date) : undefined}
+            onSelect={(d) => {
+              if (d) {
+                const offset = d.getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(d.getTime() - offset)).toISOString().split('T')[0];
+                setDate(localISOTime);
+              } else {
+                setDate("");
+              }
+              setOpen(false);
+            }}
+            initialFocus
+            disabled={minDate ? (dateToCheck) => {
+              const check = new Date(dateToCheck);
+              check.setHours(0,0,0,0);
+              const min = new Date(minDate);
+              min.setHours(0,0,0,0);
+              return check < min;
+            } : undefined}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+};
+
 const PricingCard: React.FC<{
-  fleet: FleetDetailData;
   formattedPrice: string;
-  lowestPriceItem: FleetPricing | undefined;
   priceUom: string;
   selectedPricing: FleetPricing | null;
   setSelectedPricing: (p: FleetPricing) => void;
@@ -105,10 +258,23 @@ const PricingCard: React.FC<{
   setShowAllPricing: (v: boolean) => void;
   onOrderNow: () => void;
   onCustomOrder: () => void;
+  startDate: string;
+  setStartDate: (d: string) => void;
+  endDate: string;
+  setEndDate: (d: string) => void;
+  isChecking: boolean;
+  onCheckAvailability: () => void;
+  availabilityError: string | null;
+  availablePricing: FleetPricing[] | null;
+  isAvailable: boolean | null;
+  onResetSearch: () => void;
+  destinationCity: string;
+  setDestinationCity: (c: string, serviceTypes: string[], cityId: number | string) => void;
+  serviceType: string;
+  setServiceType: (s: string) => void;
+  availableServiceTypes: string[];
 }> = ({
-  fleet,
   formattedPrice,
-  lowestPriceItem,
   priceUom,
   selectedPricing,
   setSelectedPricing,
@@ -116,77 +282,211 @@ const PricingCard: React.FC<{
   setShowAllPricing,
   onOrderNow,
   onCustomOrder,
-}) => (
-  <>
-    <div className="bg-white rounded-[2.5rem] shadow-lg p-10 mb-6 border border-gray-100">
-      <div className="mb-6">
-        <div className="text-sm text-gray-500 mb-1">Mulai dari</div>
-        <div className="text-3xl font-bold text-blue-600">{formattedPrice}</div>
-        <div className="text-sm text-gray-500">
-          {lowestPriceItem && lowestPriceItem.duration > 0
-            ? `/ ${lowestPriceItem.duration} ${lowestPriceItem.uom}`
-            : `/${priceUom}`}
-        </div>
-      </div>
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
+  isChecking,
+  onCheckAvailability,
+  availabilityError,
+  availablePricing,
+  isAvailable,
+  onResetSearch,
+  destinationCity,
+  setDestinationCity,
+  serviceType,
+  setServiceType,
+  availableServiceTypes,
+}) => {
+  const pricingList = availablePricing || [];
 
-      {fleet.pricing.length > 0 && (
-        <div className="mb-6 space-y-3">
-          <h4 className="font-semibold text-gray-900 text-sm">Pilihan Varian Durasi:</h4>
-          {(showAllPricing ? fleet.pricing : fleet.pricing.slice(0, 5)).map((pkg, idx) => {
-            const isSelected = selectedPricing === pkg;
-            return (
-              <div
-                key={idx}
-                className={`flex justify-between items-center text-sm p-3 rounded-2xl cursor-pointer border transition-all hover:scale-105 ${
-                  isSelected
-                    ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500'
-                    : 'bg-gray-50 border-transparent hover:bg-gray-100'
-                }`}
-                onClick={() => setSelectedPricing(pkg)}
-              >
-                <div>
-                  <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
-                    {pkg.rent_type_label}
-                  </span>
-                  <span className={`text-xs block ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>
-                    {pkg.duration > 0 ? `${pkg.duration} ${pkg.uom}` : `Per ${pkg.uom}`}
-                  </span>
-                </div>
-                <div className={`font-semibold ${isSelected ? 'text-blue-700' : 'text-blue-600'}`}>
-                  Rp {pkg.price.toLocaleString('id-ID')}
+  const serviceTypeConfig: Record<string, {label: string, desc: string}> = {
+    city_tour: { label: "Cititour Regular", desc: "Pelayanan khusus dalam kota" },
+    overland: { label: "Overland Regular", desc: "Antar jemput luar kota" },
+    drop_only: { label: "Drop / Pickup", desc: "Layanan antar / jemput saja" }
+  };
+
+  return (
+    <>
+      <div className="bg-white rounded-[2.5rem] shadow-lg p-10 mb-6 border border-gray-100 transition-all duration-300">
+        <div className="mb-6">
+          <div className="text-sm text-gray-500 mb-1">Mulai dari</div>
+          <div className="text-3xl font-bold text-blue-600">{formattedPrice}</div>
+          <div className="text-sm text-gray-500">
+            /{priceUom}
+          </div>
+        </div>
+
+        {isAvailable === null ? (
+          <div className="mb-6 space-y-4 transition-all duration-300">
+            <CitySearchSelect 
+              value={destinationCity} 
+              onSelect={setDestinationCity} 
+            />
+            
+            <CustomDatePicker 
+              label="Tanggal Keberangkatan"
+              placeholder="Pilih Tanggal Keberangkatan"
+              date={startDate}
+              setDate={setStartDate}
+              optional={false}
+              minDate={new Date().toISOString().split('T')[0]}
+            />
+            
+            <div>
+              <CustomDatePicker 
+                label="Tanggal Kepulangan"
+                placeholder="Pilih Tanggal Kepulangan"
+                date={endDate}
+                setDate={setEndDate}
+                optional={true}
+                minDate={startDate || new Date().toISOString().split('T')[0]}
+              />
+              <p className="text-xs text-gray-500 mt-2 italic">*Dihitung sejak datang kembali di titik penjemputan</p>
+            </div>
+            
+            {availableServiceTypes.length > 0 && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Jenis Layanan <span className="text-red-500">*</span></label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {availableServiceTypes.map(type => (
+                    <div 
+                      key={type}
+                      className={cn(
+                        "p-3 rounded-2xl border cursor-pointer transition-all hover:scale-105 text-left flex flex-col justify-center",
+                        serviceType === type 
+                          ? "bg-blue-50 border-blue-500 ring-1 ring-blue-500" 
+                          : "bg-white border-gray-200 hover:border-blue-300"
+                      )}
+                      onClick={() => setServiceType(type)}
+                    >
+                      <div className="font-semibold text-sm text-gray-900">{serviceTypeConfig[type]?.label || type}</div>
+                      <div className="text-xs text-gray-500 mt-1 leading-relaxed">{serviceTypeConfig[type]?.desc}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            );
-          })}
+            )}
+            
+            {availabilityError && (
+              <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
+                {availabilityError}
+              </div>
+            )}
 
-          {fleet.pricing.length > 5 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all hover:scale-105"
-              onClick={() => setShowAllPricing(!showAllPricing)}
+            <div className="pt-2">
+              <Button
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 h-14 font-semibold text-lg shadow-xl shadow-blue-600/20 transition-all hover:scale-105"
+                onClick={onCheckAvailability}
+                disabled={isChecking || !startDate || !destinationCity || !serviceType}
+              >
+                {isChecking ? 'Memuat Data ....' : 'Cek Ketersediaan'}
+              </Button>
+            </div>
+          </div>
+        ) : isAvailable === false ? (
+          <div className="mb-6 p-6 bg-red-50 rounded-2xl border border-red-100 text-center transition-all duration-300">
+            <h4 className="font-semibold text-red-800 mb-2">Armada Tidak Tersedia</h4>
+            <p className="text-red-600 text-sm mb-4">Armada pilihan kamu tidak tersedia, coba di tanggal lain</p>
+            <Button 
+              variant="outline" 
+              onClick={onResetSearch}
+              className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-100 rounded-xl"
             >
-              {showAllPricing ? 'Sembunyikan' : `Lihat Semua (${fleet.pricing.length})`}
+              Ubah Pencarian
             </Button>
-          )}
-        </div>
-      )}
+          </div>
+        ) : pricingList.length === 0 ? (
+          <div className="mb-6 p-6 bg-blue-50 rounded-2xl border border-blue-100 text-center transition-all duration-300">
+            <h4 className="font-semibold text-blue-900 mb-2">Informasi Harga</h4>
+            <p className="text-blue-700 text-sm mb-4">Harga belum tersedia, silakan lakukan custom order untuk informasi lebih lanjut</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button 
+                onClick={onCustomOrder}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+              >
+                Custom Order
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={onResetSearch}
+                className="border-blue-200 text-blue-600 hover:bg-blue-100 rounded-xl"
+              >
+                Ubah Pencarian
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6 space-y-3 transition-all duration-300">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-semibold text-gray-900 text-sm">Pilihan Varian Durasi:</h4>
+              <Button variant="ghost" size="sm" onClick={onResetSearch} className="text-blue-600 hover:text-blue-700 h-auto p-0 hover:bg-transparent text-sm">
+                Ubah Pencarian
+              </Button>
+            </div>
+            
+            {(showAllPricing ? pricingList : pricingList.slice(0, 5)).map((pkg, idx) => {
+              const isSelected = selectedPricing === pkg;
+              return (
+                <div
+                  key={idx}
+                  className={`flex justify-between items-center text-sm p-3 rounded-2xl cursor-pointer border transition-all hover:scale-105 ${
+                    isSelected
+                      ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500'
+                      : 'bg-gray-50 border-transparent hover:bg-gray-100'
+                  }`}
+                  onClick={() => setSelectedPricing(pkg)}
+                >
+                  <div>
+                    <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                      {pkg.rent_type_label}
+                    </span>
+                    <span className={`text-xs block ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>
+                      {pkg.duration > 0 ? `${pkg.duration} hari` : 'Per hari'} mulai dari
+                    </span>
+                  </div>
+                  <div className={`font-semibold ${isSelected ? 'text-blue-700' : 'text-blue-600'}`}>
+                    Rp {pkg.price.toLocaleString('id-ID')}
+                  </div>
+                </div>
+              );
+            })}
 
-      <div className="space-y-3">
-        <Button
-          className="w-full flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 h-14 font-semibold text-lg shadow-xl shadow-blue-600/20 transition-all hover:scale-105"
-          onClick={onOrderNow}
-          disabled={!selectedPricing}
-        >
-          {selectedPricing ? 'Pesan Sekarang' : 'Pilih Varian Durasi'}
-        </Button>
-        <Button variant="outline" className="w-full py-6 rounded-2xl border-blue-600 hover:border-blue-800 transition-all hover:scale-105" onClick={onCustomOrder}>
-          Ajukan Custom Order
-        </Button>
+            {pricingList.length > 5 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all hover:scale-105"
+                onClick={() => setShowAllPricing(!showAllPricing)}
+              >
+                {showAllPricing ? 'Sembunyikan' : `Lihat Semua (${pricingList.length})`}
+              </Button>
+            )}
+            
+            <div className="pt-3 space-y-3">
+              <Button
+                className="w-full flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 h-14 font-semibold text-lg shadow-xl shadow-blue-600/20 transition-all hover:scale-105"
+                onClick={onOrderNow}
+                disabled={!selectedPricing || isAvailable === false || pricingList.length === 0}
+              >
+                {selectedPricing ? 'Pesan Sekarang' : 'Pilih Varian Durasi'}
+              </Button>
+              <Button variant="outline" className="w-full py-6 rounded-2xl border-blue-600 hover:border-blue-800 transition-all hover:scale-105" onClick={onCustomOrder}>
+                Ajukan Custom Order
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {!availablePricing && (
+          <Button variant="outline" className="w-full py-6 rounded-2xl border-blue-600 hover:border-blue-800 transition-all hover:scale-105" onClick={onCustomOrder}>
+            Ajukan Custom Order
+          </Button>
+        )}
       </div>
-    </div>
-  </>
-);
+    </>
+  );
+};
 
 export const ArmadaDetail: React.FC = () => {
   const navigate = useNavigate();
@@ -200,6 +500,18 @@ export const ArmadaDetail: React.FC = () => {
   const [fleet, setFleet] = useState<FleetDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Search Availability State
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [destinationCity, setDestinationCity] = useState('');
+  const [destinationCityId, setDestinationCityId] = useState<number | string>('');
+  const [availableServiceTypes, setAvailableServiceTypes] = useState<string[]>([]);
+  const [serviceType, setServiceType] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [availablePricing, setAvailablePricing] = useState<FleetPricing[] | null>(null);
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
     const fetchFleetDetail = async () => {
@@ -266,6 +578,13 @@ export const ArmadaDetail: React.FC = () => {
     carouselApi?.scrollTo(index);
   };
 
+  const handleCitySelect = (cityName: string, serviceTypes: string[], cityId: number | string) => {
+    setDestinationCity(cityName);
+    setDestinationCityId(cityId);
+    setAvailableServiceTypes(serviceTypes);
+    setServiceType('');
+  };
+
   const handleOrderNow = () => {
     if (fleet && selectedPricing) {
       navigate(`/checkout/armada/${fleet.meta.fleet_id}`, {
@@ -273,9 +592,66 @@ export const ArmadaDetail: React.FC = () => {
           fleet_id: fleet.meta.fleet_id,
           price_id: selectedPricing.price_id,
           pricing: selectedPricing,
+          startDate: startDate,
+          endDate: endDate,
+          cityId: destinationCityId,
+          cityName: destinationCity,
+          serviceType: serviceType
         },
       });
     }
+  };
+
+  const handleCheckAvailability = async () => {
+    if (!startDate || !destinationCity || !serviceType) {
+      setAvailabilityError('Tujuan, Jenis Layanan, dan Tanggal keberangkatan wajib diisi');
+      return;
+    }
+    
+    setIsChecking(true);
+    setAvailabilityError(null);
+
+    // Map service_type string to integer
+    let serviceTypeId = 0;
+    if (serviceType === 'city_tour') serviceTypeId = 1;
+    else if (serviceType === 'overland') serviceTypeId = 2;
+    else if (serviceType === 'drop_only') serviceTypeId = 3;
+
+    try {
+      const response = await http.post<any>('/api/service/fleet/order/availibility', {
+        fleet_id: id,
+        start_date: startDate,
+        end_date: endDate || undefined,
+        city_id: destinationCityId,
+        service_type: serviceTypeId
+      });
+
+      if (response.data?.status === 'success' || response.status === 200) {
+        const availabilityData = response.data?.data || response.data;
+        const availability = availabilityData?.availability;
+        const prices = availabilityData?.prices || [];
+        
+        setIsAvailable(availability === true);
+        setAvailablePricing(prices);
+      } else {
+        setIsAvailable(false);
+        setAvailabilityError('Unit tidak tersedia di tanggal tersebut, ubah tanggal pencarian');
+      }
+    } catch (error: any) {
+      console.error('Error checking availability:', error);
+      setIsAvailable(false);
+      setAvailabilityError(error.response?.data?.message || 'Terjadi kesalahan saat memeriksa ketersediaan');
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  const handleResetSearch = () => {
+    setAvailablePricing(null);
+    setIsAvailable(null);
+    setAvailabilityError(null);
+    setSelectedPricing(null);
+    setShowAllPricing(false);
   };
 
   if (loading) {
@@ -333,9 +709,7 @@ export const ArmadaDetail: React.FC = () => {
   ];
 
   const pricingCardProps = {
-    fleet,
     formattedPrice,
-    lowestPriceItem,
     priceUom,
     selectedPricing,
     setSelectedPricing,
@@ -343,6 +717,21 @@ export const ArmadaDetail: React.FC = () => {
     setShowAllPricing,
     onOrderNow: handleOrderNow,
     onCustomOrder: () => navigate(`/custom-order/armada/${fleet.meta.fleet_id}`),
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    isChecking,
+    onCheckAvailability: handleCheckAvailability,
+    availabilityError,
+    availablePricing,
+    isAvailable,
+    onResetSearch: handleResetSearch,
+    destinationCity,
+    setDestinationCity: handleCitySelect,
+    serviceType,
+    setServiceType,
+    availableServiceTypes,
   };
 
   return (
