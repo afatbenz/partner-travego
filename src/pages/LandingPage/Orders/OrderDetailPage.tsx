@@ -576,7 +576,17 @@ export const OrderDetailPage: React.FC = () => {
                   </div>
 
                   {/* Payment Status Info Box */}
-                  {orderData.payment_status === 2 && (
+                  {orderData.payment_status === 2 && orderData.status === 2 && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-4 flex items-start gap-3">
+                      <Info className="h-4 w-5 text-[#295BFF] flex-shrink-0 mt-0.5" />
+                      <p className="text-[#295BFF] text-xs leading-relaxed font-normal">
+                        Setelah pesanan dikonfirmasi, kami akan mengirimkan email untuk melanjutkan pembayaran
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Payment Status Info Box */}
+                  {orderData.payment_status === 2 && orderData.status === 1 && (
                     <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-4 flex items-start gap-3">
                       <Info className="h-4 w-5 text-[#295BFF] flex-shrink-0 mt-0.5" />
                       <p className="text-[#295BFF] text-xs leading-relaxed font-normal">
