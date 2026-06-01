@@ -19,7 +19,8 @@ import {
   Info,
   XCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  Loader
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,6 +59,11 @@ interface OrderDetailData {
     customer_address: string;
   };
   additional_request?: string;
+  payment_summary?: {
+    payment_remaining: number;
+    total_charge: number;
+    payment_amount: number;
+  };
 }
 
 export const OrderDetailPage: React.FC = () => {
@@ -67,6 +73,7 @@ export const OrderDetailPage: React.FC = () => {
   const [orderData, setOrderData] = useState<OrderDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
+  const isPartialPaid = orderData?.payment_status === 4;
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
@@ -187,7 +194,7 @@ export const OrderDetailPage: React.FC = () => {
 
     if (status === 0) {
       return (
-        <div className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-full text-xs font-bold transition-all hover:bg-red-100">
+        <div className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-full text-xs font-semibold transition-all hover:bg-red-100">
           <XCircle className="w-3.5 h-3.5 mr-1.5" />
           Pesanan Dibatalkan
         </div>
@@ -197,14 +204,38 @@ export const OrderDetailPage: React.FC = () => {
     if (status === 1) {
       if (payment_status === 1) {
         return (
-          <div className="inline-flex items-center px-3 py-1.5 bg-green-50 text-green-600 border border-green-100 rounded-full text-xs font-bold transition-all hover:bg-green-100">
+          <div className="inline-flex items-center px-3 py-1.5 bg-green-50 text-green-600 border border-green-100 rounded-full text-xs font-semibold transition-all hover:bg-green-100">
             <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
             Pesanan Lunas
           </div>
         );
       }
+      if (payment_status === 2) {
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 bg-orange-200 text-black border border-green-100 rounded-full text-xs font-semibold transition-all hover:bg-green-100">
+            <Loader className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+            Menunggu Pembayaran
+          </div>
+        );
+      }
+      if (payment_status === 3) {
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 bg-yellow-50 text-green-600 border border-green-100 rounded-full text-xs font-semibold transition-all hover:bg-green-100">
+            <Loader className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+            Menunggu Konfirmasi
+          </div>
+        );
+      }
+      if (payment_status === 4) {
+        return (
+          <div className="inline-flex items-center px-3 py-1.5 bg-green-50 text-green-600 border border-green-100 rounded-full text-xs font-semibold transition-all hover:bg-green-100">
+            <Loader className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+            Belum Lunas
+          </div>
+        );
+      }
       return (
-        <div className="inline-flex items-center px-3 py-1.5 bg-blue-50 text-[#295BFF] border border-blue-100 rounded-full text-xs font-bold transition-all hover:bg-blue-100">
+        <div className="inline-flex items-center px-3 py-1.5 bg-blue-50 text-[#295BFF] border border-blue-100 rounded-full text-xs font-semibold transition-all hover:bg-blue-100">
           <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
           Menunggu Konfirmasi
         </div>
@@ -213,7 +244,7 @@ export const OrderDetailPage: React.FC = () => {
 
     if (status === 2) {
       return (
-        <div className="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-xs font-bold transition-all hover:bg-amber-100">
+        <div className="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-xs font-semibold transition-all hover:bg-amber-100">
           <AlertCircle className="w-3.5 h-3.5 mr-1.5" />
           Menunggu Konfirmasi
         </div>
@@ -560,17 +591,46 @@ export const OrderDetailPage: React.FC = () => {
                           {orderData.addon.map((addon, idx) => (
                             <div key={idx} className="flex justify-between items-center text-sm">
                               <span className="text-slate-500 font-medium">{addon.addon_name}</span>
-                              <span className="text-slate-900 font-bold">{formatCurrency(addon.addon_price)}</span>
+                              <span className="text-slate-900 font-semibold">{formatCurrency(addon.addon_price)}</span>
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    )}
+                    {orderData.payment_summary?.total_charge && (
+                      <div className="pt-2 border-t border-slate-50">
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-slate-500 font-medium">Tambahan Biaya</span>
+                              <span className="text-slate-900 font-semibold">{formatCurrency(orderData.payment_summary.total_charge)}</span>
+                            </div>
+                        </div>
+                      </div>
+                    )}
+                    <div className="pt-2 border-t border-slate-50">
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-slate-500 font-medium">Total Tagihan</span>
+                              <span className="text-slate-900 font-bold">{formatCurrency(orderData.total_amount)}</span>
+                            </div>
+                        </div>
+                      </div>
+
+                    {orderData.payment_summary?.payment_amount && (
+                      <div className="pt-2 border-t border-slate-50">
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-slate-500 font-medium">Sudah Terbayar</span>
+                              <span className="text-slate-900 font-semibold">{formatCurrency(orderData.payment_summary.payment_amount)}</span>
+                            </div>
                         </div>
                       </div>
                     )}
 
                     <div className="pt-3 border-t border-slate-100">
                       <div className="flex flex-col gap-1.5 text-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Tagihan</span>
-                        <span className="text-3xl md:text-4xl font-bold text-[#295BFF] tracking-tight">{formatCurrency(orderData.total_amount)}</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{isPartialPaid ? 'Sisa Tagihan' : 'Total Tagihan'}</span>
+                        <span className="text-3xl md:text-4xl font-bold text-[#295BFF] tracking-tight">{isPartialPaid && orderData.payment_summary?.payment_remaining ? formatCurrency(orderData.payment_summary.payment_remaining) : formatCurrency(orderData.total_amount)}</span>
                       </div>
                     </div>
                   </div>
