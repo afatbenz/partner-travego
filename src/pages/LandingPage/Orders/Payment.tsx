@@ -61,6 +61,11 @@ interface OrderData {
   status: number;
   payment_status: number;
   remaining_amount?: number;
+  payment_summary?: {
+    payment_amount: number;
+    payment_remaining: number;
+    total_addon: number;
+  };
 }
 
 interface PaymentMethod {
@@ -121,7 +126,7 @@ const PaymentStatus: React.FC<{ status: string; orderId: string }> = ({ status, 
       <div className="flex flex-col gap-3 w-full max-w-sm">
         <Button 
           onClick={() => navigate(`/order/detail/armada/${id}`)} 
-          className="bg-[#295BFF] hover:bg-blue-600 text-white font-bold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-blue-500/20"
+          className="bg-[#295BFF] hover:bg-blue-800 text-white font-semibold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-blue-500/20"
         >
           <FileText className="w-5 h-5 mr-2" />
           Lihat Pesanan Saya
@@ -129,7 +134,7 @@ const PaymentStatus: React.FC<{ status: string; orderId: string }> = ({ status, 
         {status === PAYMENT_STATUS.SUCCESS && (
           <Button 
             onClick={() => navigate(`/order-review?token=${id}`)} 
-            className="bg-white border-green-600 hover:bg-green-600 text-green-600 font-bold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-green-500/20"
+            className="bg-white border-green-400 hover:border-green-800 border-2 hover:bg-transparant text-green-600 font-semibold px-8 py-4 h-auto rounded-2xl shadow-lg shadow-green-500/20"
           >
             <MessageCircle className="w-5 h-5 mr-2" />
             Beri Ulasan
@@ -233,6 +238,7 @@ export const Payment: React.FC = () => {
   const [isDownloadingInvoice, setIsDownloadingInvoice] = useState(false);
   const [dpPercentage, setDpPercentage] = useState<number>(10);
   const [customAmount, setCustomAmount] = useState<number>(0);
+  const [customAmountDisplay, setCustomAmountDisplay] = useState<string>('');
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<{code: string, amount: number} | null>(null);
   const [promoError, setPromoError] = useState('');
@@ -279,7 +285,8 @@ export const Payment: React.FC = () => {
             addon: data.addon,
             status: data.status,
             payment_status: data.payment_status,
-            remaining_amount: data.remaining_amount
+            remaining_amount: data.remaining_amount,
+            payment_summary: data.payment_summary,
           });
         }
       } catch (error) {
@@ -360,24 +367,53 @@ export const Payment: React.FC = () => {
 
   const getPaymentAmount = () => {
     if (!orderData) return 0;
-    
-    let baseAmount = orderData.rawTotalAmount;
+
+    const paymentRemaining =
+      orderData.payment_summary?.payment_remaining ?? orderData.remaining_amount ?? 0;
+
+    let baseAmount = 0;
     if (paymentType === 'dp') {
       baseAmount = Math.round(orderData.rawTotalAmount * (dpPercentage / 100));
-    } else if (paymentType === 'repayment') {
-      baseAmount = orderData.remaining_amount || 0;
     } else if (paymentType === 'installment') {
       baseAmount = customAmount;
+    } else if (paymentType === 'repayment') {
+      baseAmount = paymentRemaining;
+    } else {
+      baseAmount = orderData.payment_summary?.payment_remaining ?? orderData.rawTotalAmount;
     }
 
     if (appliedPromo && paymentType === 'full') {
       baseAmount -= appliedPromo.amount;
     }
-    
-    if (baseAmount < 0) baseAmount = 0;
 
-    return baseAmount;
+    return Math.max(0, Math.floor(baseAmount));
   };
+
+  const previousPaymentTypeRef = React.useRef<typeof paymentType>(paymentType);
+
+  useEffect(() => {
+    if (!orderData) return;
+    const previous = previousPaymentTypeRef.current;
+    previousPaymentTypeRef.current = paymentType;
+
+    if (paymentType !== 'installment') return;
+    if (previous === 'installment') return;
+    if (customAmount > 0 || customAmountDisplay) return;
+
+    const max =
+      orderData.payment_summary?.payment_remaining ?? orderData.remaining_amount ?? 0;
+    const defaultAmount = Math.min(max, Math.round(max * 0.1));
+
+    if (defaultAmount <= 0) return;
+
+    setCustomAmount(defaultAmount);
+    setCustomAmountDisplay(defaultAmount.toLocaleString('id-ID'));
+  }, [
+    orderData,
+    paymentType,
+    customAmount,
+    customAmountDisplay,
+  ]);
 
   const handleApplyPromo = () => {
     if (!promoCode) return;
@@ -652,7 +688,7 @@ export const Payment: React.FC = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Opsi Bayar Penuh & DP hanya tampil jika status = 1 dan payment_status = 2 dan tidak ada sisa pembayaran yang sedang dicicil (asumsi logic) */}
-                      {orderData.status === 1 && orderData.payment_status === 2 && !orderData.remaining_amount && (
+                      {orderData.status === 1 && orderData.payment_status === 2 && (
                         <>
                           <div 
                             onClick={() => setPaymentType('full')}
@@ -705,7 +741,7 @@ export const Payment: React.FC = () => {
                       )}
 
                       {/* Opsi Pelunasan & Cicilan */}
-                      {orderData.status === 1 && orderData.payment_status === 4 && orderData.remaining_amount !== undefined && (
+                      {orderData.status === 1 && orderData.payment_status === 4 && (
                         <>
                           <div 
                             onClick={() => setPaymentType('repayment')}
@@ -817,20 +853,52 @@ export const Payment: React.FC = () => {
 
                     {paymentType === 'installment' && (
                       <div className="p-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm animate-in slide-in-from-top-4 duration-500">
-                        <label className="block text-xs font-bold text-[#6B7280] uppercase tracking-widest mb-4">
-                          Masukkan Nominal Pembayaran (Maks: {formatCurrency(orderData.remaining_amount || 0)})
+                        <label className="block text-xs font-normal text-[#6B7280] uppercase tracking-widest mb-4">
+                          Masukkan Nominal Pembayaran (Maks: {formatCurrency(orderData.payment_summary?.payment_remaining || 0)})
                         </label>
                         <div className="space-y-4">
                           <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">Rp</span>
                             <Input
-                              type="number"
+                              type="text"
+                              inputMode="numeric"
                               placeholder="Contoh: 500000"
-                              value={customAmount}
+                              value={customAmountDisplay}
                               onChange={(e) => {
-                                const val = parseInt(e.target.value) || 0;
-                                const max = orderData.remaining_amount || 0;
-                                setCustomAmount(val > max ? max : val);
+                                const raw = e.target.value;
+                                const max =
+                                  orderData.payment_summary?.payment_remaining ??
+                                  orderData.remaining_amount ??
+                                  0;
+
+                                const digitsOnly = raw.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+                                if (digitsOnly === '') {
+                                  setCustomAmount(0);
+                                  setCustomAmountDisplay('');
+                                  return;
+                                }
+
+                                const next = Number(digitsOnly);
+                                if (!Number.isFinite(next)) {
+                                  setCustomAmount(0);
+                                  setCustomAmountDisplay('');
+                                  return;
+                                }
+
+                                const normalized = Math.max(0, Math.floor(next));
+                                if (normalized > max) {
+                                  setCustomAmount(max);
+                                  setCustomAmountDisplay(max > 0 ? max.toLocaleString('id-ID') : '');
+                                  Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Nominal tidak valid',
+                                    text: `Nominal pembayaran disesuaikan menjadi ${formatCurrency(max)}.`,
+                                  });
+                                  return;
+                                }
+
+                                setCustomAmount(normalized);
+                                setCustomAmountDisplay(normalized.toLocaleString('id-ID'));
                               }}
                               className="pl-12 h-12 rounded-xl border-[#E5E7EB] focus:border-[#295BFF] transition-all font-bold text-lg"
                             />
