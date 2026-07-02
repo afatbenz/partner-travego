@@ -3,12 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   MapPin, 
-  Home,
   Calendar, 
-  Clock, 
   Car, 
   CheckCircle, 
-  ChevronDown, 
   FileText, 
   CalendarDays, 
   Copy, 
@@ -25,7 +22,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { http, API_BASE_URL } from '@/lib/http';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Swal from '@/lib/swal';
 
@@ -71,6 +67,7 @@ export const OrderDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [orderData, setOrderData] = useState<OrderDetailData | null>(null);
+  const [contactData, setContactData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
   const isPartialPaid = orderData?.payment_status === 4;
@@ -92,6 +89,20 @@ export const OrderDetailPage: React.FC = () => {
     fetchOrderDetail();
   }, [id, type]);
 
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await http.get<{ data?: { contact?: any } }>('/api/content');
+        const contact = res.data?.data?.contact;
+        if (contact) setContactData(contact);
+      } catch (err) {
+        console.error('Failed to fetch contact content', err);
+      }
+    };
+
+    fetchContent();
+  }, []);
+
   const formatDate = (dateString: string, withTime: boolean = false) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -109,6 +120,11 @@ export const OrderDetailPage: React.FC = () => {
 
   const formatCurrency = (amount: number) => {
     return `Rp ${amount.toLocaleString('id-ID')}`;
+  };
+
+  const getWhatsAppUrl = () => {
+    const wa = String(contactData?.company_whatsapp || '6281234567890').replace(/\D/g, '');
+    return `https://wa.me/${wa}`;
   };
 
   const handleCopyOrderId = () => {
@@ -556,7 +572,7 @@ export const OrderDetailPage: React.FC = () => {
                 </div>
                 <Button 
                   className="bg-green-400 hover:bg-green-500 text-white rounded-2xl px-6 py-6 h-auto font-semibold text-sm group transition-all hover:scale-105 active:scale-95"
-                  onClick={() => window.open('https://wa.me/6281234567890', '_blank')}
+                  onClick={() => window.open(getWhatsAppUrl(), '_blank')}
                 >
                   <MessageCircle className="mr-2 h-5 w-5 text-white-400 font-medium" />
                   WhatsApp Kami
@@ -597,12 +613,12 @@ export const OrderDetailPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    {orderData.payment_summary?.total_charge && (
+                    {Number(orderData.payment_summary?.total_charge ?? 0) > 0 && (
                       <div className="pt-2 border-t border-slate-50">
                         <div className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
                               <span className="text-slate-500 font-medium">Tambahan Biaya</span>
-                              <span className="text-slate-900 font-semibold">{formatCurrency(orderData.payment_summary.total_charge)}</span>
+                              <span className="text-slate-900 font-semibold">{formatCurrency(orderData.payment_summary?.total_charge ?? 0)}</span>
                             </div>
                         </div>
                       </div>
@@ -616,12 +632,12 @@ export const OrderDetailPage: React.FC = () => {
                         </div>
                       </div>
 
-                    {orderData.payment_summary?.payment_amount && (
+                    {Number(orderData.payment_summary?.payment_amount ?? 0) > 0 && (
                       <div className="pt-2 border-t border-slate-50">
                         <div className="space-y-3">
                             <div className="flex justify-between items-center text-sm">
                               <span className="text-slate-500 font-medium">Sudah Terbayar</span>
-                              <span className="text-slate-900 font-semibold">{formatCurrency(orderData.payment_summary.payment_amount)}</span>
+                              <span className="text-slate-900 font-semibold">{formatCurrency(orderData.payment_summary?.payment_amount ?? 0)}</span>
                             </div>
                         </div>
                       </div>
@@ -636,14 +652,14 @@ export const OrderDetailPage: React.FC = () => {
                   </div>
 
                   {/* Payment Status Info Box */}
-                  {orderData.payment_status === 2 && orderData.status === 2 && (
+                  {/* {orderData.payment_status === 2 && orderData.status === 2 && (
                     <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-4 flex items-start gap-3">
                       <Info className="h-4 w-5 text-[#295BFF] flex-shrink-0 mt-0.5" />
                       <p className="text-[#295BFF] text-xs leading-relaxed font-normal">
                         Setelah pesanan dikonfirmasi, kami akan mengirimkan email untuk melanjutkan pembayaran
                       </p>
                     </div>
-                  )}
+                  )} */}
 
                   {/* Payment Status Info Box */}
                   {orderData.payment_status === 2 && orderData.status === 1 && (
@@ -657,7 +673,7 @@ export const OrderDetailPage: React.FC = () => {
 
                   {/* CTA BUTTONS */}
                   <div className="space-y-4">
-                    {orderData.status === 1 && [2, 4].includes(orderData.payment_status) && (
+                    {/* {orderData.status === 1 && [2, 4].includes(orderData.payment_status) && (
                       <Button 
                         onClick={() => navigate(`/payment/${type}/${orderData.token || id}`)}
                         className="w-full bg-gradient-to-br from-[#295BFF] to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-7 rounded-2xl shadow-xl shadow-blue-500/25 transition-all hover:-translate-y-1 active:scale-[0.98] group"
@@ -665,7 +681,7 @@ export const OrderDetailPage: React.FC = () => {
                         Lanjutkan Pembayaran
                         <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                       </Button>
-                    )}
+                    )} */}
 
                     {orderData.status === 1 && orderData.payment_status === 1 && (
                       <Button 

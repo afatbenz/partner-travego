@@ -27,6 +27,7 @@ export const OrderSuccess: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [orderData, setOrderData] = useState<any>(location.state?.orderData || null);
+  const [contactData, setContactData] = useState<any>(null);
   const [loading, setLoading] = useState(!location.state?.orderData);
 
   useEffect(() => {
@@ -58,6 +59,25 @@ export const OrderSuccess: React.FC = () => {
 
     fetchOrderDetail();
   }, [id]);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await http.get<{ data?: { contact?: any } }>('/api/content');
+        const contact = res.data?.data?.contact;
+        if (contact) setContactData(contact);
+      } catch (err) {
+        console.error('Failed to fetch contact content', err);
+      }
+    };
+
+    fetchContent();
+  }, []);
+
+  const getWhatsAppUrl = () => {
+    const wa = String(contactData?.company_whatsapp || '6281234567890').replace(/\D/g, '');
+    return `https://wa.me/${wa}`;
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden">
@@ -302,7 +322,7 @@ export const OrderSuccess: React.FC = () => {
             
             <Button 
               className="bg-green-600 hover:bg-green-700 text-white rounded-2xl px-8 py-7 font-semibold text-lg group transition-all hover:scale-105"
-              onClick={() => window.open('https://wa.me/6281234567890', '_blank')}
+              onClick={() => window.open(getWhatsAppUrl(), '_blank')}
             >
               <MessageCircle className="mr-2 h-6 w-6 text-white-400" />
               Hubungi CS via WhatsApp

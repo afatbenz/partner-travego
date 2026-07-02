@@ -3,7 +3,6 @@ import {
   MapPin,
   Phone,
   Mail,
-  Clock,
   Send,
   MessageCircle,
   Headset,
@@ -104,10 +103,9 @@ export const Contact: React.FC = () => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await http.get('/api/content');
-        if (res.data?.data?.contact) {
-          setContactData(res.data.data.contact);
-        }
+        const res = await http.get<{ data?: { contact?: any } }>('/api/content');
+        const contact = res.data?.data?.contact;
+        if (contact) setContactData(contact);
       } catch (err) {
         console.error('Failed to fetch contact content', err);
       }
@@ -128,13 +126,7 @@ export const Contact: React.FC = () => {
     {
       icon: Phone,
       title: 'Telepon',
-      details:
-        contactData?.company_phone === contactData?.company_whatsapp
-          ? [formatPhoneNumber(contactData?.company_phone)]
-          : [
-              formatPhoneNumber(contactData?.company_phone),
-              `${formatPhoneNumber(contactData?.company_whatsapp)} (whatsapp)`,
-            ],
+      details: [formatPhoneNumber(contactData?.company_whatsapp || contactData?.company_phone || '1500888')],
     },
     {
       icon: Mail,
@@ -209,7 +201,7 @@ export const Contact: React.FC = () => {
   };
 
   const getCallCenterUrl = () => {
-    return `tel:${contactData?.company_phone || '1500888'}`;
+    return `tel:${String(contactData?.company_whatsapp || contactData?.company_phone || '1500888').replace(/\D/g, '')}`;
   };
 
   const getMapsUrl = () => {
@@ -347,7 +339,7 @@ export const Contact: React.FC = () => {
                 className="w-full h-14 justify-start rounded-2xl border-[#E5E7EB] font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF] hover:shadow-md hover:shadow-blue-500/10"
               >
                 <Phone className="mr-3 h-5 w-5" />
-                Call Center: {formatPhoneNumber(contactData?.company_phone) || '1500-888'}
+                Call Center: {formatPhoneNumber(contactData?.company_whatsapp || contactData?.company_phone || '1500888')}
               </Button>
             </div>
           </aside>

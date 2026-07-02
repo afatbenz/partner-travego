@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Mail } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { OrderDetail } from '@/pages/LandingPage/Orders/FindOrder';
 

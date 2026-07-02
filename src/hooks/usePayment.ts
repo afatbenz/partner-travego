@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { paymentService } from '@/services/paymentService';
-import { PAYMENT_STATUS } from '@/constants/payment';
+import { paymentService } from '@/services/paymentService.ts';
+import { PAYMENT_STATUS } from '@/constants/payment.ts';
 
 /**
  * Hook to manage Midtrans payment flow

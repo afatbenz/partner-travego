@@ -5,7 +5,6 @@ import { FilterSection } from '@/components/common/FilterSection';
 import { Pagination } from '@/components/common/Pagination';
 import { http } from '@/lib/http';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
-import { useNavigate } from 'react-router-dom';
 
 interface Fleet {
   fleet_id: string;
@@ -72,7 +71,7 @@ const Armada = () => {
               features: fleet.facilities && fleet.facilities.length > 0 
                 ? fleet.facilities.map(f => f.facility) 
                 : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
-              location: `${fleet.cities?.[0]} ${fleet.cities?.length > 1 ? `(+ ${fleet.cities?.length - 1} kota lainnya)` : ''}`,
+              location: `${fleet.cities?.[0] ?? ''} ${(fleet.cities?.length ?? 0) > 1 ? `(+ ${(fleet.cities?.length ?? 0) - 1} kota lainnya)` : ''}`,
               pickupAreas: fleet.cities || [],
               transmission: 'Manual', // Default value
               fuel: 'Bensin', // Default value
@@ -158,8 +157,6 @@ const Armada = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory, selectedLocation, sortBy]);
-
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">

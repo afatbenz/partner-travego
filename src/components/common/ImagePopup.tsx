@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -19,10 +18,7 @@ export const ImagePopup: React.FC<ImagePopupProps> = ({
   isOpen,
   onClose,
   onImageChange,
-  itemType = 'catalog',
-  itemId = '1'
 }) => {
-  const navigate = useNavigate();
 
   if (!isOpen) return null;
 
