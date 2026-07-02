@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Search, Star, Shield, Clock, Headphones, ArrowRight, MapPin, Phone, Users } from 'lucide-react';
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CTASection } from '@/components/common/CTASection';
 import { TourPackageList } from '@/components/common/TourPackageList';
 import { useTourPackages } from '@/hooks/useTourPackages';
@@ -54,8 +52,6 @@ export interface FleetResponse {
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { getContentByTag, getContentIn, getListIn } = useGeneralContent();
-  const heroTitle = getContentIn('landing-page', 'hero-section') || getContentByTag('hero-section') || 'Lorem Ipsum Dolor Sit Amet';
-  const heroSubTitle = getContentIn('landing-page', 'sub-hero-section') || getContentByTag('sub-hero-section') || 'Lorem Ipsum Dolor Sit Amet';
   const heroBannerImage = getContentIn('hero-banner', 'main-banner') || getContentByTag('main-banner') || '';
   const brandName = getContentIn('landing-page', 'brand-name') || getContentByTag('brand-name') || 'TravelPro';
   
@@ -85,7 +81,7 @@ export const Home: React.FC = () => {
               features: fleet.facilities && fleet.facilities.length > 0 
                 ? fleet.facilities.map(f => f.facility) 
                 : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
-              location: `${fleet.cities?.[0]} ${fleet.cities?.length > 1 ? `(+ ${fleet.cities?.length - 1} kota lainnya)` : ''}`,
+              location: `${fleet.cities?.[0] ?? ''} ${(fleet.cities?.length ?? 0) > 1 ? `(+ ${(fleet.cities?.length ?? 0) - 1} kota lainnya)` : ''}`,
               pickupAreas: fleet.cities || [],
               transmission: 'Manual', // Default value
               fuel: 'Bensin', // Default value
@@ -105,29 +101,6 @@ export const Home: React.FC = () => {
     };
     fetchFleets();
   }, []);
-
-  const [searchCity, setSearchCity] = useState('');
-  const [cityInput, setCityInput] = useState('');
-  const [serviceType, setServiceType] = useState('');
-
-  const cities = [
-    'Jakarta',
-    'Tangerang', 
-    'Depok',
-    'Bekasi',
-    'Jabotabek',
-    'Tangerang Selatan',
-    'Bogor'
-  ];
-
-  const filteredCities = cities.filter(city => 
-    city.toLowerCase().includes(cityInput.toLowerCase())
-  );
-
-  const handleSearch = () => {
-    console.log('Searching for:', { city: searchCity, service: serviceType });
-    // Implement search logic here
-  };
 
   const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     shield: Shield,

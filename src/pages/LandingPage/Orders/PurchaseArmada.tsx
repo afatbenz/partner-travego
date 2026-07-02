@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, QrCode, Clock, CheckCircle, Copy, Download, Home, ShoppingBag, Upload, X, Image } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle, Copy, Home, ShoppingBag, Upload, X, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -177,13 +177,13 @@ export const PurchaseArmada: React.FC = () => {
     formData.append('token', id);
 
     try {
-      const response = await http.post('/api/order/payment-confirmation/upload', formData, {
+      const response = await http.post<{ status?: string }>('/api/order/payment-confirmation/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (response.status === 200 || response.data.status === 'success') {
+      if (response.status === 200 || response.data?.status === 'success') {
         setIsUploadModalOpen(false);
         alert('Bukti pembayaran berhasil diupload!');
         handleRemoveFile();
@@ -199,12 +199,12 @@ export const PurchaseArmada: React.FC = () => {
   const handlePaymentComplete = async () => {
     setIsSubmitting(true);
     try {
-      const response = await http.post('/api/order/payment-confirmation', {
+      const response = await http.post<{ status?: string }>('/api/order/payment-confirmation', {
         order_type: 'fleet',
         token: id
       });
       
-      if (response.status === 200 || response.data.status === 'success') {
+      if (response.status === 200 || response.data?.status === 'success') {
         setIsPaymentConfirmed(true);
       }
     } catch (error) {

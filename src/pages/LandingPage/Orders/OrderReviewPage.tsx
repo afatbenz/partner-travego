@@ -35,13 +35,13 @@ export const OrderReviewPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await http.post('/api/service/review/submit', {
+      const response = await http.post<{ status?: string }>('/api/service/review/submit', {
         star: rating,
         review: review,
         token: token
       });
 
-      if (response.data.status === 'success' || response.status === 200) {
+      if (response.status === 200 || response.data?.status === 'success') {
         Swal.fire({
           icon: 'success',
           title: 'Ulasan Terkirim!',

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Star, Users, Shield, Zap, ArrowRight, Heart } from 'lucide-react';
 
@@ -170,7 +169,7 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
           </div>
           <div className="flex items-center bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-xl shrink-0">
             <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
-            <span className="font-normal text-blue-900 dark:text-blue-100 text-xs">{armada.rating} ({armada.reviews?.length || 0})</span>
+            <span className="font-normal text-blue-900 dark:text-blue-100 text-xs">{armada.rating} ({armada.reviews || 0})</span>
           </div>
         </div>
         

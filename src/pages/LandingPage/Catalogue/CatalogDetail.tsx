@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Calendar, Clock, Star, MapPin, Armchair } from 'lucide-react';
+import { Calendar, Clock, MapPin, Armchair } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -187,8 +187,6 @@ export const CatalogDetail: React.FC = () => {
     detail.pickup_areas.length > 1
       ? detail.pickup_areas[0].city_name +" (+ "+ (detail.pickup_areas.length - 1) + " kota lain)"
       : detail.pickup_areas[0].city_name;
-
-  const durationLabel = meta.duration > 0 ? `${meta.duration} Hari` : '-';
 
   const highlights = [
     ...new Set(

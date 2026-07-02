@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   CreditCard, 
-  QrCode, 
   CheckCircle, 
   ChevronDown, 
   Tag, 
@@ -16,7 +15,6 @@ import {
   MessageCircle,
   Ticket,
   Calendar,
-  Hash,
   Bus,
   Check,
   ChevronRight,
@@ -34,7 +32,7 @@ import { http, API_BASE_URL } from '@/lib/http';
 import { cn } from '@/lib/utils';
 import Swal from '@/lib/swal';
 import { usePayment } from '@/hooks/usePayment';
-import { PAYMENT_TYPE, PAYMENT_STATUS } from '@/constants/payment';
+import { PAYMENT_STATUS } from '@/constants/payment.ts';
 
 interface OrderData {
   id: string;
@@ -67,16 +65,6 @@ interface OrderData {
     total_addon: number;
   };
 }
-
-interface PaymentMethod {
-  id: number;
-  bank_name: string;
-  bank_account_id: string;
-  account_name: string;
-  account_number: string;
-  icon: string;
-}
-
 /**
  * Component to display payment status after transaction
  */
@@ -159,7 +147,6 @@ interface PaymentFormProps {
  */
 const PaymentForm: React.FC<PaymentFormProps> = ({ 
   orderId, 
-  priceId, 
   paymentType, 
   amount,
   onPaymentProcessed,
@@ -226,12 +213,8 @@ export const Payment: React.FC = () => {
   const navigate = useNavigate();
   
   const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [contactData, setContactData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [transferMethods, setTransferMethods] = useState<PaymentMethod[]>([]);
-  const [qrisMethods, setQrisMethods] = useState<PaymentMethod[]>([]);
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   
   const [paymentType, setPaymentType] = useState<'full' | 'dp' | 'repayment' | 'installment'>('full');
   const [isDownloadingDetail, setIsDownloadingDetail] = useState(false);
@@ -245,7 +228,6 @@ export const Payment: React.FC = () => {
 
   // State baru untuk Midtrans
   const [midtransStatus, setMidtransStatus] = useState<string | null>(null);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
@@ -296,40 +278,26 @@ export const Payment: React.FC = () => {
       }
     };
 
-    const fetchPaymentMethods = async () => {
-      try {
-        const response = await http.get<any>('/api/order/payment-method');
-        let transfer: PaymentMethod[] = [];
-        let qris: PaymentMethod[] = [];
-
-        if (response.data?.data) {
-          const data = response.data.data;
-          if (Array.isArray(data)) {
-            transfer = data; 
-          } else {
-            transfer = Array.isArray(data.transfer) ? data.transfer : [];
-            qris = Array.isArray(data.qris) ? data.qris : [];
-          }
-        }
-        
-        setTransferMethods(transfer);
-        setQrisMethods(qris);
-        setPaymentMethods([...transfer, ...qris]);
-      } catch (error) {
-        console.error('Failed to fetch payment methods:', error);
-        setTransferMethods([]);
-        setQrisMethods([]);
-        setPaymentMethods([]);
-      }
-    };
-
     if (type === 'armada') {
         fetchOrderDetail();
-        fetchPaymentMethods();
     } else {
         setLoading(false);
     }
   }, [id, type]);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await http.get<{ data?: { contact?: any } }>('/api/content');
+        const contact = res.data?.data?.contact;
+        if (contact) setContactData(contact);
+      } catch (err) {
+        console.error('Failed to fetch contact content', err);
+      }
+    };
+
+    fetchContent();
+  }, []);
 
   /**
    * Handle result from PaymentForm component
@@ -339,7 +307,6 @@ export const Payment: React.FC = () => {
       setMidtransStatus(status);
     }
     if (error) {
-      setPaymentError(error);
       // Tampilkan toast atau alert jika error dari onClose atau API
       Swal.fire({
         icon: 'info',
@@ -363,6 +330,11 @@ export const Payment: React.FC = () => {
 
   const formatCurrency = (amount: number) => {
     return `Rp ${amount.toLocaleString('id-ID')}`;
+  };
+
+  const getWhatsAppUrl = () => {
+    const wa = String(contactData?.company_whatsapp || '6281234567890').replace(/\D/g, '');
+    return `https://wa.me/${wa}`;
   };
 
   const getPaymentAmount = () => {
@@ -1179,7 +1151,7 @@ export const Payment: React.FC = () => {
                     <Button 
                       variant="ghost"
                       className="w-full bg-white hover:bg-slate-50 text-[#0F172A] rounded-2xl font-bold h-12 shadow-sm transition-all hover:shadow-md"
-                      onClick={() => window.open('https://wa.me/6281234567890', '_blank')}
+                      onClick={() => window.open(getWhatsAppUrl(), '_blank')}
                     >
                       <MessageCircle className="mr-2 h-4 w-4 text-green-500" />
                       Hubungi WhatsApp

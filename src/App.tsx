@@ -9,7 +9,6 @@ import { Toaster } from '@/components/ui/toaster';
 // Layouts
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 
 // Scroll to top component
 const ScrollToTop: React.FC = () => {
@@ -53,20 +52,6 @@ import { InvalidApiKey } from '@/pages/LandingPage/Utilities/InvalidApiKey';
 import { Login } from '@/pages/LandingPage/Auth/Login';
 import { Register } from '@/pages/LandingPage/Auth/Register';
 import { ForgotPassword } from '@/pages/auth/ForgotPassword';
-
-// Dashboard Pages
-import { DashboardHome } from '@/pages/dashboard/DashboardHome';
-import { OrdersTable } from '@/pages/dashboard/orders/OrdersTable';
-import { OrderDetail } from '@/pages/dashboard/orders/OrderDetail';
-import { ServicesPackages } from '@/pages/dashboard/ServicesPackages';
-import { ServicesArmada } from '@/pages/dashboard/services/ServicesArmada';
-import { PackageForm } from '@/pages/dashboard/services/PackageForm';
-import { CreateArmada } from '@/pages/dashboard/services/CreateArmada';
-import { EditArmada } from '@/pages/dashboard/services/EditArmada';
-import { TeamMember } from '@/pages/dashboard/team/TeamMember';
-import { ScheduleArmada } from '@/pages/dashboard/team/ScheduleArmada';
-import { AddSchedule } from '@/pages/dashboard/team/AddSchedule';
-import { OpenApiSettings } from '@/pages/dashboard/organization/OpenApiSettings';
 
 // Layout wrapper for public pages
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -236,94 +221,6 @@ function App() {
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
 
           {/* Dashboard Routes */}
-          <Route path="/dashboard" element={
-            <DashboardLayout>
-              <DashboardHome />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/orders/all-table" element={
-            <DashboardLayout>
-              <OrdersTable 
-                status="all" 
-                title="Semua Order" 
-                description="Kelola semua pesanan pelanggan" 
-              />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/orders/ongoing-table" element={
-            <DashboardLayout>
-              <OrdersTable 
-                status="ongoing" 
-                title="Order Berlangsung" 
-                description="Monitor pesanan yang sedang berlangsung" 
-              />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/orders/success" element={
-            <DashboardLayout>
-              <OrdersTable 
-                status="success" 
-                title="Order Sukses" 
-                description="Pesanan yang telah selesai dengan sukses" 
-              />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/orders/detail/:id" element={
-            <DashboardLayout>
-              <OrderDetail />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/services/packages" element={
-            <DashboardLayout>
-              <ServicesPackages />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/services/packages/create" element={
-            <DashboardLayout>
-              <PackageForm />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/services/packages/edit/:id" element={
-            <DashboardLayout>
-              <PackageForm />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/services/fleet" element={
-            <DashboardLayout>
-              <ServicesArmada />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/services/fleet/create" element={
-            <DashboardLayout>
-              <CreateArmada />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/services/fleet/edit/:id" element={
-            <DashboardLayout>
-              <EditArmada />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/team/team-member" element={
-            <DashboardLayout>
-              <TeamMember />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/team/schedule-armada" element={
-            <DashboardLayout>
-              <ScheduleArmada />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/team/schedule-armada/add" element={
-            <DashboardLayout>
-              <AddSchedule />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/partner/organization/open-api" element={
-            <DashboardLayout>
-              <OpenApiSettings />
-            </DashboardLayout>
-          } />
-
           {/* Redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

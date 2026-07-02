@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrderTracking } from '@/hooks/useOrderTracking';
 import {
@@ -41,8 +41,6 @@ import {
 } from '@/components/ui/dialog';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
-
-const WHATSAPP_URL = 'https://wa.me/6281234567890';
 
 const TRACKING_STEPS = [
   'Pesanan Dibuat',
@@ -318,6 +316,7 @@ const LazyInvoice = lazy(() =>
 export default function FindOrder() {
   const navigate = useNavigate();
   const [orderId, setOrderId] = useState('');
+  const [contactData, setContactData] = useState<any>(null);
   const {
     trackOrder,
     isLoading,
@@ -334,6 +333,20 @@ export default function FindOrder() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<any | null>(null);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await http.get<{ data?: { contact?: any } }>('/api/content');
+        const contact = res.data?.data?.contact;
+        if (contact) setContactData(contact);
+      } catch (err) {
+        console.error('Failed to fetch contact content', err);
+      }
+    };
+
+    fetchContent();
+  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -374,6 +387,11 @@ export default function FindOrder() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const getWhatsAppUrl = () => {
+    const wa = String(contactData?.company_whatsapp || '6281234567890').replace(/\D/g, '');
+    return `https://wa.me/${wa}`;
   };
 
   const handlePrint = () => {
@@ -421,13 +439,13 @@ export default function FindOrder() {
         price_id: searchResult.price_id,
       };
 
-      const response = await http.post('/api/order/fleet/payment', payload);
+      const response = await http.post<{ status?: string; data?: any }>('/api/order/fleet/payment', payload);
 
-      if (response.data.status === 'success' || response.status === 200) {
+      if (response.status === 200 || response.data?.status === 'success') {
         navigate(`/purchase/armada/${orderToken}`, {
           state: {
             paymentMethod: selectedPaymentMethod,
-            paymentData: response.data.data,
+            paymentData: response.data?.data,
             paymentAmount: 0,
             paymentType: 'remaining',
           },
@@ -878,7 +896,7 @@ export default function FindOrder() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                 <Button
-                  onClick={() => window.open(WHATSAPP_URL, '_blank')}
+                  onClick={() => window.open(getWhatsAppUrl(), '_blank')}
                   className="h-14 px-8 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-all duration-300 hover:-translate-y-1 group"
                 >
                   <MessageCircle className="mr-2 h-5 w-5" />

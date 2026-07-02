@@ -3,8 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useCheckout } from '@/contexts/CheckoutContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  ArrowLeft, Calendar, Clock, Car, MapPin, Plus, Minus, X, 
-  CheckSquare, Square, Users, Check, ChevronsUpDown,
+  ArrowLeft, Calendar, Car, Plus, Minus, X, Check, ChevronsUpDown,
   Info, ShieldCheck, MessageCircle, ThumbsUp, ArrowRight, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -115,6 +114,11 @@ const CitySearchSelect: React.FC<CitySearchSelectProps> = ({ value, onSelect, pl
   }, [search]);
 
   // Filter out excluded ID and priority cities from the main list to avoid duplicates
+  const normalizedSearch = search.toLowerCase();
+  const filteredPriorityCities = priorityCities?.filter(city =>
+    city.name.toLowerCase().includes(normalizedSearch)
+  ) || [];
+
   const filteredCities = Array.isArray(cities) 
     ? cities.filter(city => 
         String(city.id) !== String(excludeId) && 
@@ -153,9 +157,9 @@ const CitySearchSelect: React.FC<CitySearchSelectProps> = ({ value, onSelect, pl
                         <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>
                         
                         {/* Priority Cities Group */}
-                        {priorityCities && priorityCities.length > 0 && (
+                        {filteredPriorityCities.length > 0 && (
                           <CommandGroup heading="Rekomendasi Kota">
-                            {priorityCities.map((city) => (
+                            {filteredPriorityCities.map((city) => (
                               <CommandItem
                                 key={`priority-${city.id}`}
                                 value={city.name}
@@ -246,12 +250,14 @@ export const ArmadaCheckout: React.FC = () => {
   const { setCheckoutData } = useCheckout();
   const { toast } = useToast();
   const { fleet_id, price_id, startDate, endDate, cityId, cityName, pricing } = location.state || {};
+  const selectedDestinationCityId = cityId ? cityId.toString() : '';
+  const selectedDestinationCityName = cityName || '';
   
   const [fleetSummary, setFleetSummary] = useState<FleetSummaryData | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [addons, setAddons] = useState<FleetAddon[]>([]);
   const [selectedAddons, setSelectedAddons] = useState<FleetAddon[]>([]);
-  const [loadingAddons, setLoadingAddons] = useState(false);
+  const [, setLoadingAddons] = useState(false);
   const [activePriceId, setActivePriceId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
@@ -296,13 +302,13 @@ export const ArmadaCheckout: React.FC = () => {
     returnTime: '',
     
     // Titik penjemputan
-    pickupCity: cityId ? cityId.toString() : '',
-    pickupCityName: cityName || '',
+    pickupCity: '',
+    pickupCityName: '',
     pickupLocation: '',
     pickupAddress: '',
     
     // Rencana Perjalanan
-    itinerary: [{ day: 1, events: [{ location: cityName || '', city_id: cityId ? cityId.toString() : '', city_name: cityName || '' }] }],
+    itinerary: [{ day: 1, events: [{ location: '', city_id: selectedDestinationCityId, city_name: selectedDestinationCityName }] }],
     
     // Jumlah Armada
     armadaCount: 1,
@@ -349,13 +355,22 @@ export const ArmadaCheckout: React.FC = () => {
           });
           if (response.data.status === 'success') {
             setFleetSummary(response.data.data);
+            const defaultPickupPoint = response.data.data.pickup_points?.[0];
+            const defaultPickupCityId = defaultPickupPoint ? String(defaultPickupPoint.city_id) : '';
+            const defaultPickupCityName = defaultPickupPoint?.city_name || '';
             
             const duration = response.data.data.duration || 1;
             setFormData(prev => ({
               ...prev,
+              pickupCity: prev.pickupCity || defaultPickupCityId,
+              pickupCityName: prev.pickupCityName || defaultPickupCityName,
               itinerary: Array.from({ length: duration }, (_, i) => ({
                 day: i + 1,
-                events: [{ location: '', city_id: '', city_name: '' }]
+                events: [{
+                  location: '',
+                  city_id: selectedDestinationCityId,
+                  city_name: selectedDestinationCityName
+                }]
               }))
             }));
             setExpandedDays([1]); // expand first day
@@ -667,6 +682,8 @@ export const ArmadaCheckout: React.FC = () => {
   const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.addon_price, 0);
   const totalPrice = (basePrice + addonsTotal) * formData.armadaCount;
   const data = fleetSummary;
+  const pickupPriorityCities = data.pickup_points?.map(p => ({ id: String(p.city_id), name: p.city_name })) || [];
+  const isPickupOutsideCoverage = !!formData.pickupCity && !pickupPriorityCities.some((city) => city.id === String(formData.pickupCity));
 
   const steps = ['Detail Pemesan', 'Rencana Perjalanan', 'Detail Armada', 'Konfirmasi'];
 
@@ -765,7 +782,7 @@ export const ArmadaCheckout: React.FC = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-[#0F172A]">Nomor Telepon *</label>
-                    <Input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="08123456789" required className="rounded-xl border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all" />
+                    <Input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="628123456789" required className="rounded-xl border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-[#0F172A]">Instansi / Organisasi</label>
@@ -790,10 +807,15 @@ export const ArmadaCheckout: React.FC = () => {
                     <CitySearchSelect 
                       value={formData.pickupCityName} 
                       onSelect={(city) => setFormData(prev => ({ ...prev, pickupCity: city.id, pickupCityName: city.name }))}
-                      priorityCities={data.pickup_points?.map(p => ({ id: String(p.city_id), name: p.city_name })) || []}
+                      priorityCities={pickupPriorityCities}
                       placeholder="Pilih Kota Penjemputan"
                       required
                     />
+                    {isPickupOutsideCoverage && (
+                      <p className="text-xs text-amber-600 mt-2">
+                        Penjemputan di luar wilayah memungkinkan adanya biaya tambahan
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-[#0F172A]">Detail Lokasi *</label>
@@ -1027,10 +1049,6 @@ export const ArmadaCheckout: React.FC = () => {
                           {data.rent_type_label}
                         </span>
                       )}
-                      <div className="flex flex-wrap gap-1">
-                        <span className="text-[10px] font-medium text-[#64748B] bg-[#F8FAFC] px-1.5 py-0.5 rounded border border-[#E2E8F0]">{data.capacity} Seat</span>
-                        <span className="text-[10px] font-medium text-[#64748B] bg-[#F8FAFC] px-1.5 py-0.5 rounded border border-[#E2E8F0]">{data.engine}</span>
-                      </div>
                     </div>
                   </div>
 

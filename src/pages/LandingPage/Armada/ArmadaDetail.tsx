@@ -25,7 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { ImagePopup } from '@/components/common/ImagePopup';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import {
   Carousel,
@@ -86,6 +86,12 @@ interface FleetImage {
   path_file: string;
 }
 
+interface FleetFacility {
+  facility_icon?: string;
+  facility_id?: string;
+  facility_name?: string;
+}
+
 interface FleetDetailData {
   rating: number;
   reviews: any;
@@ -103,9 +109,60 @@ interface FleetDetailResponse {
   data: FleetDetailData;
 }
 
+interface SelectableCity {
+  id: number | string;
+  name: string;
+  serviceTypes: string[];
+}
+
+const normalizeFacilityName = (facility: string | FleetFacility) => {
+  if (typeof facility === 'string') {
+    return facility.trim();
+  }
+
+  return facility.facility_name?.trim() ?? '';
+};
+
+const sanitizeFleetDescription = (html: string) => {
+  if (!html) {
+    return '';
+  }
+
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\son\w+=(["']).*?\1/gi, '')
+    .replace(/\son\w+=([^\s>]+)/gi, '')
+    .replace(/\s(href|src)=("|')\s*javascript:[^"']*\2/gi, ' $1="#"');
+};
+
+const normalizeCityName = (city: any) => city.city_label || city.city_name || city.name || '';
+
+const normalizeCityId = (city: any, fallback: number) => city.city_id || city.id || fallback;
+
+const normalizeServiceTypes = (serviceTypes: unknown): string[] => {
+  if (!Array.isArray(serviceTypes)) {
+    return [];
+  }
+
+  return serviceTypes
+    .map((type) => {
+      if (typeof type === 'string') {
+        return type;
+      }
+
+      if (type && typeof type === 'object') {
+        return type.service_type || type.slug || type.name || '';
+      }
+
+      return '';
+    })
+    .filter(Boolean);
+};
+
 const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: string, serviceTypes: string[], cityId: number | string) => void }) => {
   const [open, setOpen] = useState(false);
-  const [cities, setCities] = useState<any[]>([]);
+  const [preferredCities, setPreferredCities] = useState<SelectableCity[]>([]);
+  const [otherCities, setOtherCities] = useState<SelectableCity[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   
@@ -113,10 +170,38 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
     const fetchCities = async () => {
       setLoading(true);
       try {
-        const response = await http.get<any>('/api/general/preferences/cities');
-        if (response.data?.status === 'success' || response.status === 200) {
-             setCities(response.data?.data || response.data || []);
-        }
+        const [preferredResponse, generalResponse] = await Promise.all([
+          http.get<any>('/api/general/preferences/cities'),
+          http.get<any>('/api/general/cities'),
+        ]);
+
+        const preferredData = preferredResponse.data?.data || preferredResponse.data || [];
+        const generalData = generalResponse.data?.data || generalResponse.data || [];
+
+        const normalizedPreferredCities = Array.isArray(preferredData)
+          ? preferredData
+              .map((city, idx) => ({
+                id: normalizeCityId(city, idx),
+                name: normalizeCityName(city),
+                serviceTypes: normalizeServiceTypes(city.service_types),
+              }))
+              .filter((city) => city.name)
+          : [];
+
+        const preferredIds = new Set(normalizedPreferredCities.map((city) => String(city.id)));
+
+        const normalizedOtherCities = Array.isArray(generalData)
+          ? generalData
+              .map((city, idx) => ({
+                id: normalizeCityId(city, idx),
+                name: normalizeCityName(city),
+                serviceTypes: ['overland'],
+              }))
+              .filter((city) => city.name && !preferredIds.has(String(city.id)))
+          : [];
+
+        setPreferredCities(normalizedPreferredCities);
+        setOtherCities(normalizedOtherCities);
       } catch (error) {
         console.error("Failed to fetch cities", error);
       } finally {
@@ -126,10 +211,12 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
     fetchCities();
   }, []);
 
-  const filteredCities = cities.filter(city => {
-    const name = city.city_label || city.city_name || city.name || '';
-    return name.toLowerCase().includes(search.toLowerCase());
-  });
+  const normalizedSearch = search.toLowerCase();
+  const filterCityBySearch = (city: SelectableCity) => city.name.toLowerCase().includes(normalizedSearch);
+
+  const filteredPreferredCities = preferredCities.filter(filterCityBySearch);
+  const filteredOtherCities = otherCities.filter(filterCityBySearch);
+  const hasResults = filteredPreferredCities.length > 0 || filteredOtherCities.length > 0;
 
   return (
     <div className="w-full">
@@ -162,17 +249,16 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
                 <div className="py-6 text-center text-sm text-gray-500">Memuat kota...</div>
               ) : (
                 <>
-                  {filteredCities.length === 0 && <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>}
-                  <CommandGroup>
-                    {filteredCities.map((city, idx) => {
-                      const cityName = city.city_label || city.city_name || city.name;
-                      const cityId = city.city_id || city.id || idx;
-                      return (
+                  {!hasResults && <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>}
+
+                  {filteredPreferredCities.length > 0 && (
+                    <CommandGroup>
+                      {filteredPreferredCities.map((city) => (
                         <CommandItem
-                          key={cityId}
-                          value={cityName}
+                          key={`preferred-${city.id}`}
+                          value={city.name}
                           onSelect={() => {
-                            onSelect(cityName, city.service_types || [], cityId);
+                            onSelect(city.name, city.serviceTypes, city.id);
                             setOpen(false);
                           }}
                           className="cursor-pointer"
@@ -180,14 +266,41 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4 text-blue-600",
-                              value === cityName ? "opacity-100" : "opacity-0"
+                              value === city.name ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          {cityName}
+                          {city.name}
                         </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
+                      ))}
+                    </CommandGroup>
+                  )}
+
+                  {filteredOtherCities.length > 0 && (
+                    <>
+                      {filteredPreferredCities.length > 0 && <CommandSeparator className="my-1" />}
+                      <CommandGroup heading="Kota lain">
+                        {filteredOtherCities.map((city) => (
+                          <CommandItem
+                            key={`general-${city.id}`}
+                            value={city.name}
+                            onSelect={() => {
+                              onSelect(city.name, city.serviceTypes, city.id);
+                              setOpen(false);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4 text-blue-600",
+                                value === city.name ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {city.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </>
+                  )}
                 </>
               )}
             </CommandList>
@@ -467,7 +580,7 @@ const PricingCard: React.FC<{
               <Button
                 className="w-full flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 h-14 font-semibold text-lg shadow-xl shadow-blue-600/20 transition-all hover:scale-105"
                 onClick={onOrderNow}
-                disabled={!selectedPricing || isAvailable === false || pricingList.length === 0}
+                disabled={!selectedPricing || pricingList.length === 0}
               >
                 {selectedPricing ? 'Pesan Sekarang' : 'Pilih Varian Durasi'}
               </Button>
@@ -525,7 +638,9 @@ export const ArmadaDetail: React.FC = () => {
           const data = response.data.data;
           setFleet({
             ...data,
-            facilities: data.facilities ?? [],
+            facilities: (data.facilities ?? [])
+              .map((facility) => normalizeFacilityName(facility as string | FleetFacility))
+              .filter(Boolean),
             pickup: data.pickup ?? [],
             addon: data.addon ?? [],
             pricing: data.pricing ?? [],
@@ -579,10 +694,12 @@ export const ArmadaDetail: React.FC = () => {
   };
 
   const handleCitySelect = (cityName: string, serviceTypes: string[], cityId: number | string) => {
+    const nextServiceTypes = serviceTypes.length > 0 ? serviceTypes : ['overland'];
+
     setDestinationCity(cityName);
     setDestinationCityId(cityId);
-    setAvailableServiceTypes(serviceTypes);
-    setServiceType('');
+    setAvailableServiceTypes(nextServiceTypes);
+    setServiceType(serviceTypes.length > 0 ? '' : 'overland');
   };
 
   const handleOrderNow = () => {
@@ -691,6 +808,7 @@ export const ArmadaDetail: React.FC = () => {
 
   const rating = fleet.meta.rating || 0.0;
   const reviews = fleet.meta.total_ulasan || 0;
+  const sanitizedDescription = sanitizeFleetDescription(fleet.meta.description);
 
   const fleetTypeLabel = fleet.meta.fleet_type_label ?? fleet.meta.fleet_type;
   const fuelLabel = fleet.meta.fuel_type_label ?? fleet.meta.fuel_type;
@@ -900,7 +1018,10 @@ export const ArmadaDetail: React.FC = () => {
                       <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Deskripsi Armada</h2>
                     </div>
 
-                      <div className="prose prose-lg max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: fleet.meta.description }}/>
+                      <div
+                        className="prose prose-lg max-w-none text-gray-700"
+                        dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+                      />
 
                       {fleet.pickup.length > 0 && (
                         <div className="mt-8 mb-5">

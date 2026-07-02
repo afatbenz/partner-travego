@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { http } from '@/lib/http';
 import { formatPhoneNumber } from '@/lib/utils';
 
 export const Footer: React.FC = () => {
-  const { getContentIn, getListIn } = useGeneralContent();
+  const { getContentIn } = useGeneralContent();
   const [contactData, setContactData] = useState<any>(null);
 
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await http.get('/api/content');
-        if (res.data?.data?.contact) {
-          setContactData(res.data.data.contact);
-        }
+        const res = await http.get<{ data?: { contact?: any } }>('/api/content');
+        const contact = res.data?.data?.contact;
+        if (contact) setContactData(contact);
       } catch (err) {
         console.error('Failed to fetch contact content', err);
       }
@@ -29,27 +28,6 @@ export const Footer: React.FC = () => {
   const brandDesc = brandDescRaw && brandDescRaw.trim() !== ''
     ? brandDescRaw
     : 'Partner perjalanan terpercaya Anda untuk eksplorasi Indonesia yang tak terlupakan dengan layanan premium.';
-  
-  const socialList = getListIn('general-config', 'social-media') as { icon?: string; label?: string; sub_label?: string }[] | null;
-  const socialIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    facebook: Facebook,
-    twitter: Twitter,
-    instagram: Instagram,
-    youtube: Youtube,
-    linkedin: Linkedin,
-  };
-  
-  const contactList = getListIn('general-config', 'contact') as { icon?: string; label?: string; sub_label?: string }[] | null;
-  const contactIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    phone: Phone,
-    tel: Phone,
-    call: Phone,
-    mail: Mail,
-    email: Mail,
-    address: MapPin,
-    location: MapPin,
-    'map-pin': MapPin,
-  };
 
   return (
     <footer className="bg-[#0f172a] text-white py-16 print:hidden">
@@ -106,7 +84,7 @@ export const Footer: React.FC = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 shrink-0" />
                 {contactData?.company_phone === contactData?.company_whatsapp
                   ? formatPhoneNumber(contactData?.company_whatsapp) 
-                  : formatPhoneNumber(contactData?.company_phone)}
+                  : formatPhoneNumber(contactData?.company_phone || contactData?.company_whatsapp || '')}
               </li>
               <li className="flex items-center text-gray-400 text-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 shrink-0" />
