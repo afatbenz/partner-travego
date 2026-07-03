@@ -67,7 +67,7 @@ export const CTASection: React.FC<CTASectionProps> = ({
               <Button 
                 size="lg"
                 variant="outline"
-                className="w-full sm:w-auto border-white text-white bg-transparent hover:bg-black/10 rounded-xl hover:border-white px-8 h-12 font-normal flex items-center gap-2"
+                className="w-full sm:w-auto border-white text-white bg-transparent hover:bg-black/10 rounded-xl hover:border-white hover:text-white px-8 h-12 font-normal flex items-center gap-2"
                 onClick={() => window.location.href = phoneUrl}
               >
                 <Phone className="h-5 w-5" />

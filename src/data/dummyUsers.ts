@@ -14,9 +14,9 @@ export interface User {
 export const dummyUsers: User[] = [
   {
     id: 1,
-    email: 'admin@travelpro.com',
+    email: 'admin@CalistaPrima.com',
     password: 'admin123',
-    name: 'Admin TravelPro',
+    name: 'Admin CalistaPrima',
     role: 'admin',
     phone: '+62 812-3456-7890',
     address: 'Jl. Sudirman No. 123, Jakarta Pusat',
@@ -25,7 +25,7 @@ export const dummyUsers: User[] = [
   },
   {
     id: 2,
-    email: 'user@travelpro.com',
+    email: 'user@CalistaPrima.com',
     password: 'user123',
     name: 'Ahmad Rizki',
     role: 'user',

@@ -49,7 +49,7 @@ export const Login: React.FC = () => {
   return (
     <AuthLayout
       title="Selamat Datang Kembali"
-      subtitle="Masuk ke akun TravelPro Anda"
+      subtitle="Masuk ke akun CalistaPrima Anda"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
@@ -143,8 +143,8 @@ export const Login: React.FC = () => {
             Dummy Users untuk Testing:
           </h4>
           <div className="space-y-1 text-xs text-blue-800 dark:text-blue-200">
-            <div><strong>Admin:</strong> admin@travelpro.com / admin123</div>
-            <div><strong>User:</strong> user@travelpro.com / user123</div>
+            <div><strong>Admin:</strong> admin@CalistaPrima.com / admin123</div>
+            <div><strong>User:</strong> user@CalistaPrima.com / user123</div>
             <div><strong>User 2:</strong> john.doe@email.com / john123</div>
             <div><strong>User 3:</strong> sarah.wilson@email.com / sarah123</div>
           </div>

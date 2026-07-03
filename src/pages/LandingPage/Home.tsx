@@ -53,7 +53,7 @@ export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { getContentByTag, getContentIn, getListIn } = useGeneralContent();
   const heroBannerImage = getContentIn('hero-banner', 'main-banner') || getContentByTag('main-banner') || '';
-  const brandName = getContentIn('landing-page', 'brand-name') || getContentByTag('brand-name') || 'TravelPro';
+  const brandName = getContentIn('landing-page', 'brand-name') || getContentByTag('brand-name') || 'CalistaPrima';
   
 
   const [fleets, setFleets] = useState<any[]>([]);
@@ -336,7 +336,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Popular Catalog Section */}
-      <section className="py-24 bg-white dark:bg-gray-950">
+      {/* <section className="py-24 bg-white dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 animate-in fade-in slide-in-from-bottom duration-1000">
             <div className="space-y-4 max-w-2xl">
@@ -369,7 +369,7 @@ export const Home: React.FC = () => {
             />
           </div>
         </div>
-      </section>
+      </section> */}
 
       <CTASection />
     </div>

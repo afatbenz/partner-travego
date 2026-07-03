@@ -12,9 +12,9 @@ export const Team: React.FC = () => {
       position: 'Chief Executive Officer',
       department: 'Management',
       image: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bio: 'Dengan pengalaman 15 tahun di industri travel, Ahmad memimpin TravelPro dengan visi memberikan layanan terbaik kepada setiap customer.',
+      bio: 'Dengan pengalaman 15 tahun di industri travel, Ahmad memimpin CalistaPrima dengan visi memberikan layanan terbaik kepada setiap customer.',
       expertise: ['Strategic Planning', 'Business Development', 'Customer Relations'],
-      email: 'ahmad.rizki@travelpro.com',
+      email: 'ahmad.rizki@CalistaPrima.com',
       phone: '+62 21 1234 5678',
       experience: '15+ Years',
       projects: '500+ Projects'
@@ -27,7 +27,7 @@ export const Team: React.FC = () => {
       image: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=400',
       bio: 'Sari bertanggung jawab atas operasional harian dan memastikan setiap layanan berjalan dengan standar kualitas tertinggi.',
       expertise: ['Operations Management', 'Quality Control', 'Team Leadership'],
-      email: 'sari.dewi@travelpro.com',
+      email: 'sari.dewi@CalistaPrima.com',
       phone: '+62 21 1234 5679',
       experience: '10+ Years',
       projects: '800+ Operations'
@@ -40,7 +40,7 @@ export const Team: React.FC = () => {
       image: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400',
       bio: 'Mengelola seluruh armada kendaraan dan memastikan kondisi optimal serta keamanan setiap perjalanan pelanggan.',
       expertise: ['Fleet Management', 'Vehicle Maintenance', 'Safety Protocols'],
-      email: 'budi.santoso@travelpro.com',
+      email: 'budi.santoso@CalistaPrima.com',
       phone: '+62 21 1234 5680',
       experience: '12+ Years',
       projects: '200+ Fleet Units'
@@ -53,7 +53,7 @@ export const Team: React.FC = () => {
       image: 'https://images.pexels.com/photos/3796217/pexels-photo-3796217.jpeg?auto=compress&cs=tinysrgb&w=400',
       bio: 'Maya memimpin tim customer service dan memastikan setiap pertanyaan dan keluhan pelanggan ditangani dengan profesional.',
       expertise: ['Customer Relations', 'Problem Solving', 'Communication'],
-      email: 'maya.sari@travelpro.com',
+      email: 'maya.sari@CalistaPrima.com',
       phone: '+62 21 1234 5681',
       experience: '8+ Years',
       projects: '5000+ Customers Served'
@@ -66,7 +66,7 @@ export const Team: React.FC = () => {
       image: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=400',
       bio: 'Koordinator tim tour guide yang memastikan setiap wisatawan mendapatkan pengalaman tak terlupakan di setiap destinasi.',
       expertise: ['Tourism Management', 'Cultural Knowledge', 'Language Skills'],
-      email: 'dicky.pratama@travelpro.com',
+      email: 'dicky.pratama@CalistaPrima.com',
       phone: '+62 21 1234 5682',
       experience: '9+ Years',
       projects: '1000+ Tours'
@@ -77,9 +77,9 @@ export const Team: React.FC = () => {
       position: 'Marketing Manager',
       department: 'Marketing',
       image: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bio: 'Lisa mengelola strategi pemasaran dan branding TravelPro untuk menjangkau lebih banyak pelanggan dengan pesan yang tepat.',
+      bio: 'Lisa mengelola strategi pemasaran dan branding CalistaPrima untuk menjangkau lebih banyak pelanggan dengan pesan yang tepat.',
       expertise: ['Digital Marketing', 'Brand Strategy', 'Content Creation'],
-      email: 'lisa.anggraini@travelpro.com',
+      email: 'lisa.anggraini@CalistaPrima.com',
       phone: '+62 21 1234 5683',
       experience: '7+ Years',
       projects: '50+ Campaigns'
@@ -113,7 +113,7 @@ export const Team: React.FC = () => {
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Tim Profesional Kami</h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-              Dibalik layanan terbaik TravelPro adalah tim profesional yang berpengalaman 
+              Dibalik layanan terbaik CalistaPrima adalah tim profesional yang berpengalaman 
               dan berkomitmen memberikan pengalaman perjalanan tak terlupakan
             </p>
           </div>
