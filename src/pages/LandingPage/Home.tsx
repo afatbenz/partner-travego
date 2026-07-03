@@ -3,8 +3,8 @@ import { Search, Star, Shield, Clock, Headphones, ArrowRight, MapPin, Phone, Use
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { Button } from '@/components/ui/button';
 import { CTASection } from '@/components/common/CTASection';
-import { TourPackageList } from '@/components/common/TourPackageList';
-import { useTourPackages } from '@/hooks/useTourPackages';
+// import { TourPackageList } from '@/components/common/TourPackageList';
+// import { useTourPackages } from '@/hooks/useTourPackages';
 import {
   Carousel,
   CarouselContent,
@@ -58,7 +58,7 @@ export const Home: React.FC = () => {
 
   const [fleets, setFleets] = useState<any[]>([]);
   const [loadingFleets, setLoadingFleets] = useState(true);
-  const { items: tourPackages, loading: loadingCatalogs } = useTourPackages();
+  // const { items: tourPackages, loading: loadingCatalogs } = useTourPackages();
 
   useEffect(() => {
     const fetchFleets = async () => {
