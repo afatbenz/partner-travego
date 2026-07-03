@@ -9,8 +9,8 @@ export const Referral: React.FC = () => {
   const [copied, setCopied] = useState(false);
   
   // Sample referral code - in real app, this would come from user data
-  const referralCode = "TRAVELPRO2024";
-  const referralLink = `https://travelpro.com/register?ref=${referralCode}`;
+  const referralCode = "CalistaPrima2024";
+  const referralLink = `https://CalistaPrima.com/register?ref=${referralCode}`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(referralCode);
@@ -26,8 +26,8 @@ export const Referral: React.FC = () => {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'Daftar TravelPro dengan kode referral saya',
-        text: `Daftar di TravelPro dengan kode referral ${referralCode} dan dapatkan poin di setiap transaksi!`,
+        title: 'Daftar CalistaPrima dengan kode referral saya',
+        text: `Daftar di CalistaPrima dengan kode referral ${referralCode} dan dapatkan poin di setiap transaksi!`,
         url: referralLink,
       });
     } else {
@@ -100,7 +100,7 @@ export const Referral: React.FC = () => {
           <Card>
             <CardContent className="p-8 text-center">
               <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                Bagikan ke temanmu untuk register di TravelPro, dapatkan poin di setiap transaksi
+                Bagikan ke temanmu untuk register di CalistaPrima, dapatkan poin di setiap transaksi
               </p>
             </CardContent>
           </Card>

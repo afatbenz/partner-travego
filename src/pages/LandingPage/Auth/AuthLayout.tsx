@@ -29,7 +29,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
               <Link to="/" className="inline-flex items-center space-x-2">
                 <MapPin className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-blue-600 dark:text-blue-400" />
                 <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
-                  TravelPro
+                  CalistaPrima
                 </span>
               </Link>
             </div>
@@ -51,7 +51,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
             {/* Footer */}
             <div className="mt-2 sm:mt-3 lg:mt-4 text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               <p>
-                &copy; 2025 TravelPro. All rights reserved.
+                &copy; 2025 CalistaPrima. All rights reserved.
               </p>
             </div>
           </div>

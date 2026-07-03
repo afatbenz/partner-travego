@@ -33,7 +33,6 @@ export const Navbar: React.FC = () => {
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Katalog', href: '/catalog' },
     { name: 'Armada', href: '/armada' },
     { name: 'Lacak Pesanan', href: '/find-order' },
     // { name: 'Promo', href: '/promo-discount' },

@@ -75,7 +75,7 @@ export const Topbar: React.FC = () => {
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">Ahmad Rizki</p>
-                  <p className="text-xs text-gray-500">admin@travelpro.com</p>
+                  <p className="text-xs text-gray-500">admin@CalistaPrima.com</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

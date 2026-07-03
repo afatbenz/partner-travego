@@ -48,7 +48,7 @@ export const Register: React.FC = () => {
   return (
     <AuthLayout
       title="Buat Akun Baru"
-      subtitle="Bergabunglah dengan TravelPro untuk pengalaman perjalanan terbaik"
+      subtitle="Bergabunglah dengan CalistaPrima untuk pengalaman perjalanan terbaik"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
@@ -182,7 +182,7 @@ export const Register: React.FC = () => {
             <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
               Kebijakan Privasi
             </Link>
-            {' '}TravelPro
+            {' '}CalistaPrima
           </label>
         </div>
 
