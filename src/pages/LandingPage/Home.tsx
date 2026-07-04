@@ -163,26 +163,26 @@ export const Home: React.FC = () => {
                   Lihat Armada
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button 
+                {/* <Button 
                   size="lg" 
                   variant="outline"
                   className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white hover:text-blue-900 rounded-full px-8 py-6 text-sm font-semibold transition-all hover:scale-105 active:scale-95"
                   onClick={() => navigate('/catalog')}
                 >
                   Paket Wisata
-                </Button>
+                </Button> */}
               </div>
 
               {/* Stats/Trust Indicators */}
               <div className="flex items-center gap-8 pt-4">
                 <div className="flex flex-col">
-                  <span className="text-3xl font-bold text-white">500+</span>
-                  <span className="text-blue-200 text-sm">Armada Modern</span>
+                  <span className="text-3xl font-bold text-white">10+</span>
+                  <span className="text-blue-200 text-sm">Armada Pariwisata</span>
                 </div>
                 <div className="h-10 w-px bg-white/20" />
                 <div className="flex flex-col">
-                  <span className="text-3xl font-bold text-white">10k+</span>
-                  <span className="text-blue-200 text-sm">Happy Clients</span>
+                  <span className="text-3xl font-bold text-white">50+</span>
+                  <span className="text-blue-200 text-sm">Pelanggan pertahun</span>
                 </div>
                 <div className="h-10 w-px bg-white/20" />
                 <div className="flex flex-col">

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Globe } from 'lucide-react';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { http } from '@/lib/http';
 import { formatPhoneNumber } from '@/lib/utils';
 
 export const Footer: React.FC = () => {
-  const { getContentIn } = useGeneralContent();
+  const { getContentIn, getListIn } = useGeneralContent();
   const [contactData, setContactData] = useState<any>(null);
 
   useEffect(() => {
@@ -21,6 +21,15 @@ export const Footer: React.FC = () => {
     };
     fetchContent();
   }, []);
+
+  const socialMediaList = (getListIn('general-config', 'social-media') as { icon: string; label: string; sub_label: string }[]) || [];
+
+  const socialIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    instagram: Instagram,
+    facebook: Facebook,
+    twitter: Twitter,
+    youtube: Youtube,
+  };
 
   const brandNameRaw = getContentIn('general-config', 'brand-name');
   const brandName = brandNameRaw && brandNameRaw.trim() !== '' ? brandNameRaw : 'TraveGO';
@@ -42,11 +51,22 @@ export const Footer: React.FC = () => {
               {brandDesc}
             </p>
             <div className="flex space-x-4">
-              {[Instagram, Facebook, Twitter, Youtube].map((Icon, idx) => (
-                <a key={idx} href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <Icon className="h-5 w-5" />
-                </a>
-              ))}
+              {socialMediaList.map((item, idx) => {
+                const Icon = socialIconMap[item.icon?.toLowerCase()] || Globe;
+                const href = item.sub_label?.startsWith('http') ? item.sub_label : `https://${item.sub_label}`;
+                return (
+                  <a
+                    key={idx}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                    title={item.icon}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
