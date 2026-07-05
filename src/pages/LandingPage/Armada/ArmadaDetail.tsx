@@ -16,7 +16,9 @@ import {
   Gauge,
   Calendar as CalendarIcon,
   ChevronsUpDown,
-  Check
+  Check,
+  Eye,
+  Briefcase
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
@@ -56,6 +58,8 @@ interface FleetMeta {
   fuel_type_label?: string;
   rating?: number;
   total_ulasan?: number;
+  views?: number;
+  total_orders?: number;
 }
 
 interface FleetPickup {
@@ -903,8 +907,16 @@ export const ArmadaDetail: React.FC = () => {
                 <div className="flex items-center">
                   <Star className="h-5 w-5 mr-2 text-yellow-300 fill-yellow-300" />
                   <span>
-                    Rating: {rating} ({reviews} ulasan)
+                    {rating.toFixed(1)} ({reviews} ulasan)
                   </span>
+                </div>
+                <div className="flex items-center">
+                  <Eye className="h-5 w-5 mr-2 text-blue-300" />
+                  <span>{fleet.meta.views ?? 0} dilihat</span>
+                </div>
+                <div className="flex items-center">
+                  <Briefcase className="h-5 w-5 mr-2 text-blue-300" />
+                  <span>{fleet.meta.total_orders ?? 0} perjalanan</span>
                 </div>
               </div>
             </div>
