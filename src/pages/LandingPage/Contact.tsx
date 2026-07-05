@@ -196,7 +196,7 @@ export const Contact: React.FC = () => {
   };
 
   const getWhatsAppUrl = () => {
-    const wa = contactData?.company_whatsapp || '6281234567890';
+    const wa = contactData?.company_whatsapp || contactData?.company_phone || '6281234567890';
     return `https://wa.me/${wa.replace(/\D/g, '')}`;
   };
 
