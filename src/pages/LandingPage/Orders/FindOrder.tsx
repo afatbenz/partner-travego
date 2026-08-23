@@ -540,7 +540,7 @@ export default function FindOrder() {
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+          <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] mb-[-1px]">
             <svg viewBox="0 0 1440 320" className="relative block w-full h-[50px] md:h-[80px]" preserveAspectRatio="none">
               <path
                 fill="#F8FAFC"

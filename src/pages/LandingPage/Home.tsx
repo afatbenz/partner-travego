@@ -53,7 +53,7 @@ export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { getContentByTag, getContentIn, getListIn } = useGeneralContent();
   const heroBannerImage = getContentIn('hero-banner', 'main-banner') || getContentByTag('main-banner') || '';
-  const brandName = getContentIn('landing-page', 'brand-name') || getContentByTag('brand-name') || 'CalistaPrima';
+  const brandName = getContentIn('landing-page', 'brand-name') || getContentByTag('brand-name') || 'Calista Prima';
   
 
   const [fleets, setFleets] = useState<any[]>([]);
@@ -215,7 +215,7 @@ export const Home: React.FC = () => {
         </div>
 
         {/* Curved Divider */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-10">
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] mb-[-1px] z-10">
           <svg 
             className="relative block w-[calc(100%+1.3px)] h-[60px] md:h-[100px]" 
             xmlns="http://www.w3.org/2000/svg" 

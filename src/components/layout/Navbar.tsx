@@ -65,7 +65,7 @@ export const Navbar: React.FC = () => {
               <>
                 <MapPin className={`h-8 w-8 ${isHomePage && !isScrolled ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
                 <span className={`text-2xl font-bold ${textClasses}`}>
-                  {getContentIn('general-config', 'brand-name') || 'TraveGO'}
+                  {getContentIn('general-config', 'brand-name') || 'Calista Prima'}
                 </span>
               </>
             )}
