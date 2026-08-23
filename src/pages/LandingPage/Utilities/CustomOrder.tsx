@@ -81,7 +81,6 @@ export const CustomOrder: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Custom order submitted:', formData);
     // Handle form submission logic here
     alert('Custom order berhasil diajukan! Tim kami akan menghubungi Anda dalam 1x24 jam.');
     navigate(-1);

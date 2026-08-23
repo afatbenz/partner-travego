@@ -98,7 +98,6 @@ export const EditProfile: React.FC = () => {
       alert('Profil berhasil diperbarui!');
       navigate('/myprofile');
     } catch (error) {
-      console.error('Error updating profile:', error);
       alert('Terjadi kesalahan saat memperbarui profil');
     } finally {
       setIsLoading(false);

@@ -33,7 +33,6 @@ interface ArmadaCardProps {
 export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid' }) => {
   const navigate = useNavigate();
   const features = armada.features || [];
-  console.log({armada})
 
   const handleDetailClick = () => {
     navigate(`/detail/armada/${armada.id}`);
