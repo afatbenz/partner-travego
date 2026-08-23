@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Headphones, Zap, BadgeCheck, MessageCircle, Send, Loader2 } from 'lucide-react';
 import { http } from '@/lib/http';
+import Swal from '@/lib/swal';
 
 interface InquirySectionProps {
   title?: string;
@@ -26,6 +27,11 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    // Nomor telepon: hanya angka
+    if (name === 'customer_phone') {
+      setFormData(prev => ({ ...prev, [name]: value.replace(/\D/g, '') }));
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -41,10 +47,20 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
         message_type: messageType
       });
       setFormData({ customer_name: '', customer_email: '', customer_phone: '', message: '' });
-      // Here you might want to show a success toast/alert
+      await Swal.fire({
+        icon: 'success',
+        title: 'Permintaan Terkirim',
+        text: 'Permintaan telah dikirim. Mohon tunggu tim kami akan menghubungi anda.',
+        confirmButtonText: 'OK'
+      });
     } catch (err) {
       console.error('Failed to submit inquiry:', err);
-      // Here you might want to show an error toast/alert
+      await Swal.fire({
+        icon: 'error',
+        title: 'Gagal Mengirim',
+        text: 'Terjadi kesalahan saat mengirim permintaan. Silakan coba lagi.',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -18,7 +18,9 @@ import {
   ChevronsUpDown,
   Check,
   Eye,
-  Briefcase
+  Briefcase,
+  X,
+  ChevronUp
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
@@ -614,6 +616,7 @@ export const ArmadaDetail: React.FC = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedPricing, setSelectedPricing] = useState<FleetPricing | null>(null);
   const [showAllPricing, setShowAllPricing] = useState(false);
+  const [isPricingSheetOpen, setIsPricingSheetOpen] = useState(false);
 
   const [fleet, setFleet] = useState<FleetDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -776,6 +779,31 @@ export const ArmadaDetail: React.FC = () => {
     setShowAllPricing(false);
   };
 
+  // usePageMeta harus dipanggil unconditionally (rules of hooks) — sebelum early returns.
+  // Saat fleet belum loaded (loading/error), fallback ke nilai kosong.
+  usePageMeta({
+    title: fleet ? `${fleet.meta.fleet_name} | Calista Prima` : 'Armada | Calista Prima',
+    description: fleet
+      ? (sanitizeFleetDescription(fleet.meta.description) || fleet.meta.fleet_name || '').replace(/<[^>]*>/g, '').slice(0, 160)
+      : 'Detail armada Calista Prima — sewa bus, Hiace, dan Elf di Tangerang & Jakarta.',
+    canonicalPath: fleet ? `/detail/armada/${fleet.meta.fleet_id}` : undefined,
+    jsonLd: fleet
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Service',
+          name: fleet.meta.fleet_name,
+          description: sanitizeFleetDescription(fleet.meta.description) || fleet.meta.fleet_name || '',
+          provider: { '@type': 'LocalBusiness', name: 'Calista Prima' },
+          areaServed: (fleet.pickup ?? []).map((area) => area.city_name),
+          offers: {
+            '@type': 'Offer',
+            price: fleet.pricing.length > 0 ? Math.min(...fleet.pricing.map((p) => p.price)) : undefined,
+            priceCurrency: 'IDR',
+          },
+        }
+      : undefined,
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -857,28 +885,9 @@ export const ArmadaDetail: React.FC = () => {
     availableServiceTypes,
   };
 
-  usePageMeta({
-    title: `${fleet.meta.fleet_name} | Calista Prima`,
-    description: (sanitizedDescription || fleet.meta.fleet_name || '').replace(/<[^>]*>/g, '').slice(0, 160),
-    canonicalPath: `/detail/armada/${fleet.meta.fleet_id}`,
-    jsonLd: {
-      '@context': 'https://schema.org',
-      '@type': 'Service',
-      name: fleet.meta.fleet_name,
-      description: sanitizedDescription || fleet.meta.fleet_name || '',
-      provider: { '@type': 'LocalBusiness', name: 'Calista Prima' },
-      areaServed: (fleet.pickup ?? []).map((area) => area.city_name),
-      offers: {
-        '@type': 'Offer',
-        price: lowestPrice > 0 ? lowestPrice : undefined,
-        priceCurrency: 'IDR',
-      },
-    },
-  });
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <section className="relative overflow-hidden text-white">
+      <section className="relative overflow-hidden text-white text-center md:text-left">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
           style={{ backgroundImage: `url(${fleet.meta.thumbnail})` }}
@@ -889,33 +898,35 @@ export const ArmadaDetail: React.FC = () => {
         <div className="absolute bottom-[-100px] left-[-100px] w-[300px] h-[300px] bg-indigo-500/20 rounded-full blur-3xl" />
 
         <div className="relative min-h-[420px] flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-24">
-          <div className="max-w-7xl mx-auto w-full">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="mb-8 bg-white/10 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white rounded-full"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
+          <div className="max-w-7xl mx-auto w-full text-center md:text-left">
+            <div className="flex justify-start mb-4 md:mb-8">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="bg-white/10 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white rounded-full"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            </div>
 
-            <div className="max-w-3xl">
+            <div className="max-w-3xl mx-auto md:mx-0">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 {fleet.meta.fleet_name}
               </h1>
 
-              <div className="flex flex-wrap gap-4 mb-6">
-                <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10">
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-2 md:mb-6">
+                <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10 text-xs md:text-normal">
                   <Car className="h-4 w-4 mr-2" />
                   <span>{fleetTypeLabel}</span>
                 </div>
-                <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10">
+                <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10 text-xs md:text-normal">
                   <Users className="h-4 w-4 mr-2" />
                   <span>{fleet.meta.capacities} Penumpang</span>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 text-white/90">
+              <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-6 text-white/90 text-xs md:text-normal">
                 <div className="flex items-center">
                   <MapPin className="h-5 w-5 mr-2 text-blue-300" />
                   <span>
@@ -941,7 +952,7 @@ export const ArmadaDetail: React.FC = () => {
               </div>
             </div>
 
-            <div className="absolute top-8 right-8 flex gap-3">
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-8 flex gap-3">
               <Button
                 variant="ghost"
                 size="icon"
@@ -1046,7 +1057,7 @@ export const ArmadaDetail: React.FC = () => {
 
                   <div className='mt-8 bg-white rounded-lg border border-gray-100 p-6 shadow-sm'>
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="h-1 w-12 bg-blue-600 rounded-full" />
+                      <div className="h-1 w-6 md:w-12 bg-blue-600 rounded-full" />
                       <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Deskripsi Armada</h2>
                     </div>
 
@@ -1058,7 +1069,7 @@ export const ArmadaDetail: React.FC = () => {
                       {fleet.pickup.length > 0 && (
                         <div className="mt-8 mb-5">
                           <div className="flex items-center gap-3 mb-5">
-                            <div className="h-1 w-12 bg-blue-600 rounded-full" />
+                            <div className="h-1 w-6 md:w-12 bg-blue-600 rounded-full" />
                             <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Area Penjemputan</h2>
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -1083,7 +1094,7 @@ export const ArmadaDetail: React.FC = () => {
                             <ClipboardList className="h-5 w-5 text-blue-600" />
                             Spesifikasi
                           </h3>
-                          <div className="bg-white rounded-lg border border-gray-100 p-6 shadow-sm">
+                          <div className="bg-white rounded-lg border-none md:border md: border-b-slate-200 md:border-gray-100 p-0 pb-4 md:p-6 md:shadow-sm">
                             <ul className="space-y-3">
                               {specItems.map((item) => {
                                 const Icon = item.icon;
@@ -1104,7 +1115,7 @@ export const ArmadaDetail: React.FC = () => {
                             <ListChecks className="h-5 w-5 text-green-600" />
                             Fasilitas
                           </h3>
-                          <div className="bg-white rounded-lg border border-gray-100 p-6 shadow-sm">
+                          <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6 md:shadow-sm">
                             <ul className="space-y-2">
                               {(fleet.facilities ?? []).map((feature, index) => (
                                 <li key={index} className="flex items-start text-sm text-gray-700">
@@ -1161,12 +1172,14 @@ export const ArmadaDetail: React.FC = () => {
                 </div>
 
                   <div className='lg:col-span-1'>
-                    {/* Pricing Section */}
+                    {/* Pricing Section — desktop only (mobile pakai bottom bar + floating sheet) */}
                     <div className="sticky top-6">
-                      <PricingCard {...pricingCardProps} />
+                      <div className="hidden lg:block">
+                        <PricingCard {...pricingCardProps} />
+                      </div>
                     {/* Addon Section */}
                     {fleet.addon.length > 0 && (
-                      <div className="bg-white rounded-[2.5rem] p-6 border border-gray-100">
+                      <div className="bg-white rounded-[2.5rem] p-6 border border-gray-100 mt-6 lg:mt-0">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Add-on Tersedia</h3>
                         <div className="flex flex-wrap gap-2">
                           {fleet.addon.map((addon, index) => (
@@ -1191,6 +1204,58 @@ export const ArmadaDetail: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Mobile floating bottom bar — tampil {price} / hari, buka floating pricing card */}
+      <div className="lg:hidden">
+        {/* Backdrop saat sheet terbuka */}
+        {isPricingSheetOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => setIsPricingSheetOpen(false)}
+          />
+        )}
+
+        {/* Bottom bar */}
+        <button
+          type="button"
+          onClick={() => setIsPricingSheetOpen(true)}
+          className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-3 bg-blue-500 text-white px-5 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(37,99,235,0.45)]"
+        >
+          <div className="text-left">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-blue-100">Mulai dari</div>
+            <div className="text-xl font-bold leading-tight">{formattedPrice} <span className="text-sm font-normal text-blue-100">/ {priceUom}</span></div>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-2.5 text-sm font-semibold">
+            <ChevronUp className="h-4 w-4" />
+            Lihat Harga
+          </div>
+        </button>
+
+        {/* Floating pricing sheet — slide up smooth */}
+        <div
+          className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-[2.5rem] shadow-[0_-20px_60px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-out max-h-[85vh] flex flex-col ${
+            isPricingSheetOpen ? 'translate-y-0' : 'translate-y-full'
+          }`}
+        >
+          <div className="shrink-0 flex items-center justify-between px-6 pt-4 pb-2">
+            <div className="flex items-center gap-2">
+              <div className="h-1 w-8 bg-blue-500 rounded-full" />
+              <span className="text-sm font-bold text-gray-900">Pilih Harga</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPricingSheetOpen(false)}
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+              aria-label="Tutup"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="overflow-y-auto px-4 sm:px-6 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <PricingCard {...pricingCardProps} />
+          </div>
+        </div>
+      </div>
 
       <ImagePopup
         images={allImages}

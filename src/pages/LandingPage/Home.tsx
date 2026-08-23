@@ -129,7 +129,9 @@ export const Home: React.FC = () => {
           style={{
             backgroundImage: `url(${heroBannerImage})`,
             backgroundPosition: 'center',
-            backgroundSize: 'cover'
+            backgroundSize: 'cover',
+            backgroundAttachment: 'fixed',
+            willChange: 'transform'
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/60 to-transparent" />
@@ -145,15 +147,15 @@ export const Home: React.FC = () => {
                   Jelajahi <span className="text-orange-400">Indonesia</span> <br />
                   Bersama Kami
                 </h1>
-                <p className="text-lg md:text-xl text-blue-50 max-w-xl leading-relaxed font-light">
-                  Layanan rental bus pariwisata premium dan paket wisata eksklusif untuk perjalanan tak terlupakan Anda di seluruh Nusantara.
+                <p className="text-md md:text-xl text-blue-50 max-w-xl leading-relaxed font-light">
+                  Layanan sewa bus pariwisata Tangerang & Jakarta terlengkap. Hadirkan pengalaman wisata eksklusif dan perjalanan premium ke berbagai destinasi di Indonesia, khususnya Jawa, Bali, dan Sumatera.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-4">
                 <Button 
                   size="lg" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 py-6 text-sm font-semibold shadow-xl shadow-blue-900/20 transition-all hover:scale-105 active:scale-95"
+                  className="bg-transparent hover:bg-black/20 text-white rounded-full px-8 py-6 text-sm font-semibold shadow-xl shadow-blue-900/20 transition-all hover:scale-105 active:scale-95 border border-white"
                   onClick={() => navigate('/armada')}
                 >
                   Lihat Armada
@@ -172,18 +174,18 @@ export const Home: React.FC = () => {
               {/* Stats/Trust Indicators */}
               <div className="flex items-center gap-8 pt-4">
                 <div className="flex flex-col">
-                  <span className="text-3xl font-bold text-white">10+</span>
-                  <span className="text-blue-200 text-sm">Armada Pariwisata</span>
+                  <span className="text-xl md:text-3xl font-bold text-white">10+</span>
+                  <span className="text-blue-200 text-xs md:text-sm">Armada Pariwisata</span>
                 </div>
                 <div className="h-10 w-px bg-white/20" />
                 <div className="flex flex-col">
-                  <span className="text-3xl font-bold text-white">50+</span>
-                  <span className="text-blue-200 text-sm">Pelanggan pertahun</span>
+                  <span className="text-xl md:text-3xl font-bold text-white">50+</span>
+                  <span className="text-blue-200 text-xs md:text-sm">Pelanggan pertahun</span>
                 </div>
                 <div className="h-10 w-px bg-white/20" />
                 <div className="flex flex-col">
-                  <span className="text-3xl font-bold text-white">4.9/5</span>
-                  <span className="text-blue-200 text-sm">Rating Layanan</span>
+                  <span className="text-xl md:text-3xl font-bold text-white">4.9/5</span>
+                  <span className="text-blue-200 text-xs md:text-sm">Rating Layanan</span>
                 </div>
               </div>
             </div>
@@ -218,9 +220,16 @@ export const Home: React.FC = () => {
             viewBox="0 0 1200 120" 
             preserveAspectRatio="none"
           >
+            {/* PATH UNTUK MOBILE (Lekukan lebih diperjelas/bergelombang sedang) */}
+            <path 
+              d="M0,0V40C300,90 450,-20 700,50C950,120 1100,20 1200,40V120H0Z" 
+              className="fill-white dark:fill-gray-950 block md:hidden"
+            ></path>
+
+            {/* PATH UNTUK DESKTOP (Path asli yang detail) */}
             <path 
               d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5,73.84-4.36,147.54,16.88,218.2,35.26,69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-1.42,1200,0.48V120H0Z" 
-              className="fill-white dark:fill-gray-950"
+              className="fill-white dark:fill-gray-950 hidden md:block"
             ></path>
           </svg>
         </div>
@@ -309,7 +318,7 @@ export const Home: React.FC = () => {
       {/* Why Choose Us Section */}
       <section className="py-24 bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-          <div className="text-center mb-20 space-y-4 animate-in fade-in slide-in-from-bottom duration-1000">
+          <div className="text-center mb-10 md:mb-20 space-y-4 animate-in fade-in slide-in-from-bottom duration-1000">
             <span className="text-blue-600 font-bold tracking-widest uppercase text-sm">Keunggulan Kami</span>
             <h2 className="text-2xl md:text-5xl font-bold text-gray-900 dark:text-white">
               Kenapa Pilih <span className="text-blue-600">{brandName}?</span>
