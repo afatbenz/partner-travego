@@ -38,6 +38,7 @@ import {
   type CarouselApi,
 } from '@/components/ui/carousel';
 import { http } from '@/lib/http';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 // Interfaces
 interface FleetMeta {
@@ -856,6 +857,25 @@ export const ArmadaDetail: React.FC = () => {
     availableServiceTypes,
   };
 
+  usePageMeta({
+    title: `${fleet.meta.fleet_name} | Calista Prima`,
+    description: (sanitizedDescription || fleet.meta.fleet_name || '').replace(/<[^>]*>/g, '').slice(0, 160),
+    canonicalPath: `/detail/armada/${fleet.meta.fleet_id}`,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: fleet.meta.fleet_name,
+      description: sanitizedDescription || fleet.meta.fleet_name || '',
+      provider: { '@type': 'LocalBusiness', name: 'Calista Prima' },
+      areaServed: (fleet.pickup ?? []).map((area) => area.city_name),
+      offers: {
+        '@type': 'Offer',
+        price: lowestPrice > 0 ? lowestPrice : undefined,
+        priceCurrency: 'IDR',
+      },
+    },
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       <section className="relative overflow-hidden text-white">
@@ -940,7 +960,7 @@ export const ArmadaDetail: React.FC = () => {
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] mb-[-1px]">
           <svg
             className="relative block w-[calc(100%+1.3px)] h-[100px]"
             xmlns="http://www.w3.org/2000/svg"

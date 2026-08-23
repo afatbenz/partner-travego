@@ -47,6 +47,8 @@ import { Referral } from '@/pages/LandingPage/Utilities/Referral';
 import { Reviews } from '@/pages/LandingPage/Utilities/Reviews';
 import { CustomOrder } from '@/pages/LandingPage/Utilities/CustomOrder';
 import { InvalidApiKey } from '@/pages/LandingPage/Utilities/InvalidApiKey';
+import { SeoLandingPage } from '@/pages/Seo/SeoLandingPage';
+import { seoLandingPages } from '@/seo/landingPages';
 
 // Auth Pages
 import { Login } from '@/pages/LandingPage/Auth/Login';
@@ -131,6 +133,16 @@ function App() {
               <ArmadaDetail />
             </PublicLayout>
           } />
+          {/* SEO Landing Pages */}
+          {seoLandingPages.map((page) => (
+            <Route key={page.path} path={page.path} element={
+              <PublicLayout>
+                <SeoLandingPage config={page} />
+              </PublicLayout>
+            } />
+          ))}
+          {/* "Bis" keyword variant → canonical "Bus" page */}
+          <Route path="/sewa-bis-tangerang" element={<Navigate to="/sewa-bus-tangerang" replace />} />
           <Route path="/checkout/catalog/:id" element={
             <PublicLayout>
               <CatalogCheckout />

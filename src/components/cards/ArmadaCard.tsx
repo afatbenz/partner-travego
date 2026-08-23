@@ -4,27 +4,29 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Star, Users, Shield, Zap, ArrowRight, Heart } from 'lucide-react';
 
+export interface ArmadaData {
+  id: number | string;
+  name: string;
+  type: string;
+  capacity: string;
+  price: string;
+  originalPrice: string;
+  image: string;
+  rating: number;
+  reviews: number;
+  features: string[];
+  location: string;
+  pickupAreas?: string[];
+  year: string;
+  transmission: string;
+  fuel: string;
+  badge: string;
+  discount: string;
+  productionYear?: number;
+}
+
 interface ArmadaCardProps {
-  armada: {
-    id: number | string;
-    name: string;
-    type: string;
-    capacity: string;
-    price: string;
-    originalPrice: string;
-    image: string;
-    rating: number;
-    reviews: number;
-    features: string[];
-    location: string;
-    pickupAreas?: string[];
-    year: string;
-    transmission: string;
-    fuel: string;
-    badge: string;
-    discount: string;
-    productionYear?: number;
-  };
+  armada: ArmadaData;
   viewMode?: 'grid' | 'list';
 }
 

@@ -75,22 +75,22 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
       />
 
       {/* Content */}
-      <div className="relative pt-10 pb-10 z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-gradient-to-br from-[#295BFF] via-[#3A6AFF] to-[#4F7BFF] dark:bg-gray-900">
+      <div className="relative pt-10 pb-10 z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 dark:bg-gray-900 rounded-[2rem]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
           {/* Left Side */}
           <div className="space-y-8 animate-in fade-in slide-in-from-left duration-700">
             {/* Icon */}
-            <div className="w-16 h-16 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
-              <Headphones className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-blue-600">
+              <Headphones className="h-8 w-8 text-blue-600" />
             </div>
 
             {/* Headline */}
             <div className="space-y-4">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight whitespace-pre-line">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-blue-600 leading-tight whitespace-pre-line">
                 {title}
               </h2>
-              <p className="text-lg text-blue-100 font-normal leading-relaxed max-w-md">
+              <p className="text-lg text-blue-900 font-normal leading-relaxed max-w-md">
                 {subtitle}
               </p>
             </div>
@@ -102,8 +102,8 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
                   key={idx}
                   className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl px-5 py-3 transition-all duration-300 hover:bg-white/20"
                 >
-                  <feature.icon className="h-4.5 w-4.5 text-blue-200" />
-                  <span className="text-sm font-medium text-white">{feature.label}</span>
+                  <feature.icon className="h-4.5 w-4.5 text-blue-900" />
+                  <span className="text-sm font-medium text-blue-900">{feature.label}</span>
                 </div>
               ))}
             </div>
@@ -111,7 +111,7 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
 
           {/* Right Side — Form */}
           <div className="animate-in fade-in slide-in-from-right duration-700">
-            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+            <div className="bg-blue-600 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
               <div className="mb-6">
                 <h3 className="text-xl font-semibold text-white">Kirim Permintaan</h3>
                 <p className="text-sm text-blue-200 mt-1 font-normal">Isi form di bawah, tim kami akan segera menghubungi Anda.</p>
@@ -186,7 +186,7 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-[52px] bg-white hover:bg-blue-50 text-[#295BFF] font-semibold rounded-xl shadow-lg shadow-black/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full h-[52px] bg-white hover:bg-blue-50 text-[#295BFF] font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

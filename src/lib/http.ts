@@ -36,6 +36,12 @@ async function parseJson(res: Response) {
 }
 
 async function request<T = unknown>(path: string, options: RequestOptions = {}): Promise<HttpResponse<T>> {
+  // During prerender (react-snap), the backend Origin check rejects the api-key
+  // (headless Chrome origin != domain embedded in key) which triggers the
+  // never-resolving 401 path below. Throw before any fetch so snapshots finish.
+  if (import.meta.env.VITE_PRERENDER === 'true') {
+    throw new Error('PRERENDER_SKIP_API');
+  }
   const url = buildUrl(path, options.query);
   const headers: Record<string, string> = {
     ...(options.headers || {}),
