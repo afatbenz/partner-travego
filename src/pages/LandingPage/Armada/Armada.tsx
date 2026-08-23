@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { InquirySection } from '@/components/common/InquirySection';
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
+import { ArmadaMobileCard } from '@/components/cards/ArmadaMobileCard';
 import { FilterSection } from '@/components/common/FilterSection';
 import { Pagination } from '@/components/common/Pagination';
 import { http } from '@/lib/http';
@@ -240,7 +241,9 @@ const Armada = () => {
         
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm font-normal text-gray-600 dark:text-gray-300 px-4">
-            Menampilkan {paginatedArmada.length} dari {sortedArmada.length} armada
+            Menampilkan {viewMode === 'list'
+              ? paginatedArmada.filter((a) => a.image).length
+              : paginatedArmada.length} dari {sortedArmada.length} armada
           </p>
         </div>
       </div>
@@ -254,13 +257,24 @@ const Armada = () => {
           </div>
         ) : (
           <>
-            <div className={viewMode === 'grid' 
-              ? "grid grid-cols-2 lg:grid-cols-3 gap-6" 
-              : "space-y-6"
+            <div className={viewMode === 'grid'
+              ? "grid grid-cols-2 lg:grid-cols-3 gap-6"
+              : "flex flex-col gap-4"
             }>
-              {paginatedArmada.length > 0 ? (
+              {viewMode === 'list' ? (
+                // List view: reuse ArmadaMobileCard (sama dengan Home mobile list) + hanya yang punya thumbnail
+                paginatedArmada.filter((a) => a.image).length > 0 ? (
+                  paginatedArmada.filter((a) => a.image).map((armada) => (
+                    <ArmadaMobileCard key={armada.id} armada={armada} />
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>
+                  </div>
+                )
+              ) : paginatedArmada.length > 0 ? (
                 paginatedArmada.map((armada) => (
-                  <ArmadaCard key={armada.id} armada={armada} viewMode={viewMode} />
+                  <ArmadaCard key={armada.id} armada={armada} viewMode="grid" />
                 ))
               ) : (
                 <div className="col-span-full text-center py-12">
