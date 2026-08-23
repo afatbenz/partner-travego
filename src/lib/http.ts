@@ -40,6 +40,10 @@ async function request<T = unknown>(path: string, options: RequestOptions = {}):
   const headers: Record<string, string> = {
     ...(options.headers || {}),
   };
+  // Auto-inject X-Idempotency-Key for POST requests
+  if ((options.method || 'GET') === 'POST' && !headers['X-Idempotency-Key']) {
+    headers['X-Idempotency-Key'] = crypto.randomUUID();
+  }
   const apiKey = import.meta.env.VITE_API_KEY;
   if (apiKey) {
     headers['api-key'] = apiKey;

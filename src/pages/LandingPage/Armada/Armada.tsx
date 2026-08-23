@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { InquirySection } from '@/components/common/InquirySection';
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { FilterSection } from '@/components/common/FilterSection';
@@ -39,7 +40,10 @@ interface FleetResponse {
 
 const Armada = () => {
   const { getContentByTag, getContentIn } = useGeneralContent();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryParam = (searchParams.get('query') || '').trim();
+  const [searchTerm, setSearchTerm] = useState(queryParam);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -51,13 +55,34 @@ const Armada = () => {
   const [armadaData, setArmadaData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Debounced search → update URL query param (server-filtered)
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      const params = new URLSearchParams(searchParams);
+      const trimmed = value.trim();
+      if (trimmed) params.set('query', trimmed);
+      else params.delete('query');
+      setSearchParams(params);
+    }, 500);
+  };
+
+  useEffect(() => () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+  }, []);
+
   useEffect(() => {
     const fetchFleets = async () => {
       try {
-        const res = await http.get<FleetResponse>('/api/service/fleet');
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (queryParam) params.set('query', queryParam);
+        const qs = params.toString();
+        const res = await http.get<FleetResponse>(`/api/service/fleet${qs ? `?${qs}` : ''}`);
         if (res.data && Array.isArray(res.data.data)) {
           const mappedFleets = res.data.data.map((fleet) => {
-            
+
             return {
               id: fleet.fleet_id,
               name: fleet.fleet_name,
@@ -68,8 +93,8 @@ const Armada = () => {
               image: fleet.thumbnail,
               rating: fleet.rating || 0.0, // Default value as API doesn't provide rating
               reviews: fleet.reviews ? fleet.reviews.length : 0, // Default value
-              features: fleet.facilities && fleet.facilities.length > 0 
-                ? fleet.facilities.map(f => f.facility) 
+              features: fleet.facilities && fleet.facilities.length > 0
+                ? fleet.facilities.map(f => f.facility)
                 : (fleet.body ? [fleet.body] : ['AC', 'Audio System']),
               location: `${fleet.cities?.[0] ?? ''} ${(fleet.cities?.length ?? 0) > 1 ? `(+ ${(fleet.cities?.length ?? 0) - 1} kota lainnya)` : ''}`,
               pickupAreas: fleet.cities || [],
@@ -92,7 +117,7 @@ const Armada = () => {
     };
 
     fetchFleets();
-  }, []);
+  }, [queryParam]);
 
   // Extract unique categories from data
   const uniqueTypes = Array.from(new Set(armadaData.map(item => item.type)));
@@ -124,17 +149,8 @@ const Armada = () => {
     { value: 'rating', label: 'Rating Tertinggi' }
   ];
 
-  const filteredArmada = armadaData.filter(armada => {
-    const matchesSearch = armada.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         armada.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || armada.type.toLowerCase().includes(selectedCategory);
-    const matchesLocation = selectedLocation === 'all' || armada.location.toLowerCase().includes(selectedLocation);
-    
-    return matchesSearch && matchesCategory && matchesLocation;
-  });
-
-  // Sorting logic
-  const sortedArmada = [...filteredArmada].sort((a, b) => {
+  // Sort + paginate (all client-side filtering removed — server filters by query)
+  const sortedArmada = [...armadaData].sort((a, b) => {
     switch (sortBy) {
       case 'price-low':
         return (a.rawPrice || 0) - (b.rawPrice || 0);
@@ -153,10 +169,10 @@ const Armada = () => {
   const endIndex = startIndex + itemsPerPage;
   const paginatedArmada = sortedArmada.slice(startIndex, endIndex);
 
-  // Reset to first page when filters change
+  // Reset to first page when URL query or sort changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCategory, selectedLocation, sortBy]);
+  }, [queryParam, sortBy]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
@@ -208,7 +224,7 @@ const Armada = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 pt-8 pb-4">
         <FilterSection
           searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
+          onSearchChange={handleSearchChange}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
           selectedLocation={selectedLocation}
