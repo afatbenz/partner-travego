@@ -776,6 +776,31 @@ export const ArmadaDetail: React.FC = () => {
     setShowAllPricing(false);
   };
 
+  // usePageMeta harus dipanggil unconditionally (rules of hooks) — sebelum early returns.
+  // Saat fleet belum loaded (loading/error), fallback ke nilai kosong.
+  usePageMeta({
+    title: fleet ? `${fleet.meta.fleet_name} | Calista Prima` : 'Armada | Calista Prima',
+    description: fleet
+      ? (sanitizeFleetDescription(fleet.meta.description) || fleet.meta.fleet_name || '').replace(/<[^>]*>/g, '').slice(0, 160)
+      : 'Detail armada Calista Prima — sewa bus, Hiace, dan Elf di Tangerang & Jakarta.',
+    canonicalPath: fleet ? `/detail/armada/${fleet.meta.fleet_id}` : undefined,
+    jsonLd: fleet
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Service',
+          name: fleet.meta.fleet_name,
+          description: sanitizeFleetDescription(fleet.meta.description) || fleet.meta.fleet_name || '',
+          provider: { '@type': 'LocalBusiness', name: 'Calista Prima' },
+          areaServed: (fleet.pickup ?? []).map((area) => area.city_name),
+          offers: {
+            '@type': 'Offer',
+            price: fleet.pricing.length > 0 ? Math.min(...fleet.pricing.map((p) => p.price)) : undefined,
+            priceCurrency: 'IDR',
+          },
+        }
+      : undefined,
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -856,25 +881,6 @@ export const ArmadaDetail: React.FC = () => {
     setServiceType,
     availableServiceTypes,
   };
-
-  usePageMeta({
-    title: `${fleet.meta.fleet_name} | Calista Prima`,
-    description: (sanitizedDescription || fleet.meta.fleet_name || '').replace(/<[^>]*>/g, '').slice(0, 160),
-    canonicalPath: `/detail/armada/${fleet.meta.fleet_id}`,
-    jsonLd: {
-      '@context': 'https://schema.org',
-      '@type': 'Service',
-      name: fleet.meta.fleet_name,
-      description: sanitizedDescription || fleet.meta.fleet_name || '',
-      provider: { '@type': 'LocalBusiness', name: 'Calista Prima' },
-      areaServed: (fleet.pickup ?? []).map((area) => area.city_name),
-      offers: {
-        '@type': 'Offer',
-        price: lowestPrice > 0 ? lowestPrice : undefined,
-        priceCurrency: 'IDR',
-      },
-    },
-  });
 
   return (
     <div className="min-h-screen bg-gray-50">
