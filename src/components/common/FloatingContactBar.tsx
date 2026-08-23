@@ -62,7 +62,7 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
   };
 
   const inputClass =
-    "h-[52px] bg-gray-50 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300";
+    "h-[52px] bg-white/10 border-blue-600 rounded-xl text-white placeholder:text-white/50 focus:border-blue-200 focus:ring-2 focus:ring-blue-200/20 focus-visible:border-blue-200 focus-visible:ring-2 focus-visible:ring-blue-200/20 transition-all duration-300";
 
   return (
     <>
@@ -96,19 +96,18 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
 
       {/* Floating sheet — slide up smooth */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-[2.5rem] shadow-[0_-20px_60px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-out max-h-[85vh] flex flex-col ${
+        className={`fixed inset-x-0 bottom-0 z-50 bg-gradient-to-b from-blue-600 to-blue-800 rounded-t-[1rem] shadow-[0_-20px_60px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-out max-h-[85vh] flex flex-col ${
           open ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
-        <div className="shrink-0 flex items-center justify-between px-6 pt-4 pb-2">
+        <div className="shrink-0 flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-2">
-            <div className="h-1 w-8 bg-blue-500 rounded-full" />
-            <span className="text-sm font-bold text-gray-900">Kirim Permintaan</span>
+            <span className="text-lg font-bold text-white">Kirim Permintaan</span>
           </div>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+            className="p-2 rounded-full text-white transition-colors"
             aria-label="Tutup"
           >
             <X className="h-5 w-5" />
@@ -117,10 +116,10 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
 
         <div className="overflow-y-auto px-4 sm:px-6 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-sm text-gray-500 -mt-1">Isi form di bawah, tim kami akan segera menghubungi Anda.</p>
+            <p className="text-sm text-blue-100 -mt-1">Isi form di bawah, tim kami akan segera menghubungi Anda.</p>
 
             <div className="space-y-1.5">
-              <label htmlFor="requestName" className="text-sm font-medium text-gray-700">
+              <label htmlFor="requestName" className="text-sm font-medium text-white">
                 Nama Lengkap
               </label>
               <Input
@@ -137,7 +136,7 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="requestEmail" className="text-sm font-medium text-gray-700">
+                <label htmlFor="requestEmail" className="text-sm font-medium text-white">
                   Email
                 </label>
                 <Input
@@ -153,7 +152,7 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="requestPhone" className="text-sm font-medium text-gray-700">
+                <label htmlFor="requestPhone" className="text-sm font-medium text-white">
                   Nomor Telepon
                 </label>
                 <Input
@@ -170,7 +169,7 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="requestRequirement" className="text-sm font-medium text-gray-700">
+              <label htmlFor="requestRequirement" className="text-sm font-medium text-white">
                 Kebutuhan / Keperluan
               </label>
               <Textarea
@@ -179,7 +178,7 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
                 placeholder="Jelaskan kebutuhan perjalanan Anda..."
                 value={formData.message}
                 onChange={handleInputChange}
-                className="min-h-[100px] bg-gray-50 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 resize-none"
+                  className="min-h-[100px] bg-white/10 border-blue-600 rounded-xl text-white placeholder:text-white/50 focus:border-blue-200 focus:ring-2 focus:ring-blue-200/20 focus-visible:border-blue-200 focus-visible:ring-2 focus-visible:ring-blue-200/20 transition-all duration-300"
                 required
               />
             </div>

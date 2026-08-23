@@ -129,7 +129,9 @@ export const Home: React.FC = () => {
           style={{
             backgroundImage: `url(${heroBannerImage})`,
             backgroundPosition: 'center',
-            backgroundSize: 'cover'
+            backgroundSize: 'cover',
+            backgroundAttachment: 'fixed',
+            willChange: 'transform'
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/60 to-transparent" />
@@ -153,7 +155,7 @@ export const Home: React.FC = () => {
               <div className="flex flex-wrap gap-4">
                 <Button 
                   size="lg" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 py-6 text-sm font-semibold shadow-xl shadow-blue-900/20 transition-all hover:scale-105 active:scale-95"
+                  className="bg-transparent hover:bg-black/20 text-white rounded-full px-8 py-6 text-sm font-semibold shadow-xl shadow-blue-900/20 transition-all hover:scale-105 active:scale-95 border border-white"
                   onClick={() => navigate('/armada')}
                 >
                   Lihat Armada
