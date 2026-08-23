@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "postinstall": "node scripts/patch-react-snap.mjs",
     "build": "tsc -b && cross-env VITE_PRERENDER=true vite build && node scripts/patch-react-snap.mjs && react-snap && node scripts/generate-sitemap.mjs",
     "build:no-seo": "tsc -b && vite build",
     "lint": "eslint .",
