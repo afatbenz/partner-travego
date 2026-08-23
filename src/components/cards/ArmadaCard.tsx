@@ -53,10 +53,10 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
 
   if (viewMode === 'list') {
     return (
-      <Card className="group overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-3xl">
+      <Card className="group overflow-hidden bg-white dark:bg-gray-900 border-none shadow-md hover:shadow-2xl transition-all duration-500 rounded-3xl">
         <div className="flex flex-col md:flex-row h-full">
           {/* Image Section */}
-          <div className="relative w-full md:w-2/5 aspect-video md:aspect-auto overflow-hidden">
+          <div className="relative w-full md:w-2/5 aspect-square md:aspect-auto overflow-hidden">
             <img
               src={armada.image}
               alt={armada.name}
@@ -148,8 +148,8 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
 
   return (
     <Card className="group overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] h-full flex flex-col transform hover:-translate-y-2">
-      {/* Image Area */}
-      <div className="relative aspect-[4/3] overflow-hidden">
+      {/* Image Area — ratio 5:3 (lebih panjang horizontal) */}
+      <div className="relative aspect-[5/3] overflow-hidden">
         <img
           src={armada.image}
           alt={armada.name}

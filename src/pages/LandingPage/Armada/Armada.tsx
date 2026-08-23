@@ -256,7 +256,7 @@ const Armada = () => {
           {/* Tombol filter + dropdown urutkan (mobile) */}
           <div className="lg:hidden flex items-center gap-2 shrink-0">
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="h-11 w-11 rounded-2xl border-gray-200 bg-white focus:ring-blue-500" aria-label="Urutkan">
+              <SelectTrigger className="h-12 w-12 rounded-2xl border-gray-200 bg-white focus:ring-blue-500" aria-label="Urutkan">
                 <ListOrdered className="h-4 w-4 text-blue-600" />
                 <SelectValue className="sr-only" placeholder="Urutkan" />
               </SelectTrigger>

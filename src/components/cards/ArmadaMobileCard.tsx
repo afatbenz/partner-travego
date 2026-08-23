@@ -34,7 +34,7 @@ export const ArmadaMobileCard: React.FC<ArmadaMobileCardProps> = ({ armada, larg
   return (
     <Card className="group flex overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm rounded-2xl">
       {/* Image - left (2x saat large) */}
-      <div className={`relative shrink-0 aspect-[3/4] overflow-hidden ${large ? 'w-56 sm:w-72' : 'w-28 sm:w-36'}`}>
+      <div className={`relative shrink-0 aspect-square overflow-hidden ${large ? 'w-56 sm:w-72' : 'w-28 sm:w-36'}`}>
         <img
           src={armada.image}
           alt={armada.name}
