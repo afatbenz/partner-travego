@@ -85,7 +85,7 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
               <Headphones className="h-4 w-4" />
             </div>
-            <span className="font-semibold text-sm truncate">Belum menemukan yang sesuai?</span>
+            <span className="font-semibold text-sm truncate">Belum Sesuai?</span>
           </div>
           <span className="flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-2.5 text-sm font-semibold shrink-0">
             <MessageCircle className="h-4 w-4" />

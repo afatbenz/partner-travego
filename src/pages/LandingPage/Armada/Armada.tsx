@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { SlidersHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { InquirySection } from '@/components/common/InquirySection';
 import { FloatingContactBar } from '@/components/common/FloatingContactBar';
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
@@ -49,6 +51,7 @@ const Armada = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [sortBy, setSortBy] = useState('default');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
@@ -196,10 +199,10 @@ const Armada = () => {
           <div className="max-w-2xl animate-in fade-in slide-in-from-left duration-1000">
             <div className="space-y-4">
               <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
-                Armada <span className="text-blue-400">Terbaik</span> <br />
+                Armada <span className="text-orange-400">Terbaik</span> <br />
                 Untuk Anda
               </h1>
-              <p className="text-lg text-blue-50 font-light leading-relaxed">
+              <p className="text-sm md:text-lg text-blue-50 font-light leading-relaxed">
                 Pilih armada terbaik untuk perjalanan Anda dengan kenyamanan dan keamanan terjamin. Layanan rental premium di seluruh Indonesia.
               </p>
             </div>
@@ -224,28 +227,60 @@ const Armada = () => {
 
       {/* Search and Filter Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 pt-8 pb-4">
-        <FilterSection
-          searchTerm={searchTerm}
-          onSearchChange={handleSearchChange}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedLocation={selectedLocation}
-          onLocationChange={setSelectedLocation}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          categories={categories}
-          locations={locations}
-          sortOptions={sortOptions}
-        />
-        
-        <div className="mt-4 flex items-center justify-between">
+        {/* Filter Section — desktop selalu tampil; mobile hidden, buka lewat tombol filter */}
+        <div className="hidden lg:block">
+          <FilterSection
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedLocation={selectedLocation}
+            onLocationChange={setSelectedLocation}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            categories={categories}
+            locations={locations}
+            sortOptions={sortOptions}
+          />
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
           <p className="text-sm font-normal text-gray-600 dark:text-gray-300 px-4">
             Menampilkan {viewMode === 'list'
               ? paginatedArmada.filter((a) => a.image).length
               : paginatedArmada.length} dari {sortedArmada.length} armada
           </p>
+          {/* Tombol filter mobile — buka/tutup panel filter */}
+          <Button
+            variant="outline"
+            className="lg:hidden h-11 px-4 rounded-2xl border-gray-200 text-blue-600 hover:bg-blue-50 shrink-0 flex items-center gap-2"
+            onClick={() => setShowMobileFilter(!showMobileFilter)}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filter
+          </Button>
+        </div>
+
+        {/* Panel filter mobile — collapsible */}
+        <div className={`lg:hidden transition-all duration-300 overflow-hidden ${showMobileFilter ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+          <FilterSection
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedLocation={selectedLocation}
+            onLocationChange={setSelectedLocation}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            categories={categories}
+            locations={locations}
+            sortOptions={sortOptions}
+            showViewToggle={false}
+          />
         </div>
       </div>
 
@@ -258,44 +293,41 @@ const Armada = () => {
           </div>
         ) : (
           <>
-            <div className={viewMode === 'grid'
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              : "flex flex-col gap-4"
-            }>
-              {viewMode === 'list' ? (
-                // List view: reuse ArmadaMobileCard (sama dengan Home mobile list) + hanya yang punya thumbnail
-                paginatedArmada.filter((a) => a.image).length > 0 ? (
-                  paginatedArmada.filter((a) => a.image).map((armada) => (
-                    <ArmadaMobileCard key={armada.id} armada={armada} />
-                  ))
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>
-                  </div>
-                )
-              ) : paginatedArmada.length > 0 ? (
-                <>
-                  {/* Mobile: vertical stack ArmadaMobileCard (sama seperti Home) */}
-                  <div className="flex flex-col gap-4 md:hidden">
-                    {paginatedArmada.filter((a) => a.image).length > 0 ? (
-                      paginatedArmada.filter((a) => a.image).map((armada) => (
-                        <ArmadaMobileCard key={armada.id} armada={armada} />
-                      ))
-                    ) : (
-                      <div className="text-center py-12">
-                        <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>
-                      </div>
-                    )}
-                  </div>
-                  {/* Desktop: grid ArmadaCard */}
-                  <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:col-span-2 lg:col-span-3">
-                    {paginatedArmada.map((armada) => (
-                      <ArmadaCard key={armada.id} armada={armada} viewMode="grid" />
-                    ))}
-                  </div>
-                </>
+            {/* Mobile: selalu stack ArmadaMobileCard (grid default, tanpa toggle jenis grid) */}
+            <div className="flex flex-col gap-4 md:hidden">
+              {paginatedArmada.filter((a) => a.image).length > 0 ? (
+                paginatedArmada.filter((a) => a.image).map((armada) => (
+                  <ArmadaMobileCard key={armada.id} armada={armada} />
+                ))
               ) : (
-                <div className="col-span-full text-center py-12">
+                <div className="text-center py-12">
+                  <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop: grid / list sesuai toggle */}
+            <div className="hidden md:block">
+              {viewMode === 'list' ? (
+                <div className="flex flex-col gap-6">
+                  {paginatedArmada.filter((a) => a.image).length > 0 ? (
+                    paginatedArmada.filter((a) => a.image).map((armada) => (
+                      <ArmadaMobileCard key={armada.id} armada={armada} large />
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>
+                    </div>
+                  )}
+                </div>
+              ) : paginatedArmada.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedArmada.map((armada) => (
+                    <ArmadaCard key={armada.id} armada={armada} viewMode="grid" />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
                   <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>
                 </div>
               )}

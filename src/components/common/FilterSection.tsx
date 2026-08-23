@@ -24,6 +24,8 @@ interface FilterSectionProps {
   locations: FilterOption[];
   sortOptions: FilterOption[];
   className?: string;
+  /** Sembunyikan toggle grid/list (mobile default grid saja) */
+  showViewToggle?: boolean;
 }
 
 export const FilterSection: React.FC<FilterSectionProps> = ({
@@ -40,7 +42,8 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
   categories,
   locations,
   sortOptions,
-  className = ''
+  className = '',
+  showViewToggle = true
 }) => {
   return (
     <div className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/40 dark:border-gray-800/40 p-4 sm:p-8 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] ${className}`}>
@@ -114,7 +117,7 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl">
+        {showViewToggle && <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl">
           <Button
             variant="ghost"
             size="sm"
@@ -131,7 +134,7 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
           >
             <List className="h-5 w-5" />
           </Button>
-        </div>
+        </div>}
       </div>
     </div>
   );
