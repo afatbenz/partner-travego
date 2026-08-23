@@ -149,7 +149,7 @@ const Armada = () => {
   ];
 
   const sortOptions = [
-    { value: 'default', label: 'Default' },
+    { value: 'default', label: '' },
     { value: 'price-low', label: 'Harga Terendah' },
     { value: 'price-high', label: 'Harga Tertinggi' },
     { value: 'rating', label: 'Rating Tertinggi' }
@@ -256,9 +256,9 @@ const Armada = () => {
           {/* Tombol filter + dropdown urutkan (mobile) */}
           <div className="lg:hidden flex items-center gap-2 shrink-0">
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="h-11 w-[130px] rounded-2xl border-gray-200 bg-white text-sm text-gray-700 focus:ring-blue-500">
+              <SelectTrigger className="h-11 w-11 rounded-2xl border-gray-200 bg-white focus:ring-blue-500" aria-label="Urutkan">
                 <ArrowUpDown className="h-4 w-4 text-blue-600" />
-                <SelectValue placeholder="Urutkan" />
+                <SelectValue className="sr-only" placeholder="Urutkan" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-gray-200 shadow-2xl">
                 {sortOptions.map((option) => (
