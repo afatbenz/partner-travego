@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { SlidersHorizontal, ListOrdered } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { InquirySection } from '@/components/common/InquirySection';
@@ -257,7 +257,7 @@ const Armada = () => {
           <div className="lg:hidden flex items-center gap-2 shrink-0">
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="h-11 w-11 rounded-2xl border-gray-200 bg-white focus:ring-blue-500" aria-label="Urutkan">
-                <ArrowUpDown className="h-4 w-4 text-blue-600" />
+                <ListOrdered className="h-4 w-4 text-blue-600" />
                 <SelectValue className="sr-only" placeholder="Urutkan" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-gray-200 shadow-2xl">
