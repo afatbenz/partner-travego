@@ -314,8 +314,10 @@ const Armada = () => {
         )}
       </div>
 
-      {/* Inquiry Section */}
-      <InquirySection />
+      {/* Inquiry Section — desktop only (mobile pakai FloatingContactBar) */}
+      <div className="hidden lg:block">
+        <InquirySection />
+      </div>
 
       {/* Floating contact bar + request sheet (mobile) */}
       <FloatingContactBar />
