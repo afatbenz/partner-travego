@@ -75,35 +75,25 @@ export const ArmadaMobileCard: React.FC<ArmadaMobileCardProps> = ({ armada }) =>
           </div>
         </div>
 
-        {/* Model/tag */}
-        {armada.features.slice(0, 1).map((feature, index) => (
-          <span
-            key={index}
-            className="self-start text-[10px] font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md mb-2"
-          >
-            {feature}
-          </span>
-        ))}
-
-        {/* Price + CTA */}
-        <div className="mt-auto pt-2 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Price</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm font-bold text-blue-600 dark:text-blue-400 truncate">
-                {priceAmount}
-              </span>
-              <span className="text-[10px] font-normal text-gray-500 truncate">{priceUnit}</span>
-            </div>
+        {/* Price */}
+        <div className="mt-auto pt-2 border-t border-gray-100 dark:border-gray-800">
+          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Price</p>
+          <div className="flex items-baseline gap-1">
+            <span className="text-sm font-bold text-blue-600 dark:text-blue-400 truncate">
+              {priceAmount}
+            </span>
+            <span className="text-[10px] font-normal text-gray-500 truncate">{priceUnit}</span>
           </div>
-          <Button
-            onClick={handleDetailClick}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-9 px-4 text-xs font-semibold shadow-lg shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-1 shrink-0"
-          >
-            Lihat
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
         </div>
+
+        {/* CTA - below price */}
+        <Button
+          onClick={handleDetailClick}
+          className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-9 text-xs font-semibold shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1"
+        >
+          Lihat
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Button>
       </div>
     </Card>
   );

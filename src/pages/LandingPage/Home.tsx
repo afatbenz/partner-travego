@@ -263,10 +263,10 @@ export const Home: React.FC = () => {
               </div>
             ) : fleets.length > 0 ? (
               <div className="flex flex-col gap-4">
-                {fleets.slice(0, 4).map((fleet) => (
+                {fleets.filter((f) => f.image).slice(0, 4).map((fleet) => (
                   <ArmadaMobileCard key={fleet.id} armada={fleet} />
                 ))}
-                {fleets.length > 4 && (
+                {fleets.filter((f) => f.image).length > 4 && (
                   <Button
                     variant="outline"
                     className="w-full rounded-2xl px-8 h-11 font-semibold border-gray-200 hover:bg-blue-50 text-blue-600 transition-all hover:scale-[1.02] mt-1"
