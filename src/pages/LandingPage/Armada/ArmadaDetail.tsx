@@ -18,7 +18,9 @@ import {
   ChevronsUpDown,
   Check,
   Eye,
-  Briefcase
+  Briefcase,
+  X,
+  ChevronUp
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
@@ -614,6 +616,7 @@ export const ArmadaDetail: React.FC = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedPricing, setSelectedPricing] = useState<FleetPricing | null>(null);
   const [showAllPricing, setShowAllPricing] = useState(false);
+  const [isPricingSheetOpen, setIsPricingSheetOpen] = useState(false);
 
   const [fleet, setFleet] = useState<FleetDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1052,7 +1055,7 @@ export const ArmadaDetail: React.FC = () => {
 
                   <div className='mt-8 bg-white rounded-lg border border-gray-100 p-6 shadow-sm'>
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="h-1 w-12 bg-blue-600 rounded-full" />
+                      <div className="h-1 w-6 md:w-12 bg-blue-600 rounded-full" />
                       <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Deskripsi Armada</h2>
                     </div>
 
@@ -1064,7 +1067,7 @@ export const ArmadaDetail: React.FC = () => {
                       {fleet.pickup.length > 0 && (
                         <div className="mt-8 mb-5">
                           <div className="flex items-center gap-3 mb-5">
-                            <div className="h-1 w-12 bg-blue-600 rounded-full" />
+                            <div className="h-1 w-6 md:w-12 bg-blue-600 rounded-full" />
                             <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Area Penjemputan</h2>
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -1089,7 +1092,7 @@ export const ArmadaDetail: React.FC = () => {
                             <ClipboardList className="h-5 w-5 text-blue-600" />
                             Spesifikasi
                           </h3>
-                          <div className="bg-white rounded-lg border border-gray-100 p-6 shadow-sm">
+                          <div className="bg-white rounded-lg border-none md:border md: border-b-slate-200 md:border-gray-100 p-0 pb-4 md:p-6 md:shadow-sm">
                             <ul className="space-y-3">
                               {specItems.map((item) => {
                                 const Icon = item.icon;
@@ -1110,7 +1113,7 @@ export const ArmadaDetail: React.FC = () => {
                             <ListChecks className="h-5 w-5 text-green-600" />
                             Fasilitas
                           </h3>
-                          <div className="bg-white rounded-lg border border-gray-100 p-6 shadow-sm">
+                          <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6 md:shadow-sm">
                             <ul className="space-y-2">
                               {(fleet.facilities ?? []).map((feature, index) => (
                                 <li key={index} className="flex items-start text-sm text-gray-700">
@@ -1167,12 +1170,14 @@ export const ArmadaDetail: React.FC = () => {
                 </div>
 
                   <div className='lg:col-span-1'>
-                    {/* Pricing Section */}
+                    {/* Pricing Section — desktop only (mobile pakai bottom bar + floating sheet) */}
                     <div className="sticky top-6">
-                      <PricingCard {...pricingCardProps} />
+                      <div className="hidden lg:block">
+                        <PricingCard {...pricingCardProps} />
+                      </div>
                     {/* Addon Section */}
                     {fleet.addon.length > 0 && (
-                      <div className="bg-white rounded-[2.5rem] p-6 border border-gray-100">
+                      <div className="bg-white rounded-[2.5rem] p-6 border border-gray-100 mt-6 lg:mt-0">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Add-on Tersedia</h3>
                         <div className="flex flex-wrap gap-2">
                           {fleet.addon.map((addon, index) => (
@@ -1197,6 +1202,58 @@ export const ArmadaDetail: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Mobile floating bottom bar — tampil {price} / hari, buka floating pricing card */}
+      <div className="lg:hidden">
+        {/* Backdrop saat sheet terbuka */}
+        {isPricingSheetOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => setIsPricingSheetOpen(false)}
+          />
+        )}
+
+        {/* Bottom bar */}
+        <button
+          type="button"
+          onClick={() => setIsPricingSheetOpen(true)}
+          className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-3 bg-blue-500 text-white px-5 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(37,99,235,0.45)]"
+        >
+          <div className="text-left">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-blue-100">Mulai dari</div>
+            <div className="text-xl font-bold leading-tight">{formattedPrice} <span className="text-sm font-normal text-blue-100">/ {priceUom}</span></div>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-2.5 text-sm font-semibold">
+            <ChevronUp className="h-4 w-4" />
+            Lihat Harga
+          </div>
+        </button>
+
+        {/* Floating pricing sheet — slide up smooth */}
+        <div
+          className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-[2.5rem] shadow-[0_-20px_60px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-out max-h-[85vh] flex flex-col ${
+            isPricingSheetOpen ? 'translate-y-0' : 'translate-y-full'
+          }`}
+        >
+          <div className="shrink-0 flex items-center justify-between px-6 pt-4 pb-2">
+            <div className="flex items-center gap-2">
+              <div className="h-1 w-8 bg-blue-500 rounded-full" />
+              <span className="text-sm font-bold text-gray-900">Pilih Harga</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPricingSheetOpen(false)}
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+              aria-label="Tutup"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="overflow-y-auto px-4 sm:px-6 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <PricingCard {...pricingCardProps} />
+          </div>
+        </div>
+      </div>
 
       <ImagePopup
         images={allImages}
