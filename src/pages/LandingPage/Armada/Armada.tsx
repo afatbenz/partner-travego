@@ -258,7 +258,7 @@ const Armada = () => {
         ) : (
           <>
             <div className={viewMode === 'grid'
-              ? "grid grid-cols-2 lg:grid-cols-3 gap-6"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               : "flex flex-col gap-4"
             }>
               {viewMode === 'list' ? (
@@ -273,9 +273,26 @@ const Armada = () => {
                   </div>
                 )
               ) : paginatedArmada.length > 0 ? (
-                paginatedArmada.map((armada) => (
-                  <ArmadaCard key={armada.id} armada={armada} viewMode="grid" />
-                ))
+                <>
+                  {/* Mobile: vertical stack ArmadaMobileCard (sama seperti Home) */}
+                  <div className="flex flex-col gap-4 md:hidden">
+                    {paginatedArmada.filter((a) => a.image).length > 0 ? (
+                      paginatedArmada.filter((a) => a.image).map((armada) => (
+                        <ArmadaMobileCard key={armada.id} armada={armada} />
+                      ))
+                    ) : (
+                      <div className="text-center py-12">
+                        <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>
+                      </div>
+                    )}
+                  </div>
+                  {/* Desktop: grid ArmadaCard */}
+                  <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:col-span-2 lg:col-span-3">
+                    {paginatedArmada.map((armada) => (
+                      <ArmadaCard key={armada.id} armada={armada} viewMode="grid" />
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="col-span-full text-center py-12">
                   <p className="text-gray-500">Tidak ada armada yang ditemukan.</p>

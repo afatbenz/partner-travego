@@ -254,7 +254,7 @@ const maxPax = Math.max(...detail.pricing.map(item => item.max_pax));
               <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
                 {meta.package_name}
               </h1>
-              <div className="flex flex-wrap items-center gap-6 text-white/90">
+              <div className="flex flex-wrap items-center gap-6 text-white/90 text-xs md:text-normal">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-blue-400" />
                   <span className="font-normal tracking-wide">{locationLabel}</span>

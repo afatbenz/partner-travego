@@ -887,7 +887,7 @@ export const ArmadaDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <section className="relative overflow-hidden text-white">
+      <section className="relative overflow-hidden text-white text-center md:text-left">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
           style={{ backgroundImage: `url(${fleet.meta.thumbnail})` }}
@@ -898,33 +898,35 @@ export const ArmadaDetail: React.FC = () => {
         <div className="absolute bottom-[-100px] left-[-100px] w-[300px] h-[300px] bg-indigo-500/20 rounded-full blur-3xl" />
 
         <div className="relative min-h-[420px] flex items-center px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-24">
-          <div className="max-w-7xl mx-auto w-full">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="mb-8 bg-white/10 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white rounded-full"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
+          <div className="max-w-7xl mx-auto w-full text-center md:text-left">
+            <div className="flex justify-start mb-4 md:mb-8">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="bg-white/10 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white rounded-full"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            </div>
 
-            <div className="max-w-3xl">
+            <div className="max-w-3xl mx-auto md:mx-0">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 {fleet.meta.fleet_name}
               </h1>
 
-              <div className="flex flex-wrap gap-4 mb-6">
-                <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10">
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-2 md:mb-6">
+                <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10 text-xs md:text-normal">
                   <Car className="h-4 w-4 mr-2" />
                   <span>{fleetTypeLabel}</span>
                 </div>
-                <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10">
+                <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md px-4 py-2 border border-white/10 text-xs md:text-normal">
                   <Users className="h-4 w-4 mr-2" />
                   <span>{fleet.meta.capacities} Penumpang</span>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 text-white/90">
+              <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-6 text-white/90 text-xs md:text-normal">
                 <div className="flex items-center">
                   <MapPin className="h-5 w-5 mr-2 text-blue-300" />
                   <span>
@@ -950,7 +952,7 @@ export const ArmadaDetail: React.FC = () => {
               </div>
             </div>
 
-            <div className="absolute top-8 right-8 flex gap-3">
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-8 flex gap-3">
               <Button
                 variant="ghost"
                 size="icon"
