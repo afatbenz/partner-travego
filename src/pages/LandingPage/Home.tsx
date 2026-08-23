@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Star, Shield, Clock, Headphones, ArrowRight, MapPin, Phone, Users } from 'lucide-react';
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
+import { ArmadaMobileCard } from '@/components/cards/ArmadaMobileCard';
 import { Button } from '@/components/ui/button';
 import { CTASection } from '@/components/common/CTASection';
 // import { TourPackageList } from '@/components/common/TourPackageList';
 // import { useTourPackages } from '@/hooks/useTourPackages';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
 import { useNavigate } from 'react-router-dom';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
 import { http } from '@/lib/http';
@@ -241,11 +237,11 @@ export const Home: React.FC = () => {
                 <div className="h-1 w-12 bg-blue-600 rounded-full" />
                 <span className="text-blue-600 font-bold tracking-widest uppercase text-sm">Pilihan Terbaik</span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+              <h2 className="text-2xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
                 Armada Premium <br />
                 <span className="text-blue-600">Siap Menemani</span> Anda
               </h2>
-              <p className="text-lg text-gray-500 dark:text-gray-400 font-normal">
+              <p className="text-sm md:text-lg text-gray-500 dark:text-gray-400 font-normal">
                 Koleksi kendaraan terbaru dengan perawatan rutin dan fasilitas lengkap untuk menjamin kenyamanan perjalanan Anda.
               </p>
             </div>
@@ -258,7 +254,7 @@ export const Home: React.FC = () => {
             </Button>
           </div>
           
-          {/* Mobile View - Carousel */}
+          {/* Mobile View - Vertical List */}
           <div className="block md:hidden">
             {loadingFleets ? (
               <div className="text-center py-20">
@@ -266,17 +262,21 @@ export const Home: React.FC = () => {
                 <p className="text-gray-500 font-bold">Menyiapkan Armada...</p>
               </div>
             ) : fleets.length > 0 ? (
-              <Carousel className="w-full">
-                <CarouselContent>
-                  {fleets.map((fleet) => (
-                    <CarouselItem key={fleet.id} className="pl-4 basis-[85%]">
-                      <div className="py-4 h-full">
-                        <ArmadaCard armada={fleet} viewMode="grid" />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
+              <div className="flex flex-col gap-4">
+                {fleets.slice(0, 4).map((fleet) => (
+                  <ArmadaMobileCard key={fleet.id} armada={fleet} />
+                ))}
+                {fleets.length > 4 && (
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-2xl px-8 h-11 font-semibold border-gray-200 hover:bg-blue-50 text-blue-600 transition-all hover:scale-[1.02] mt-1"
+                    onClick={() => navigate('/armada')}
+                  >
+                    Lihat Semua Armada
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500">Belum ada armada tersedia.</p>
@@ -311,22 +311,24 @@ export const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-20 space-y-4 animate-in fade-in slide-in-from-bottom duration-1000">
             <span className="text-blue-600 font-bold tracking-widest uppercase text-sm">Keunggulan Kami</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl md:text-5xl font-bold text-gray-900 dark:text-white">
               Kenapa Pilih <span className="text-blue-600">{brandName}?</span>
             </h2>
             <div className="h-1.5 w-24 bg-blue-600 mx-auto rounded-full" />
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid md:grid-cols-2 gap-4">
             {whyChooseUs.map((item, index) => (
-              <div key={index} className="relative group p-8 bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-4 border border-blue-100/50 dark:border-gray-800 animate-in fade-in slide-in-from-bottom duration-1000" style={{ animationDelay: `${index * 150}ms` }}>
-                <div className="w-20 h-20 mb-8 bg-blue-600 text-white rounded-3xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-500 shadow-xl shadow-blue-600/30">
-                  <item.icon className="h-10 w-10" />
+              <div key={index} className="relative group p-5 md:p-8 bg-white dark:bg-gray-900 rounded-xl md:rounded-[2rem] shadow-sm hover:shadow-2xl transition-all hover:-translate-y-4 border border-blue-100/50 dark:border-gray-800 animate-in fade-in slide-in-from-bottom duration-1000" style={{ animationDelay: `${index * 150}ms` }}>
+                <div className="flex flex-row items-center gap-4 md:flex-col md:items-start md:gap-0 mb-2 md:mb-0">
+                  <div className="w-8 h-8 text-xs md:w-20 md:h-20 md:mb-8 bg-blue-600 text-white rounded-3xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-500 shadow-xl shadow-blue-600/30 shrink-0">
+                    <item.icon className="h-4 w-4 md:h-10 md:w-10" />
+                  </div>
+                  <h3 className="text-xl font-bold md:text-2xl md:mb-4 text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                    {item.title}
+                  </h3>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+                <p className="text-xs md:text-lg text-gray-500 dark:text-gray-400 font-normal leading-relaxed pl-12 md:pl-0">
                   {item.description}
                 </p>
               </div>

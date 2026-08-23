@@ -14,8 +14,8 @@ interface CTASectionProps {
 export const CTASection: React.FC<CTASectionProps> = ({
   title = "Siap Memulai Perjalanan Anda?",
   subtitle = "Hubungi kami sekarang dan dapatkan penawaran terbaik!",
-  whatsappNumber = "https://wa.me/62812345678",
-  phoneNumber = "tel:02112345678",
+  whatsappNumber = "https://wa.me/6285289029944",
+  phoneNumber = "tel:085289029944",
   className = ""
 }) => {
   const [contactData, setContactData] = useState<any>(null);
@@ -49,10 +49,10 @@ export const CTASection: React.FC<CTASectionProps> = ({
             </svg>
           </div>
           <div className="relative z-10 space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
               {title}
             </h2>
-            <p className="text-blue-50 text-lg opacity-90">
+            <p className="text-blue-50 text-md md:text-xl opacity-90"> 
               {subtitle}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">

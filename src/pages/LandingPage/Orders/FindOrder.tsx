@@ -881,7 +881,7 @@ export default function FindOrder() {
         {/* Help section */}
         <section className="container mx-auto px-4 pb-16 max-w-5xl">
           <div className="h-px bg-gradient-to-r from-transparent via-[#E5E7EB] to-transparent mb-12" />
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 md:p-10 border border-blue-100 transition-all duration-300 hover:shadow-md">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 md:p-10 border border-blue-300 transition-all duration-300 hover:shadow-md">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
                 <div className="w-16 h-16 bg-white rounded-3xl shadow-lg flex items-center justify-center flex-shrink-0">
