@@ -26,6 +26,8 @@ interface FilterSectionProps {
   className?: string;
   /** Sembunyikan toggle grid/list (mobile default grid saja) */
   showViewToggle?: boolean;
+  /** Sembunyikan dropdown Urutkan (mobile pindah ke row tombol filter) */
+  showSort?: boolean;
 }
 
 export const FilterSection: React.FC<FilterSectionProps> = ({
@@ -43,7 +45,8 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
   locations,
   sortOptions,
   className = '',
-  showViewToggle = true
+  showViewToggle = true,
+  showSort = true
 }) => {
   return (
     <div className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/40 dark:border-gray-800/40 p-4 sm:p-8 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] ${className}`}>
@@ -100,7 +103,7 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
         </div>
 
         {/* Sort Filter */}
-        <div className="w-full lg:w-48 space-y-2">
+        {showSort && <div className="w-full lg:w-48 space-y-2">
           <label className="text-sm font-normal text-blue-900 dark:text-blue-100 px-1">Urutkan</label>
           <Select value={sortBy} onValueChange={onSortChange}>
             <SelectTrigger className="h-14 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all">
@@ -114,7 +117,7 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div>}
 
         {/* View Mode Toggle */}
         {showViewToggle && <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl">

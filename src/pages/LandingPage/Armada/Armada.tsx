@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { InquirySection } from '@/components/common/InquirySection';
 import { FloatingContactBar } from '@/components/common/FloatingContactBar';
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
@@ -252,15 +253,29 @@ const Armada = () => {
               ? paginatedArmada.filter((a) => a.image).length
               : paginatedArmada.length} dari {sortedArmada.length} armada
           </p>
-          {/* Tombol filter mobile — buka/tutup panel filter */}
-          <Button
-            variant="outline"
-            className="lg:hidden h-11 px-4 rounded-2xl border-gray-200 text-blue-600 hover:bg-blue-50 shrink-0 flex items-center gap-2"
-            onClick={() => setShowMobileFilter(!showMobileFilter)}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Filter
-          </Button>
+          {/* Tombol filter + dropdown urutkan (mobile) */}
+          <div className="lg:hidden flex items-center gap-2 shrink-0">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="h-11 w-[130px] rounded-2xl border-gray-200 bg-white text-sm text-gray-700 focus:ring-blue-500">
+                <ArrowUpDown className="h-4 w-4 text-blue-600" />
+                <SelectValue placeholder="Urutkan" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-gray-200 shadow-2xl">
+                {sortOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="rounded-lg py-3">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              className="h-11 px-4 rounded-2xl border-gray-200 text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+              onClick={() => setShowMobileFilter(!showMobileFilter)}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Panel filter mobile — collapsible */}
@@ -280,6 +295,7 @@ const Armada = () => {
             locations={locations}
             sortOptions={sortOptions}
             showViewToggle={false}
+            showSort={false}
           />
         </div>
       </div>
