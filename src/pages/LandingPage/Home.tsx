@@ -148,7 +148,7 @@ export const Home: React.FC = () => {
                   Bersama Kami
                 </h1>
                 <p className="text-md md:text-xl text-blue-50 max-w-xl leading-relaxed font-light">
-                  Layanan rental bus pariwisata premium dan paket wisata eksklusif untuk perjalanan tak terlupakan Anda di seluruh Nusantara.
+                  Layanan sewa bus pariwisata Tangerang & Jakarta terlengkap. Hadirkan pengalaman wisata eksklusif dan perjalanan premium ke berbagai destinasi di Indonesia, khususnya Jawa, Bali, dan Sumatera.
                 </p>
               </div>
 
