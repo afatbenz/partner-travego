@@ -32,23 +32,19 @@ export const usePayment = () => {
       // 2. Memanggil window.snap.pay dari Midtrans
       if ((window as any).snap) {
         (window as any).snap.pay(snap_token, {
-          onSuccess: (result: any) => {
-            console.log('Payment success:', result);
+          onSuccess: (_result: any) => {
             setPaymentStatus(PAYMENT_STATUS.SUCCESS);
             setLoading(false);
           },
-          onPending: (result: any) => {
-            console.log('Payment pending:', result);
+          onPending: (_result: any) => {
             setPaymentStatus(PAYMENT_STATUS.PENDING);
             setLoading(false);
           },
-          onError: (result: any) => {
-            console.error('Payment error:', result);
+          onError: (_result: any) => {
             setPaymentStatus(PAYMENT_STATUS.ERROR);
             setLoading(false);
           },
           onClose: () => {
-            console.log('Payment popup closed');
             setError('Pembayaran belum diselesaikan');
             setLoading(false);
           },
