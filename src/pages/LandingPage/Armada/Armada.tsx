@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { InquirySection } from '@/components/common/InquirySection';
+import { FloatingContactBar } from '@/components/common/FloatingContactBar';
 import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { ArmadaMobileCard } from '@/components/cards/ArmadaMobileCard';
 import { FilterSection } from '@/components/common/FilterSection';
@@ -176,7 +177,7 @@ const Armada = () => {
   }, [queryParam, sortBy]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="min-h-screen bg-white dark:bg-black pb-20 lg:pb-0">
       {/* Header Section with Cinematic Background */}
       <section className="relative min-h-[60vh] flex items-center pt-20 overflow-hidden">
         {/* Background Image with Overlay */}
@@ -315,6 +316,9 @@ const Armada = () => {
 
       {/* Inquiry Section */}
       <InquirySection />
+
+      {/* Floating contact bar + request sheet (mobile) */}
+      <FloatingContactBar />
     </div>
   );
 };
