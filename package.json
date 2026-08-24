@@ -32,13 +32,11 @@
     "minifyHtml": {
       "removeComments": false
     },
-    "puppeteerConfig": {
-      "args": [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage"
-      ]
-    }
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage"
+    ]
   },
   "overrides": {
     "react-snap": {
