@@ -59,7 +59,7 @@ export const Home: React.FC = () => {
   useEffect(() => {
     const fetchFleets = async () => {
       try {
-        const res = await http.get<FleetResponse>('/api/services/fleet/list');
+        const res = await http.get<FleetResponse>('/api/service/fleet');
         if (res.data && Array.isArray(res.data.data)) {
           const mappedFleets = res.data.data.map((fleet) => {
             const displayUom = fleet.duration ? `${fleet.duration} ${fleet.uom}` : fleet.uom;

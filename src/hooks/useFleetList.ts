@@ -44,7 +44,7 @@ async function fetchAll(): Promise<FleetListItem[]> {
     const perPage = 100;
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const res = await http.get<FleetResponse>(`/api/services/fleet/list?per_page=${perPage}&page=${page}`);
+      const res = await http.get<FleetResponse>(`/api/service/fleet?per_page=${perPage}&page=${page}`);
       const items = Array.isArray(res.data?.data) ? res.data.data : [];
       acc.push(...items);
       if (items.length < perPage) break;
