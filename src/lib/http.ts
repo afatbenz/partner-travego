@@ -39,7 +39,11 @@ async function request<T = unknown>(path: string, options: RequestOptions = {}):
   // During prerender (react-snap), the backend Origin check rejects the api-key
   // (headless Chrome origin != domain embedded in key) which triggers the
   // never-resolving 401 path below. Throw before any fetch so snapshots finish.
-  if (import.meta.env.VITE_PRERENDER === 'true') {
+  // Detect react-snap prerender via runtime flag (window.__reactSnap),
+  // NOT the env var — VITE_PRERENDER is compile-time and gets inlined as 'true'
+  // into the production bundle, killing all live API calls.
+  // @ts-ignore - __reactSnap is set by react-snap at prerender time
+  if ((window as any).__reactSnap) {
     throw new Error('PRERENDER_SKIP_API');
   }
   const url = buildUrl(path, options.query);

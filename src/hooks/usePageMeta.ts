@@ -23,7 +23,7 @@ function upsertMeta(selector: string, create: () => HTMLElement, apply: (el: HTM
 // Selama prerender (react-snap), window.location.origin = http://localhost:<port>,
 // sehingga canonical/OG URL di snapshot statis salah. Pakai origin produksi eksplisit.
 const SITE_ORIGIN =
-  import.meta.env.VITE_PRERENDER === 'true'
+  typeof window !== 'undefined' && (window as any).__reactSnap
     ? (import.meta.env.VITE_SITE_URL || 'https://calistaprima.com').replace(/\/+$/, '')
     : window.location.origin;
 
