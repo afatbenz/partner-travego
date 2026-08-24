@@ -254,13 +254,6 @@ export const Home: React.FC = () => {
                 Koleksi kendaraan terbaru dengan perawatan rutin dan fasilitas lengkap untuk menjamin kenyamanan perjalanan Anda.
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              className="rounded-2xl px-8 h-10 font-semibold border-gray-200 hover:bg-blue-50 text-blue-600 transition-all hover:scale-105"
-              onClick={() => navigate('/armada')}
-            >
-              Lihat Semua Armada
-            </Button>
           </div>
           
           {/* Mobile View - Vertical List */}
