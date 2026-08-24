@@ -85,7 +85,7 @@ const Armada = () => {
         const params = new URLSearchParams();
         if (queryParam) params.set('query', queryParam);
         const qs = params.toString();
-        const res = await http.get<FleetResponse>(`/api/service/fleet${qs ? `?${qs}` : ''}`);
+        const res = await http.get<FleetResponse>(`/api/services/fleet/list${qs ? `?${qs}` : ''}`);
         if (res.data && Array.isArray(res.data.data)) {
           const mappedFleets = res.data.data.map((fleet) => {
 
