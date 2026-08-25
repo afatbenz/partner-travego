@@ -107,14 +107,14 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">
-                {features.slice(0, 5).map((feature, index) => (
+                {features.slice(0, 3).map((feature, index) => (
                   <span key={index} className="text-[11px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
                     {feature}
                   </span>
                 ))}
-                {features.length > 5 && (
+                {features.length > 3 && (
                   <span className="text-[11px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg border border-blue-200/50 dark:border-blue-800/50">
-                    +{features.length - 5}
+                    +{features.length - 3}
                   </span>
                 )}
               </div>
@@ -196,14 +196,14 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
 
         {/* Facilities - Minimalist Icons or text */}
         <div className="flex flex-wrap gap-1.5 mb-6">
-          {features.slice(0, 5).map((feature, index) => (
+          {features.slice(0, 3).map((feature, index) => (
             <span key={index} className="text-[9px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-tight bg-gray-50 dark:bg-gray-800/30 px-2 py-1 rounded-md">
               {feature}
             </span>
           ))}
-          {features.length > 5 && (
+          {features.length > 3 && (
             <span className="text-[9px] font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
-              +{features.length - 5}
+              +{features.length - 3}
             </span>
           )}
         </div>
