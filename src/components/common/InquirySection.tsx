@@ -73,7 +73,7 @@ export const InquirySection: React.FC<InquirySectionProps> = ({
   ];
 
   return (
-    <section className="relative py-20 md:py-28 overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <section className="relative py-10 md:py-18 overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Background Gradient */}
       <div className="absolute inset-0" />
 

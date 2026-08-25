@@ -84,12 +84,14 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
               </div>
               
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 my-6">
+				{armada.capacity ? (
                 <div className="flex items-center text-gray-600 dark:text-gray-400">
                   <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl mr-3">
                     <Users className="h-5 w-5 text-blue-600" />
                   </div>
                   <span className="text-sm font-medium">{armada.capacity}</span>
                 </div>
+                ) : null}
                 <div className="flex items-center text-gray-600 dark:text-gray-400">
                   <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl mr-3">
                     <MapPin className="h-5 w-5 text-blue-600" />
@@ -175,10 +177,12 @@ export const ArmadaCard: React.FC<ArmadaCardProps> = ({ armada, viewMode = 'grid
         </div>
         
         <div className="grid grid-cols-1 gap-3 mb-6">
+          {armada.capacity ? (
           <div className="flex items-center text-gray-500 dark:text-gray-400 dark:bg-gray-800/50 rounded-2xl dark:border-gray-700/50">
             <Users className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
             <span className="text-[11px] font-semibold truncate">{armada.capacity}</span>
           </div>
+          ) : null}
           <div className="flex items-center text-gray-500 dark:text-gray-400 dark:bg-gray-800/50 rounded-2xl dark:border-gray-700/50">
             <MapPin className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
             <span className="text-[11px] font-semibold truncate">{armada.location}</span>

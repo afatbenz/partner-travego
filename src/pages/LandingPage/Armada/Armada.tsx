@@ -93,7 +93,7 @@ const Armada = () => {
               id: fleet.fleet_id,
               name: fleet.fleet_name,
               type: fleet.fleet_type_label,
-              capacity: `${fleet.capacities} Penumpang`,
+              capacity: fleet.capacities ? `${fleet.capacities} Penumpang` : '',
               price: `Rp ${fleet.price.toLocaleString('id-ID')}/${fleet.uom}`,
               originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
               image: fleet.thumbnail,

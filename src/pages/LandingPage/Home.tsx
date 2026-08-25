@@ -68,7 +68,7 @@ export const Home: React.FC = () => {
               id: fleet.fleet_id,
               name: fleet.fleet_name,
               type: fleet.fleet_type_label,
-              capacity: `${fleet.capacities} Penumpang`,
+              capacity: fleet.capacities ? `${fleet.capacities} Penumpang` : '',
               price: `Rp ${fleet.price.toLocaleString('id-ID')}/${displayUom}`,
               originalPrice: fleet.discount_type !== null && fleet.original_price ? `Rp ${fleet.original_price.toLocaleString('id-ID')}/${fleet.uom}` : '',
               image: fleet.thumbnail,
@@ -305,6 +305,19 @@ export const Home: React.FC = () => {
               </div>
             )}
           </div>
+          {/* Centered "Lihat Semua Armada" for desktop — show when more than 6 fleets */}
+          {fleets.length > 6 && !loadingFleets && (
+            <div className="flex justify-center mt-12">
+              <Button
+                variant="outline"
+                className="rounded-2xl px-12 h-12 font-semibold border-blue-200 hover:bg-blue-50 text-blue-600 transition-all hover:scale-105 text-sm"
+                onClick={() => navigate('/armada')}
+              >
+                Lihat Semua Armada
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 

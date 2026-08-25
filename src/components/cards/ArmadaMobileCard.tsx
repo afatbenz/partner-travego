@@ -67,10 +67,12 @@ export const ArmadaMobileCard: React.FC<ArmadaMobileCardProps> = ({ armada, larg
 
         {/* Capacity + location */}
         <div className="flex flex-col gap-1 mb-2">
+          {armada.capacity ? (
           <div className="flex items-center text-gray-500 dark:text-gray-400">
             <Users className={`text-blue-600 mr-1.5 shrink-0 ${large ? 'h-4 w-4' : 'h-3.5 w-3.5'}`} />
             <span className={`font-medium truncate ${large ? 'text-sm' : 'text-[11px]'}`}>{armada.capacity}</span>
           </div>
+          ) : null}
           <div className="flex items-center text-gray-500 dark:text-gray-400">
             <MapPin className={`text-blue-600 mr-1.5 shrink-0 ${large ? 'h-4 w-4' : 'h-3.5 w-3.5'}`} />
             <span className={`font-medium truncate ${large ? 'text-sm' : 'text-[11px]'}`}>{displayLocation}</span>
