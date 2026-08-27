@@ -766,7 +766,7 @@ export const ArmadaDetail: React.FC = () => {
         const newReview = payload?.data;
         setFleet(prev => prev ? {
           ...prev,
-          reviews: [newReview, ...prev.reviews],
+          reviews: [newReview, ...(prev.reviews ?? [])],
         } : prev);
         setAllReviews(prev => newReview ? [newReview, ...prev] : prev);
         setReviewsTotal(prev => prev + 1);
