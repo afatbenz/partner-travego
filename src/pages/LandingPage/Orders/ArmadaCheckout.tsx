@@ -264,6 +264,7 @@ export const ArmadaCheckout: React.FC = () => {
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [totalAvailable, setTotalAvailable] = useState<number>(0);
   const [expandedDays, setExpandedDays] = useState<number[]>([1]);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   // Calculate default dates
   let defaultReturnDate = endDate || '';
@@ -682,6 +683,18 @@ export const ArmadaCheckout: React.FC = () => {
   const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.addon_price, 0);
   const totalPrice = (basePrice + addonsTotal) * formData.armadaCount;
   const data = fleetSummary;
+
+  // Validation: enable submit only when all required fields are filled
+  const isFormValid = !!(
+    formData.fullName.trim() &&
+    formData.address.trim() &&
+    formData.city_id &&
+    formData.pickupCity &&
+    formData.pickupLocation.trim() &&
+    formData.pickupDate &&
+    formData.pickupTime &&
+    formData.returnDate
+  );
   const pickupPriorityCities = data.pickup_points?.map(p => ({ id: String(p.city_id), name: p.city_name })) || [];
   const isPickupOutsideCoverage = !!formData.pickupCity && !pickupPriorityCities.some((city) => city.id === String(formData.pickupCity));
 
