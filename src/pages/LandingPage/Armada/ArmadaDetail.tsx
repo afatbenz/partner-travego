@@ -234,7 +234,7 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-semibold text-gray-900 mb-2">Pilih Tujuan <span className="text-red-500">*</span></label>
+      <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Pilih Tujuan <span className="text-red-500 dark:text-white">*</span></label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -242,19 +242,19 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between font-normal bg-white border-blue-200 hover:bg-blue-50/50 p-3 h-auto rounded-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all",
-              !value && "text-gray-400"
+              "w-full justify-between font-normal bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-gray-700 p-3 h-auto rounded-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-gray-900 dark:text-white",
+              !value && "text-gray-400 dark:text-gray-500"
             )}
           >
             {value ? value : <span>Pilih Tujuan</span>}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-2xl shadow-xl border-blue-100 bg-white" align="start">
-          <Command shouldFilter={false} className="bg-white rounded-2xl">
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-2xl shadow-xl border-blue-100 dark:border-gray-700 bg-white dark:bg-gray-800" align="start">
+          <Command shouldFilter={false} className="bg-white dark:bg-gray-800 rounded-2xl">
             <CommandInput 
               placeholder="Cari kota..." 
-              className="border-none focus:ring-0" 
+              className="border-none focus:ring-0 text-gray-900 dark:text-white" 
               value={search}
               onValueChange={setSearch}
             />
@@ -263,7 +263,7 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
                 <div className="py-6 text-center text-sm text-gray-500">Memuat kota...</div>
               ) : (
                 <>
-                  {!hasResults && <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>}
+                  {!hasResults && <CommandEmpty className="text-gray-500 dark:text-gray-400">Kota tidak ditemukan.</CommandEmpty>}
 
                   {filteredPreferredCities.length > 0 && (
                     <CommandGroup>
@@ -275,7 +275,7 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
                             onSelect(city.name, city.serviceTypes, city.id);
                             setOpen(false);
                           }}
-                          className="cursor-pointer"
+                          className="cursor-pointer text-gray-900 dark:text-white"
                         >
                           <Check
                             className={cn(
@@ -292,7 +292,7 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
                   {filteredOtherCities.length > 0 && (
                     <>
                       {filteredPreferredCities.length > 0 && <CommandSeparator className="my-1" />}
-                      <CommandGroup heading="Kota lain">
+                      <CommandGroup heading="Kota lain" className="text-gray-500 dark:text-gray-400">
                         {filteredOtherCities.map((city) => (
                           <CommandItem
                             key={`general-${city.id}`}
@@ -301,7 +301,7 @@ const CitySearchSelect = ({ value, onSelect }: { value: string, onSelect: (val: 
                               onSelect(city.name, city.serviceTypes, city.id);
                               setOpen(false);
                             }}
-                            className="cursor-pointer"
+                            className="cursor-pointer text-gray-900 dark:text-white"
                           >
                             <Check
                               className={cn(
@@ -330,24 +330,24 @@ const CustomDatePicker = ({ date, setDate, label, placeholder, optional, minDate
   
   return (
     <div className="w-full">
-      <label className="block text-sm font-semibold text-gray-900 mb-2">
+      <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
         {label} {!optional && <span className="text-red-500">*</span>}
-        {optional && <span className="text-gray-400 font-normal"> (Opsional)</span>}
+        {optional && <span className="text-gray-400 dark:text-gray-500 font-normal"> (Opsional)</span>}
       </label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant={"outline"}
             className={cn(
-              "w-full justify-start text-left font-normal bg-white border-blue-200 hover:bg-blue-50/50 p-3 h-auto rounded-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all",
-              !date && "text-gray-400"
+              "w-full justify-start text-left font-normal bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-gray-700 p-3 h-auto rounded-2xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-gray-900 dark:text-white",
+              !date && "text-gray-400 dark:text-gray-500"
             )}
           >
-            <CalendarIcon className="mr-3 h-5 w-5 text-blue-500" />
+            <CalendarIcon className="mr-3 h-5 w-5 text-blue-500 dark:text-blue-400" />
             {date ? format(new Date(date), "dd MMMM yyyy", { locale: idLocale }) : <span>{placeholder}</span>}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 rounded-2xl border-blue-100 shadow-xl" align="start">
+        <PopoverContent className="w-auto p-0 rounded-2xl border-blue-100 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-800" align="start">
           <Calendar
             mode="single"
             selected={date ? new Date(date) : undefined}
@@ -435,11 +435,11 @@ const PricingCard: React.FC<{
 
   return (
     <>
-      <div className="md:bg-white rounded-[1rem] md:rounded-[2.5rem] md:shadow-lg p-5 mt-5 md:mt-0 md:p-10 mb-6 md:border border-gray-100 transition-all duration-300">
+      <div className="md:bg-white md:dark:bg-gray-900 rounded-[1rem] md:rounded-[2.5rem] md:shadow-lg p-5 mt-5 md:mt-0 md:p-10 mb-6 md:border border-gray-100 dark:border-gray-700 transition-all duration-300">
         <div className="mb-6">
-          <div className="text-sm text-gray-500 mb-1">Mulai dari</div>
-          <div className="text-3xl font-bold text-blue-600">{formattedPrice}</div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Mulai dari</div>
+          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{formattedPrice}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             /{priceUom}
           </div>
         </div>
@@ -469,12 +469,12 @@ const PricingCard: React.FC<{
                 optional={true}
                 minDate={startDate || new Date().toISOString().split('T')[0]}
               />
-              <p className="text-xs text-gray-500 mt-2 italic">*Dihitung sejak datang kembali di titik penjemputan</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">*Dihitung sejak datang kembali di titik penjemputan</p>
             </div>
             
             {availableServiceTypes.length > 0 && (
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Jenis Layanan <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Jenis Layanan <span className="text-red-500">*</span></label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {availableServiceTypes.map(type => (
                     <div 
@@ -482,13 +482,13 @@ const PricingCard: React.FC<{
                       className={cn(
                         "p-3 rounded-2xl border cursor-pointer transition-all hover:scale-105 text-left flex flex-col justify-center",
                         serviceType === type 
-                          ? "bg-blue-50 border-blue-500 ring-1 ring-blue-500" 
-                          : "bg-white border-gray-200 hover:border-blue-300"
+                          ? "bg-blue-50 dark:bg-blue-900/30 border-blue-500 ring-1 ring-blue-500" 
+                          : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-300"
                       )}
                       onClick={() => setServiceType(type)}
                     >
-                      <div className="font-semibold text-sm text-gray-900">{serviceTypeConfig[type]?.label || type}</div>
-                      <div className="text-xs text-gray-500 mt-1 leading-relaxed">{serviceTypeConfig[type]?.desc}</div>
+                      <div className="font-semibold text-sm text-gray-900 dark:text-white">{serviceTypeConfig[type]?.label || type}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{serviceTypeConfig[type]?.desc}</div>
                     </div>
                   ))}
                 </div>
@@ -496,7 +496,7 @@ const PricingCard: React.FC<{
             )}
             
             {availabilityError && (
-              <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-xl border border-red-100 dark:border-red-900">
                 {availabilityError}
               </div>
             )}
@@ -512,21 +512,21 @@ const PricingCard: React.FC<{
             </div>
           </div>
         ) : isAvailable === false ? (
-          <div className="mb-6 p-6 bg-red-50 rounded-2xl border border-red-100 text-center transition-all duration-300">
-            <h4 className="font-semibold text-red-800 mb-2">Armada Tidak Tersedia</h4>
-            <p className="text-red-600 text-sm mb-4">Armada pilihan kamu tidak tersedia, coba di tanggal lain</p>
+          <div className="mb-6 p-6 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900 text-center transition-all duration-300">
+            <h4 className="font-semibold text-red-800 dark:text-red-300 mb-2">Armada Tidak Tersedia</h4>
+            <p className="text-red-600 dark:text-red-400 text-sm mb-4">Armada pilihan kamu tidak tersedia, coba di tanggal lain</p>
             <Button 
               variant="outline" 
               onClick={onResetSearch}
-              className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-100 rounded-xl"
+              className="w-full sm:w-auto border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl"
             >
               Ubah Pencarian
             </Button>
           </div>
         ) : pricingList.length === 0 ? (
-          <div className="mb-6 p-6 bg-blue-50 rounded-2xl border border-blue-100 text-center transition-all duration-300">
-            <h4 className="font-semibold text-blue-900 mb-2">Informasi Harga</h4>
-            <p className="text-blue-700 text-sm mb-4">Harga belum tersedia, silakan lakukan custom order untuk informasi lebih lanjut</p>
+          <div className="mb-6 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-900 text-center transition-all duration-300">
+            <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Informasi Harga</h4>
+            <p className="text-blue-700 dark:text-blue-400 text-sm mb-4">Harga belum tersedia, silakan lakukan custom order untuk informasi lebih lanjut</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 onClick={onCustomOrder}
@@ -537,7 +537,7 @@ const PricingCard: React.FC<{
               <Button 
                 variant="outline" 
                 onClick={onResetSearch}
-                className="border-blue-200 text-blue-600 hover:bg-blue-100 rounded-xl"
+                className="border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-xl"
               >
                 Ubah Pencarian
               </Button>
@@ -546,8 +546,8 @@ const PricingCard: React.FC<{
         ) : (
           <div className="mb-6 space-y-3 transition-all duration-300">
             <div className="flex justify-between items-center mb-2">
-              <h4 className="font-semibold text-gray-900 text-sm">Pilihan Varian Durasi:</h4>
-              <Button variant="ghost" size="sm" onClick={onResetSearch} className="text-blue-600 hover:text-blue-700 h-auto p-0 hover:bg-transparent text-sm">
+              <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Pilihan Varian Durasi:</h4>
+              <Button variant="ghost" size="sm" onClick={onResetSearch} className="text-blue-600 hover:text-blue-700 h-auto p-0 hover:bg-transparent text-sm dark:text-blue-400 dark:hover:text-blue-300">
                 Ubah Pencarian
               </Button>
             </div>
@@ -557,22 +557,23 @@ const PricingCard: React.FC<{
               return (
                 <div
                   key={idx}
-                  className={`flex justify-between items-center text-sm p-3 rounded-2xl cursor-pointer border transition-all hover:scale-105 ${
+                  className={cn(
+                    "flex justify-between items-center text-sm p-3 rounded-2xl cursor-pointer border transition-all hover:scale-105",
                     isSelected
-                      ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500'
-                      : 'bg-gray-50 border-transparent hover:bg-gray-100'
-                  }`}
+                      ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 ring-1 ring-blue-500'
+                      : 'bg-gray-50 dark:bg-gray-800 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700'
+                  )}
                   onClick={() => setSelectedPricing(pkg)}
                 >
                   <div>
-                    <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                    <span className={cn("font-medium", isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300')}>
                       {pkg.rent_type_label}
                     </span>
-                    <span className={`text-xs block ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>
+                    <span className={cn("text-xs block", isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400')}>
                       {pkg.duration > 0 ? `${pkg.duration} hari` : 'Per hari'} mulai dari
                     </span>
                   </div>
-                  <div className={`font-semibold ${isSelected ? 'text-blue-700' : 'text-blue-600'}`}>
+                  <div className={cn("font-semibold", isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-blue-600 dark:text-blue-400')}>
                     Rp {pkg.price.toLocaleString('id-ID')}
                   </div>
                 </div>
@@ -583,7 +584,7 @@ const PricingCard: React.FC<{
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all hover:scale-105"
+                className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all hover:scale-105 dark:text-blue-400"
                 onClick={() => setShowAllPricing(!showAllPricing)}
               >
                 {showAllPricing ? 'Sembunyikan' : `Lihat Semua (${pricingList.length})`}
@@ -598,7 +599,7 @@ const PricingCard: React.FC<{
               >
                 {selectedPricing ? 'Pesan Sekarang' : 'Pilih Varian Durasi'}
               </Button>
-              <Button variant="outline" className="w-full py-6 rounded-2xl border-blue-600 hover:border-blue-800 transition-all hover:scale-105" onClick={onCustomOrder}>
+              <Button variant="outline" className="w-full py-6 rounded-2xl border-blue-600 hover:border-blue-800 transition-all hover:scale-105 dark:border-blue-500 dark:hover:border-blue-400" onClick={onCustomOrder}>
                 Ajukan Custom Order
               </Button>
             </div>
@@ -606,7 +607,7 @@ const PricingCard: React.FC<{
         )}
         
         {!availablePricing && (
-          <Button variant="outline" className="w-full py-6 rounded-2xl border-blue-600 hover:border-blue-800 transition-all hover:scale-105" onClick={onCustomOrder}>
+          <Button variant="outline" className="w-full py-6 rounded-2xl border-blue-600 hover:border-blue-800 transition-all hover:scale-105 dark:border-blue-500 dark:hover:border-blue-400" onClick={onCustomOrder}>
             Ajukan Custom Order
           </Button>
         )}
@@ -746,7 +747,7 @@ export const ArmadaDetail: React.FC = () => {
       return;
     }
     if (!reviewText.trim()) {
-      Swal.fire({ icon: 'warning', title: 'Ulasan Required', text: 'Mohon tulis ulasan Anda.' });
+      Swal.fire({ icon: 'warning', title: 'Ulasan Required', text: 'Mohon sampaikan ulasan Anda.' });
       return;
     }
 
@@ -911,10 +912,10 @@ export const ArmadaDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500">Memuat detail armada...</p>
+          <p className="text-gray-500 dark:text-gray-400">Memuat detail armada...</p>
         </div>
       </div>
     );
@@ -922,11 +923,11 @@ export const ArmadaDetail: React.FC = () => {
 
   if (error || !fleet) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <div className="text-red-500 text-5xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Gagal Memuat Data</h2>
-          <p className="text-gray-600 mb-6">{error || 'Data armada tidak ditemukan'}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Gagal Memuat Data</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error || 'Data armada tidak ditemukan'}</p>
           <Button onClick={() => navigate('/armada')} variant="outline">
             Kembali ke Daftar Armada
           </Button>
@@ -989,7 +990,7 @@ export const ArmadaDetail: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <section className="relative overflow-hidden text-white text-center md:text-left">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
@@ -1076,7 +1077,7 @@ export const ArmadaDetail: React.FC = () => {
 
         <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] mb-[-1px]">
           <svg
-            className="relative block w-[calc(100%+1.3px)] h-[100px]"
+            className="relative block w-[calc(100%+1.3px)] h-[100px] dark:hidden"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 1440 320"
             preserveAspectRatio="none"
@@ -1086,10 +1087,21 @@ export const ArmadaDetail: React.FC = () => {
               d="M0,256L80,245.3C160,235,320,213,480,202.7C640,192,800,192,960,208C1120,224,1280,256,1360,272L1440,288L1440,320L0,320Z"
             />
           </svg>
+          <svg
+            className="relative block w-[calc(100%+1.3px)] h-[100px] hidden dark:block"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 320"
+            preserveAspectRatio="none"
+          >
+            <path
+              fill="#111827"
+              d="M0,256L80,245.3C160,235,320,213,480,202.7C640,192,800,192,960,208C1120,224,1280,256,1360,272L1440,288L1440,320L0,320Z"
+            />
+          </svg>
         </div>
       </section>
 
-      <section className="pt-8 pb-4 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-gray-50">
+      <section className="pt-8 pb-4 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-3 space-y-4">
@@ -1121,8 +1133,8 @@ export const ArmadaDetail: React.FC = () => {
                       </CarouselContent>
                       {allImages.length > 1 && (
                         <>
-                          <CarouselPrevious className="left-0 bg-white/90 shadow-md border-gray-200 hover:bg-white" />
-                          <CarouselNext className="right-0 bg-white/90 shadow-md border-gray-200 hover:bg-white" />
+                          <CarouselPrevious className="left-0 bg-white/90 dark:bg-gray-800/90 shadow-md border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-700" />
+                          <CarouselNext className="right-0 bg-white/90 dark:bg-gray-800/90 shadow-md border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-700" />
                         </>
                       )}
                     </Carousel>
@@ -1140,11 +1152,12 @@ export const ArmadaDetail: React.FC = () => {
                               key={img.uuid}
                               type="button"
                               onClick={() => handleThumbnailClick(activeIndex)}
-                              className={`relative flex-shrink-0 w-30 h-16 sm:w-30 sm:h-20 rounded-lg overflow-hidden border-2 transition-all p-0 ${
+                              className={cn(
+                                "relative flex-shrink-0 w-30 h-16 sm:w-30 sm:h-20 rounded-lg overflow-hidden border-2 transition-all p-0",
                                 isActive
-                                  ? 'border-blue-600 ring-2 ring-blue-200'
+                                  ? 'border-blue-600 ring-2 ring-blue-200 dark:ring-blue-800'
                                   : 'border-transparent opacity-70 hover:opacity-100'
-                              }`}
+                              )}
                             >
                               <img
                                 src={img.path_file}
@@ -1158,46 +1171,45 @@ export const ArmadaDetail: React.FC = () => {
                     </div>
                   )}
 
-                  <div className='mt-8 bg-white rounded-lg border border-gray-100 p-6 shadow-sm'>
+                  <div className='mt-8 bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700 p-6 shadow-sm'>
                     <div className="flex items-center gap-3 mb-5">
                       <div className="h-1 w-6 md:w-12 bg-blue-600 rounded-full" />
-                      <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Deskripsi Armada</h2>
+                      <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">Deskripsi Armada</h2>
                     </div>
 
                       <div
-                        className="prose prose-lg max-w-none text-gray-700"
+                        className="prose prose-lg max-w-none text-gray-700 dark:text-gray-300"
                         dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
                       />
-
                       {fleet.pickup.length > 0 && (
                         <div className="mt-8 mb-5">
                           <div className="flex items-center gap-3 mb-5">
                             <div className="h-1 w-6 md:w-12 bg-blue-600 rounded-full" />
-                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Area Penjemputan</h2>
+                            <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">Area Penjemputan</h2>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {fleet.pickup.map((area) => (
                               <Badge
                                 key={area.city_id}
                                 variant="outline"
-                                className="px-3 py-1 border-blue-200 bg-blue-50 text-blue-700"
+                                className="px-3 py-1 border-blue-200 bg-blue-50 dark:bg-gray-700 text-blue-700/90 dark:text-white"
                               >
                                 <MapPin className="h-3 w-3 mr-1" />
                                 {area.city_name}
                               </Badge>
                             ))}
                           </div>
-                          <p className="text-xs mt-2 italic text-gray-400/90">*Penjemputan di luar area kemungkinan akan ada biaya tambahan. Hubungi admin untuk informasi lebih lanjut.</p>
+                          <p className="text-xs mt-2 italic text-gray-400 dark:text-gray-500">*Penjemputan di luar area kemungkinan akan ada biaya tambahan. Hubungi admin untuk informasi lebih lanjut.</p>
                         </div>
                       )}
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                         <div>
-                          <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-4">
+                          <h3 className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white mb-4">
                             <ClipboardList className="h-5 w-5 text-blue-600" />
                             Spesifikasi
                           </h3>
-                          <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6">
+                          <div className="bg-white dark:bg-gray-900 rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6">
                             {/* Gambar minibus di sisi kiri card */}
                             <div className="flex flex-col sm:flex-row gap-4 mb-4">
                               <div className="flex-1 min-w-0">
@@ -1221,16 +1233,16 @@ export const ArmadaDetail: React.FC = () => {
                         </div>
 
                         <div>
-                          <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 mb-4">
+                          <h3 className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white mb-4">
                             <ListChecks className="h-5 w-5 text-green-600" />
                             Fasilitas
                           </h3>
-                          <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6">
+                          <div className="bg-white dark:bg-gray-900 rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6">
                             <ul className="space-y-2">
                               {(fleet.facilities ?? []).map((feature, index) => (
                                 <ul className="divide-y divide-gray-100 dark:divide-gray-700">
                                   <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                                      <li key={index} className="flex items-start text-md text-gray-700">
+                                      <li key={index} className="flex items-start text-md text-gray-700 dark:text-white">
                                         <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
                                         {feature}
                                       </li>
@@ -1253,14 +1265,14 @@ export const ArmadaDetail: React.FC = () => {
                       </div>
                     {/* Addon Section */}
                     {fleet.addon.length > 0 && (
-                      <div className="bg-white rounded-[2.5rem] p-6 border border-gray-100 mt-6 lg:mt-0">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <Gift className="h-5 w-5 text-blue-600" />
+                      <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 border border-gray-100 dark:border-gray-700 mt-6 lg:mt-0">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                          <Gift className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                           Add-on Tersedia
                         </h3>
                         <div className="flex flex-wrap gap-2">
                           {fleet.addon.map((addon, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs flex flex-col items-start gap-1 p-4 h-auto border-blue-400 bg-transparent">
+                            <Badge key={index} variant="secondary" className="text-xs flex flex-col items-start gap-1 p-4 h-auto border-blue-400 bg-transparent text-gray-900 dark:text-white">
                               <span className="font-bold">{addon.addon_name}</span>
                               <span className="text-blue-600 font-semibold">Rp {addon.addon_price.toLocaleString('id-ID')}</span>
                             </Badge>
@@ -1285,39 +1297,39 @@ export const ArmadaDetail: React.FC = () => {
 
 
       {/* Ulasan — two-column grid */}
-      <div className="max-w-7xl mx-auto px-5 md:px-0">
+      <div className="max-w-7xl mx-auto px-5 md:px-0 dark:bg-gray-900">
         <div className="grid grid-cols-1 lg:grid-cols-[35%_65%] gap-6 items-start">
           {/* Kolom kiri: info panel — sembunyikan di mobile */}
-          <div className="hidden lg:block bg-blue-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
-            <p className="mb-4 text-gray-700">
+          <div className="hidden lg:block bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg p-6 relative overflow-hidden">
+            <p className="mb-4 text-gray-700 dark:text-gray-300">
               Ulasan Anda membantu kami meningkatkan kualitas layanan dan memberikan pengalaman terbaik bagi setiap pelanggan.
             </p>
             <ul className="space-y-3">
               <li className="flex items-center gap-3">
-                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600">
+                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
                   <Users className="h-4 w-4" />
                 </span>
                 <div>
-                  <div className="font-semibold">Bantu pelanggan lain</div>
-                  <div className="text-sm text-gray-600">Ulasan jujur Anda membantu mereka membuat keputusan yang tepat.</div>
+                  <div className="font-semibold dark:text-white">Bantu pelanggan lain</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Ulasan jujur Anda membantu mereka membuat keputusan yang tepat.</div>
                 </div>
               </li>
               <li className="flex items-center gap-3">
-                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600">
+                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
                   <ShieldCheck className="h-4 w-4" />
                 </span>
                 <div>
-                  <div className="font-semibold">Tingkatkan kualitas layanan</div>
-                  <div className="text-sm text-gray-600">Masukan Anda menjadi bahan berharga bagi kami untuk terus berbenah.</div>
+                  <div className="font-semibold dark:text-white">Tingkatkan kualitas layanan</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Masukan Anda menjadi bahan berharga bagi kami untuk terus berbenah.</div>
                 </div>
               </li>
               <li className="flex items-center gap-3">
-                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600">
+                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
                   <Clock className="h-4 w-4" />
                 </span>
                 <div>
-                  <div className="font-semibold">Hanya butuh 1 menit</div>
-                  <div className="text-sm text-gray-600">Ulasan cepat Anda sangat berarti bagi kami.</div>
+                  <div className="font-semibold dark:text-white">Hanya butuh 1 menit</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Ulasan cepat Anda sangat berarti bagi kami.</div>
                 </div>
               </li>
             </ul>
@@ -1328,22 +1340,22 @@ export const ArmadaDetail: React.FC = () => {
           <div className="space-y-4">
             <div className="flex flex-col gap-2 mb-2 md:flex-row md:items-center">
               <div className="flex items-center gap-2">
-                <MessageCircle className="h-6 w-6 text-blue-600" />
-                <h3 className="text-2xl font-bold text-gray-900">Tulis Ulasan Armada</h3>
+                <MessageCircle className="h-6 w-6 text-blue-600 dark:text-blue-50" />
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Bagikan Pengalaman</h3>
               </div>
-              <span className="text-sm text-gray-500 md:ml-auto">Bagikan pengalaman Anda menggunakan layanan kami.</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 md:ml-auto">Bagikan pengalaman Anda bersama kami.</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
               {/* Order ID input */}
-              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white">
-                <span className="text-gray-400 text-sm mr-2 font-bold">ID</span>
+              <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+                <span className="text-gray-400 dark:text-gray-500 text-sm mr-2 font-bold">ID</span>
                 <input
                   type="text"
                   value={orderIdInput}
                   onChange={(e) => setOrderIdInput(e.target.value)}
                   placeholder="Order ID"
-                  className="w-full border-0 p-0 text-sm text-gray-900 bg-transparent focus:outline-none placeholder:text-gray-400"
+                  className="w-full border-0 p-0 text-sm text-gray-900 dark:text-white bg-transparent focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
               </div>
               {/* Star rating */}
@@ -1365,7 +1377,7 @@ export const ArmadaDetail: React.FC = () => {
                           className={`h-8 w-8 transition-colors ${
                             isActive
                               ? 'text-orange-500 fill-orange-500'
-                              : 'text-gray-300 fill-transparent'
+                              : 'text-gray-300 dark:text-gray-600 fill-transparent'
                           }`}
                         />
                       </button>
@@ -1376,17 +1388,17 @@ export const ArmadaDetail: React.FC = () => {
             </div>
 
             {/* Ulasan textarea */}
-            <div className="border border-gray-300 rounded-lg px-3 py-2 bg-white">
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
               <div className="flex items-center gap-1 mb-1">
-                <MessageCircle className="h-4 w-4 text-gray-400" />
-                <label className="text-sm text-gray-600 font-medium">Sampaikan penilaian anda di sini:</label>
+                <MessageCircle className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                <label className="text-sm text-gray-600 dark:text-gray-400 font-medium">Sampaikan penilaian anda di sini:</label>
               </div>
               <textarea
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
                 rows={3}
                 placeholder="Bagikan pengalaman Anda..."
-                className="w-full resize-none border-0 p-4 text-sm text-gray-900 bg-transparent focus:outline-none placeholder:text-gray-400"
+                className="w-full resize-none border-0 p-4 text-sm text-gray-900 dark:text-white bg-transparent focus:outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
               />
             </div>
 
@@ -1401,9 +1413,9 @@ export const ArmadaDetail: React.FC = () => {
             </Button>
 
             {/* Privacy notice */}
-            <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+            <div className="flex items-start gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 rounded-lg px-3 py-2">
               <Lock className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-gray-600 leading-relaxed">
+              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                 Ulasan Anda akan ditinjau sebelum ditampilkan untuk menjaga kualitas dan keamanan.
               </p>
             </div>
@@ -1413,7 +1425,7 @@ export const ArmadaDetail: React.FC = () => {
       </div>
 
       {/* Daftar ulasan pelanggan — full-width section di bawah grid */}
-      <div className="max-w-7xl mx-auto mt-8 mb-5 px-5 md:px-0">
+      <div className="max-w-7xl mx-auto mt-8 mb-5 px-5 md:px-0 dark:bg-gray-900">
         {allReviews.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1422,22 +1434,22 @@ export const ArmadaDetail: React.FC = () => {
                 const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
 
                 return (
-                  <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
+                  <div key={index} className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h4 className="font-bold text-gray-900">{reviewItem.customer_name}</h4>
-                        <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
+                        <h4 className="font-bold text-gray-900 dark:text-white">{reviewItem.customer_name}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formattedDate}</p>
                       </div>
                       <div className="flex">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
                             key={star}
-                            className={`h-4 w-4 ${star <= reviewItem.star ? 'text-orange-500 fill-orange-500' : 'text-gray-300'}`}
+                            className={`h-4 w-4 ${star <= reviewItem.star ? 'text-orange-500 fill-orange-500' : 'text-gray-300 dark:text-gray-600'}`}
                           />
                         ))}
                       </div>
                     </div>
-                    <p className="text-gray-700 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
+                    <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
                   </div>
                 );
               })}
@@ -1446,7 +1458,7 @@ export const ArmadaDetail: React.FC = () => {
               <div className="mt-4 text-center">
                 <button
                   onClick={() => setShowAllReviewsModal(true)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-blue-500 hover:bg-blue-50 text-blue-500 text-sm font-semibold transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-500 text-sm font-semibold transition-colors"
                 >
                   Lihat Semua Ulasan ({reviewsTotal})
                 </button>
@@ -1454,9 +1466,9 @@ export const ArmadaDetail: React.FC = () => {
             )}
           </>
         ) : (
-          <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-8 text-center border border-gray-700 dark:border-gray-600">
             <Inbox className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Belum ada ulasan untuk armada ini.</p>
+            <p className="text-gray-500 dark:text-gray-400">Belum ada ulasan untuk armada ini.</p>
           </div>
         )}
       </div>
@@ -1467,21 +1479,21 @@ export const ArmadaDetail: React.FC = () => {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) setShowAllReviewsModal(false); }}
         >
-          <div className="bg-white rounded-2xl w-full max-w-full md:max-w-[50%] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-full md:max-w-[50%] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Star className="h-4 w-4 text-blue-600 fill-blue-600" />
+                <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                  <Star className="h-4 w-4 text-blue-600 dark:text-blue-400 fill-blue-600 dark:fill-blue-400" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Semua Ulasan</h2>
-                  <p className="text-xs text-gray-500">{reviewsTotal} ulasan</p>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Semua Ulasan</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{reviewsTotal} ulasan</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAllReviewsModal(false)}
-                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                 aria-label="Tutup"
               >
                 <X className="h-5 w-5" />
@@ -1494,19 +1506,19 @@ export const ArmadaDetail: React.FC = () => {
                   const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
                   const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
                   return (
-                    <div key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h4 className="font-semibold text-gray-900 text-sm">{reviewItem.customer_name}</h4>
-                          <p className="text-xs text-gray-400 mt-0.5">{formattedDate}</p>
+                          <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{reviewItem.customer_name}</h4>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formattedDate}</p>
                         </div>
                         <div className="flex gap-0.5">
                           {[1,2,3,4,5].map((star) => (
-                            <Star key={star} className={`h-3.5 w-3.5 ${star <= reviewItem.star ? 'text-orange-400 fill-orange-400' : 'text-gray-300'}`} />
+                            <Star key={star} className={`h-3.5 w-3.5 ${star <= reviewItem.star ? 'text-orange-400 fill-orange-400' : 'text-gray-300 dark:text-gray-600'}`} />
                           ))}
                         </div>
                       </div>
-                      <p className="text-gray-600 text-xs leading-relaxed">"{reviewItem.review}"</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">"{reviewItem.review}"</p>
                     </div>
                   );
                 })}
@@ -1544,19 +1556,19 @@ export const ArmadaDetail: React.FC = () => {
 
         {/* Floating pricing sheet — slide up smooth */}
         <div
-          className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-[2.5rem] shadow-[0_-20px_60px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-out max-h-[85vh] flex flex-col ${
+          className={`fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-blue-950 rounded-t-[2.5rem] shadow-[0_-20px_60px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-out max-h-[85vh] flex flex-col ${
             isPricingSheetOpen ? 'translate-y-0' : 'translate-y-full'
           }`}
         >
           <div className="shrink-0 flex items-center justify-between px-6 pt-4 pb-2">
             <div className="flex items-center gap-2">
               <div className="h-1 w-8 bg-blue-500 rounded-full" />
-              <span className="text-sm font-bold text-gray-900">Pilih Harga</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white">Pilih Harga</span>
             </div>
             <button
               type="button"
               onClick={() => setIsPricingSheetOpen(false)}
-              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
               aria-label="Tutup"
             >
               <X className="h-5 w-5" />

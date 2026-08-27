@@ -130,39 +130,39 @@ function getPaymentStatusInfo(order: OrderDetail) {
   const payment = order.payment;
   if (!payment || payment.length === 0) {
     if (order.payment_status === 1) {
-      return { label: 'Lunas', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+      return { label: 'Lunas', className: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' };
     }
-    return { label: 'Menunggu Pembayaran', className: 'bg-amber-50 text-amber-700 border-amber-200' };
+    return { label: 'Menunggu Pembayaran', className: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' };
   }
   const last = payment[payment.length - 1];
   if (last.status === 10) {
-    return { label: 'Sedang Verifikasi', className: 'bg-orange-50 text-orange-700 border-orange-200' };
+    return { label: 'Sedang Verifikasi', className: 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800' };
   }
   if (last.status === 1) {
     const dp = payment.find((p) => String(p.payment_type) === '2');
     if (dp && (dp.payment_remaining || 0) > 0) {
-      return { label: 'DP Terbayar', className: 'bg-blue-50 text-blue-700 border-blue-200' };
+      return { label: 'DP Terbayar', className: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' };
     }
-    return { label: 'Lunas', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+    return { label: 'Lunas', className: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' };
   }
-  return { label: 'Diproses', className: 'bg-slate-100 text-slate-600 border-slate-200' };
+  return { label: 'Diproses', className: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700' };
 }
 
 function getTripStatusInfo(order: OrderDetail) {
   if (order.status_label) {
     const label = order.status_label;
-    if (/selesai/i.test(label)) return { label, className: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-    if (/berjalan|jalan/i.test(label)) return { label, className: 'bg-blue-50 text-blue-700 border-blue-200' };
-    if (/konfirm/i.test(label)) return { label, className: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
-    return { label, className: 'bg-slate-100 text-slate-600 border-slate-200' };
+    if (/selesai/i.test(label)) return { label, className: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' };
+    if (/berjalan|jalan/i.test(label)) return { label, className: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' };
+    if (/konfirm/i.test(label)) return { label, className: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' };
+    return { label, className: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700' };
   }
 
   const now = new Date();
   const start = new Date(order.pickup.start_date);
   const end = new Date(order.pickup.end_date);
 
-  if (now > end) return { label: 'Selesai', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-  if (now >= start) return { label: 'Sedang Berjalan', className: 'bg-blue-50 text-blue-700 border-blue-200' };
+  if (now > end) return { label: 'Selesai', className: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' };
+  if (now >= start) return { label: 'Sedang Berjalan', className: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' };
 
   const payment = order.payment;
   const paid =
@@ -171,8 +171,8 @@ function getTripStatusInfo(order: OrderDetail) {
       payment.some((p) => p.status === 1) &&
       !payment.some((p) => String(p.payment_type) === '2' && (p.payment_remaining || 0) > 0));
 
-  if (paid) return { label: 'Dikonfirmasi', className: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
-  return { label: 'Diproses', className: 'bg-slate-100 text-slate-600 border-slate-200' };
+  if (paid) return { label: 'Dikonfirmasi', className: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' };
+  return { label: 'Diproses', className: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700' };
 }
 
 function TrackingPreviewCard() {
@@ -232,7 +232,7 @@ function TrackingTimeline({ currentStep }: { currentStep: number }) {
       {/* Desktop horizontal */}
       <div className="hidden lg:block">
         <div className="relative flex justify-between">
-          <div className="absolute top-5 left-0 right-0 h-0.5 bg-[#E5E7EB] mx-8" />
+          <div className="absolute top-5 left-0 right-0 h-0.5 bg-[#E5E7EB] dark:bg-gray-700 mx-8" />
           <div
             className="absolute top-5 left-8 h-0.5 bg-gradient-to-r from-[#295BFF] to-indigo-500 transition-all duration-500"
             style={{ width: `calc(${(currentStep / (TRACKING_STEPS.length - 1)) * 100}% - 4rem)` }}
@@ -248,7 +248,7 @@ function TrackingTimeline({ currentStep }: { currentStep: number }) {
                     'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300',
                     isComplete && 'bg-gradient-to-br from-[#295BFF] to-indigo-500 text-white shadow-lg shadow-blue-500/25',
                     isCurrent && 'bg-[#295BFF] text-white ring-4 ring-[#295BFF]/25 animate-pulse shadow-lg shadow-blue-500/30',
-                    isPending && 'bg-slate-100 text-slate-400 border border-[#E5E7EB]'
+                    isPending && 'bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-gray-500 border border-[#E5E7EB] dark:border-gray-600'
                   )}
                 >
                   {isComplete ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">{index + 1}</span>}
@@ -256,7 +256,7 @@ function TrackingTimeline({ currentStep }: { currentStep: number }) {
                 <p
                   className={cn(
                     'mt-3 text-[11px] font-semibold text-center leading-tight max-w-[90px]',
-                    isComplete || isCurrent ? 'text-[#111827]' : 'text-[#6B7280]'
+                    isComplete || isCurrent ? 'text-[#111827] dark:text-white' : 'text-[#6B7280] dark:text-gray-400'
                   )}
                 >
                   {step}
@@ -281,7 +281,7 @@ function TrackingTimeline({ currentStep }: { currentStep: number }) {
                     'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all',
                     isComplete && 'bg-gradient-to-br from-[#295BFF] to-indigo-500 text-white',
                     isCurrent && 'bg-[#295BFF] text-white ring-4 ring-[#295BFF]/20 animate-pulse',
-                    !isComplete && !isCurrent && 'bg-slate-100 text-slate-400'
+                    !isComplete && !isCurrent && 'bg-slate-100 dark:bg-gray-700 text-slate-400 dark:text-gray-500'
                   )}
                 >
                   {isComplete ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">{index + 1}</span>}
@@ -290,13 +290,13 @@ function TrackingTimeline({ currentStep }: { currentStep: number }) {
                   <div
                     className={cn(
                       'w-0.5 flex-1 min-h-[32px] my-1',
-                      isComplete ? 'bg-gradient-to-b from-[#295BFF] to-indigo-400' : 'bg-[#E5E7EB]'
+                      isComplete ? 'bg-gradient-to-b from-[#295BFF] to-indigo-400' : 'bg-[#E5E7EB] dark:bg-gray-700'
                     )}
                   />
                 )}
               </div>
               <div className={cn('pb-6', isLast && 'pb-0')}>
-                <p className={cn('text-sm font-semibold', isComplete || isCurrent ? 'text-[#111827]' : 'text-[#6B7280]')}>
+                <p className={cn('text-sm font-semibold', isComplete || isCurrent ? 'text-[#111827] dark:text-white' : 'text-[#6B7280] dark:text-gray-400')}>
                   {step}
                 </p>
                 {isCurrent && <p className="text-xs text-[#295BFF] mt-0.5 font-medium">Status saat ini</p>}
@@ -484,7 +484,7 @@ export default function FindOrder() {
   const serviceName = searchResult?.package_name || searchResult?.fleet_name;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-gray-900 overflow-x-hidden">
       <div className="print:hidden">
         {/* Hero */}
         <section className="relative w-full min-h-[300px] md:min-h-[360px] overflow-hidden bg-gradient-to-br from-[#0F172A] via-[#1e3a5f] to-[#295BFF]">
@@ -541,9 +541,15 @@ export default function FindOrder() {
           </div>
 
           <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] mb-[-1px]">
-            <svg viewBox="0 0 1440 320" className="relative block w-full h-[50px] md:h-[80px]" preserveAspectRatio="none">
+            <svg viewBox="0 0 1440 320" className="relative block w-full h-[50px] md:h-[80px] dark:hidden" preserveAspectRatio="none">
               <path
                 fill="#F8FAFC"
+                d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,165.3C1248,149,1344,139,1392,133.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+              />
+            </svg>
+            <svg viewBox="0 0 1440 320" className="relative block w-full h-[50px] md:h-[80px] hidden dark:block" preserveAspectRatio="none">
+              <path
+                fill="#1f2937"
                 d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,165.3C1248,149,1344,139,1392,133.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
               />
             </svg>
@@ -552,17 +558,17 @@ export default function FindOrder() {
 
         {/* Floating search card */}
         <section className="relative z-20 -mt-14 md:-mt-20 container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto bg-white/90 backdrop-blur-xl border border-[#E5E7EB]/80 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.08)] transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)]">
+          <Card className="max-w-4xl mx-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-[#E5E7EB] dark:border-gray-700 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-300 hover:shadow-[0_30px_80px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
             <CardContent className="p-5 md:p-8">
               <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6B7280]" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6B7280] dark:text-gray-400" />
                   <Input
                     type="text"
                     placeholder="Masukkan Order ID (contoh: FO-2621051840-CLS70 atau TO-...)"
                     value={orderId}
                     onChange={(e) => handleOrderIdChange(e.target.value)}
-                    className="w-full h-14 md:h-[60px] pl-12 pr-4 rounded-2xl border-[#E5E7EB] bg-[#F8FAFC] focus-visible:ring-[#295BFF] text-base"
+                    className="w-full h-14 md:h-[60px] pl-12 pr-4 rounded-2xl border-[#E5E7EB] dark:border-gray-600 bg-[#F8FAFC] dark:bg-gray-900 focus-visible:ring-[#295BFF] text-base dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                 </div>
                 <Button
@@ -590,7 +596,7 @@ export default function FindOrder() {
                 </Button>
               </form>
               {isThrottled && searchResult && (
-                <p className="mt-4 text-xs text-[#6B7280]">
+                <p className="mt-4 text-xs text-[#6B7280] dark:text-gray-400">
                   Data pesanan ditampilkan dari cache. Tunggu 30 detik untuk memuat ulang Order ID yang sama.
                 </p>
               )}
@@ -601,30 +607,30 @@ export default function FindOrder() {
         {/* Main content */}
         <section className="container mx-auto px-4 py-10 md:py-14 max-w-5xl">
           {error && (
-            <div className="mb-8 flex items-start gap-3 p-4 rounded-2xl bg-red-50 border border-red-100 animate-in fade-in duration-300">
+            <div className="mb-8 flex items-start gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900 animate-in fade-in duration-300">
               <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-red-800">Pesanan tidak ditemukan</p>
-                <p className="text-sm text-red-600 mt-0.5">{error}</p>
+                <p className="font-semibold text-red-800 dark:text-red-300">Pesanan tidak ditemukan</p>
+                <p className="text-sm text-red-600 dark:text-red-400 mt-0.5">{error}</p>
               </div>
             </div>
           )}
 
           {!searchResult && !isLoading && !error && (
             <div className="animate-in fade-in duration-500">
-              <Card className="rounded-3xl border border-[#E5E7EB] bg-white shadow-sm">
+              <Card className="rounded-3xl border border-[#E5E7EB] dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
                 <CardContent className="py-16 md:py-20 px-6 text-center">
-                  <div className="mx-auto w-20 h-20 bg-gradient-to-br from-[#295BFF]/10 to-indigo-50 rounded-3xl flex items-center justify-center mb-6">
+                  <div className="mx-auto w-20 h-20 bg-gradient-to-br from-[#295BFF]/10 to-indigo-50 dark:to-indigo-900/20 rounded-3xl flex items-center justify-center mb-6">
                     <PackageSearch className="h-10 w-10 text-[#295BFF]" />
                   </div>
-                  <h3 className="text-xl font-bold text-[#111827] mb-2">Belum ada pesanan ditampilkan</h3>
-                  <p className="text-[#6B7280] max-w-md mx-auto leading-relaxed">
+                  <h3 className="text-xl font-bold text-[#111827] dark:text-white mb-2">Belum ada pesanan ditampilkan</h3>
+                  <p className="text-[#6B7280] dark:text-gray-400 max-w-md mx-auto leading-relaxed">
                     Masukkan nomor pesanan untuk mulai melacak status perjalanan Anda.
                   </p>
-                  <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm text-[#6B7280]">
-                    <span className="px-4 py-2 bg-[#F8FAFC] rounded-2xl border border-[#E5E7EB]">1. Salin Order ID dari email/WA</span>
-                    <span className="px-4 py-2 bg-[#F8FAFC] rounded-2xl border border-[#E5E7EB]">2. Tempel di kolom pencarian</span>
-                    <span className="px-4 py-2 bg-[#F8FAFC] rounded-2xl border border-[#E5E7EB]">3. Klik Lacak Pesanan</span>
+                  <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm text-[#6B7280] dark:text-gray-400">
+                    <span className="px-4 py-2 bg-[#F8FAFC] dark:bg-gray-700 rounded-2xl border border-[#E5E7EB] dark:border-gray-600">1. Salin Order ID dari email/WA</span>
+                    <span className="px-4 py-2 bg-[#F8FAFC] dark:bg-gray-700 rounded-2xl border border-[#E5E7EB] dark:border-gray-600">2. Tempel di kolom pencarian</span>
+                    <span className="px-4 py-2 bg-[#F8FAFC] dark:bg-gray-700 rounded-2xl border border-[#E5E7EB] dark:border-gray-600">3. Klik Lacak Pesanan</span>
                   </div>
                 </CardContent>
               </Card>
@@ -634,22 +640,22 @@ export default function FindOrder() {
           {searchResult && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* Order summary */}
-              <Card className="rounded-3xl border border-[#E5E7EB] shadow-[0_8px_30px_rgba(0,0,0,0.06)] overflow-hidden transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+              <Card className="rounded-3xl border border-[#E5E7EB] dark:border-gray-700 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
                 <CardContent className="p-6 md:p-8">
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                     <div className="space-y-4">
                       <div className="flex items-center gap-2">
                         <Hash className="h-4 w-4 text-[#295BFF]" />
-                        <span className="text-sm text-[#6B7280]">Order ID</span>
+                        <span className="text-sm text-[#6B7280] dark:text-gray-400">Order ID</span>
                       </div>
-                      <p className="text-xl md:text-2xl font-bold text-[#111827] break-all">{searchResult.order_id}</p>
+                      <p className="text-xl md:text-2xl font-bold text-[#111827] dark:text-white break-all">{searchResult.order_id}</p>
                       <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-blue-50 rounded-2xl">
+                        <div className="p-2.5 bg-blue-50 dark:bg-blue-900/30 rounded-2xl">
                           <Car className="h-5 w-5 text-[#295BFF]" />
                         </div>
                         <div>
-                          <p className="font-bold text-[#111827]">{serviceName}</p>
-                          <p className="text-sm text-[#6B7280]">
+                          <p className="font-bold text-[#111827] dark:text-white">{serviceName}</p>
+                          <p className="text-sm text-[#6B7280] dark:text-gray-400">
                             {serviceLabel} • {searchResult.rent_type_label}
                             {searchResult.duration
                               ? ` • ${searchResult.duration} ${searchResult.duration_uom}`
@@ -657,7 +663,7 @@ export default function FindOrder() {
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-[#6B7280] flex items-center gap-2">
+                      <p className="text-sm text-[#6B7280] dark:text-gray-400 flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         Perjalanan: {formatShortDate(searchResult.pickup.start_date)} —{' '}
                         {formatShortDate(searchResult.pickup.end_date)}
@@ -694,11 +700,11 @@ export default function FindOrder() {
               </Card>
 
               {/* Timeline */}
-              <Card className="rounded-3xl border border-[#E5E7EB] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+              <Card className="rounded-3xl border border-[#E5E7EB] dark:border-gray-700 shadow-sm dark:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-lg">
                 <CardContent className="p-6 md:p-8">
                   <div className="mb-8">
-                    <h2 className="text-lg font-bold text-[#111827]">Progress Perjalanan</h2>
-                    <p className="text-sm text-[#6B7280] mt-1">Ikuti setiap tahap pesanan Anda</p>
+                    <h2 className="text-lg font-bold text-[#111827] dark:text-white">Progress Perjalanan</h2>
+                    <p className="text-sm text-[#6B7280] dark:text-gray-400 mt-1">Ikuti setiap tahap pesanan Anda</p>
                   </div>
                   <TrackingTimeline currentStep={currentStep} />
                 </CardContent>
@@ -706,48 +712,48 @@ export default function FindOrder() {
 
               {/* Detail grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Card className="rounded-2xl border border-[#E5E7EB] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <Card className="rounded-2xl border border-[#E5E7EB] dark:border-gray-700 shadow-sm dark:bg-gray-800 transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-blue-50 rounded-xl">
+                      <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
                         <Calendar className="h-5 w-5 text-[#295BFF]" />
                       </div>
-                      <h3 className="font-bold text-[#111827]">Jadwal Perjalanan</h3>
+                      <h3 className="font-bold text-[#111827] dark:text-white">Jadwal Perjalanan</h3>
                     </div>
-                    <p className="text-sm text-[#6B7280] mb-1">Mulai</p>
-                    <p className="text-sm font-semibold text-[#111827] mb-3">{formatDate(searchResult.pickup.start_date)}</p>
-                    <p className="text-sm text-[#6B7280] mb-1">Selesai</p>
-                    <p className="text-sm font-semibold text-[#111827]">{formatDate(searchResult.pickup.end_date)}</p>
-                    <p className="text-xs text-[#6B7280] mt-3 pt-3 border-t border-[#E5E7EB]">
+                    <p className="text-sm text-[#6B7280] dark:text-gray-400 mb-1">Mulai</p>
+                    <p className="text-sm font-semibold text-[#111827] dark:text-white mb-3">{formatDate(searchResult.pickup.start_date)}</p>
+                    <p className="text-sm text-[#6B7280] dark:text-gray-400 mb-1">Selesai</p>
+                    <p className="text-sm font-semibold text-[#111827] dark:text-white">{formatDate(searchResult.pickup.end_date)}</p>
+                    <p className="text-xs text-[#6B7280] dark:text-gray-400 mt-3 pt-3 border-t border-[#E5E7EB] dark:border-gray-700">
                       Dipesan: {formatDate(searchResult.order_date)}
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-2xl border border-[#E5E7EB] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <Card className="rounded-2xl border border-[#E5E7EB] dark:border-gray-700 shadow-sm dark:bg-gray-800 transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-blue-50 rounded-xl">
+                      <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
                         <MapPin className="h-5 w-5 text-[#295BFF]" />
                       </div>
-                      <h3 className="font-bold text-[#111827]">Lokasi Penjemputan</h3>
+                      <h3 className="font-bold text-[#111827] dark:text-white">Lokasi Penjemputan</h3>
                     </div>
-                    <p className="text-sm font-semibold text-[#111827]">{searchResult.pickup.pickup_location}</p>
-                    <p className="text-sm text-[#6B7280]">{searchResult.pickup.pickup_city}</p>
+                    <p className="text-sm font-semibold text-[#111827] dark:text-white">{searchResult.pickup.pickup_location}</p>
+                    <p className="text-sm text-[#6B7280] dark:text-gray-400">{searchResult.pickup.pickup_city}</p>
                     {(searchResult.destination?.length > 0 || searchResult.itinerary?.length) && (
-                      <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
+                      <div className="mt-4 pt-3 border-t border-[#E5E7EB] dark:border-gray-700">
                         <p className="text-xs font-bold text-[#295BFF] uppercase tracking-wider mb-2">
                           {searchResult.orderType === 'tour' ? 'Itinerary' : 'Tujuan'}
                         </p>
                         {searchResult.itinerary?.map((it, idx) => (
-                          <p key={`it-${idx}`} className="text-sm text-[#6B7280] flex items-start gap-1 mb-1">
+                          <p key={`it-${idx}`} className="text-sm text-[#6B7280] dark:text-gray-400 flex items-start gap-1 mb-1">
                             <Route className="h-3.5 w-3.5 text-[#295BFF] mt-0.5 flex-shrink-0" />
                             Hari {it.day}: {it.destination}
                             {it.city_label ? `, ${it.city_label}` : ''}
                           </p>
                         ))}
                         {searchResult.destination?.map((dest, idx) => (
-                          <p key={idx} className="text-sm text-[#6B7280] flex items-start gap-1">
+                          <p key={idx} className="text-sm text-[#6B7280] dark:text-gray-400 flex items-start gap-1">
                             <Route className="h-3.5 w-3.5 text-[#295BFF] mt-0.5 flex-shrink-0" />
                             {dest.location}
                             {dest.city ? `, ${dest.city}` : ''}
@@ -758,25 +764,25 @@ export default function FindOrder() {
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-2xl border border-[#E5E7EB] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <Card className="rounded-2xl border border-[#E5E7EB] dark:border-gray-700 shadow-sm dark:bg-gray-800 transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-blue-50 rounded-xl">
+                      <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
                         <User className="h-5 w-5 text-[#295BFF]" />
                       </div>
-                      <h3 className="font-bold text-[#111827]">Kontak Pemesan</h3>
+                      <h3 className="font-bold text-[#111827] dark:text-white">Kontak Pemesan</h3>
                     </div>
                     <div className="space-y-2 text-sm">
-                      <p className="font-semibold text-[#111827]">{searchResult.customer.customer_name}</p>
-                      <p className="flex items-center gap-2 text-[#6B7280]">
+                      <p className="font-semibold text-[#111827] dark:text-white">{searchResult.customer.customer_name}</p>
+                      <p className="flex items-center gap-2 text-[#6B7280] dark:text-gray-400">
                         <Phone className="h-3.5 w-3.5" />
                         {searchResult.customer.customer_phone}
                       </p>
-                      <p className="flex items-center gap-2 text-[#6B7280]">
+                      <p className="flex items-center gap-2 text-[#6B7280] dark:text-gray-400">
                         <Mail className="h-3.5 w-3.5" />
                         {searchResult.customer.customer_email}
                       </p>
-                      <p className="flex items-start gap-2 text-[#6B7280]">
+                      <p className="flex items-start gap-2 text-[#6B7280] dark:text-gray-400">
                         <Home className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                         {searchResult.customer.customer_address}
                       </p>
@@ -784,36 +790,36 @@ export default function FindOrder() {
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-2xl border border-[#E5E7EB] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <Card className="rounded-2xl border border-[#E5E7EB] dark:border-gray-700 shadow-sm dark:bg-gray-800 transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-blue-50 rounded-xl">
+                      <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
                         <CreditCard className="h-5 w-5 text-[#295BFF]" />
                       </div>
-                      <h3 className="font-bold text-[#111827]">Metode Pembayaran</h3>
+                      <h3 className="font-bold text-[#111827] dark:text-white">Metode Pembayaran</h3>
                     </div>
                     {searchResult.payment?.length > 0 ? (
                       <div className="space-y-3">
                         {[...searchResult.payment]
                           .sort((a, b) => new Date(a.payment_date).getTime() - new Date(b.payment_date).getTime())
                           .map((pay, idx) => (
-                            <div key={idx} className="p-3 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB]/60">
+                            <div key={idx} className="p-3 bg-[#F8FAFC] dark:bg-gray-900 rounded-xl border border-[#E5E7EB]/60 dark:border-gray-700">
                               <div className="flex justify-between items-start gap-2">
                                 <div>
-                                  <p className="text-sm font-semibold text-[#111827]">{pay.bank_name}</p>
-                                  <p className="text-xs text-[#6B7280]">
+                                  <p className="text-sm font-semibold text-[#111827] dark:text-white">{pay.bank_name}</p>
+                                  <p className="text-xs text-[#6B7280] dark:text-gray-400">
                                     {String(pay.payment_type) === '1' ? 'Pembayaran Penuh' : 'Pembayaran DP'}
                                   </p>
                                 </div>
                                 <p className="text-sm font-bold text-[#295BFF]">{formatCurrency(pay.payment_amount)}</p>
                               </div>
                               {String(pay.payment_type) === '2' && (pay.payment_remaining || 0) > 0 && (
-                                <p className="text-xs text-red-600 font-semibold mt-2">
+                                <p className="text-xs text-red-600 dark:text-red-400 font-semibold mt-2">
                                   Sisa: {formatCurrency(pay.payment_remaining || 0)}
                                 </p>
                               )}
                               {pay.status === 10 && (
-                                <p className="text-xs text-orange-600 font-medium mt-2 flex items-center gap-1">
+                                <p className="text-xs text-orange-600 dark:text-orange-400 font-medium mt-2 flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
                                   Menunggu verifikasi
                                 </p>
@@ -822,9 +828,9 @@ export default function FindOrder() {
                           ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-[#6B7280]">Belum ada pembayaran tercatat.</p>
+                      <p className="text-sm text-[#6B7280] dark:text-gray-400">Belum ada pembayaran tercatat.</p>
                     )}
-                    <p className="text-xs text-[#6B7280] mt-3">
+                    <p className="text-xs text-[#6B7280] dark:text-gray-400 mt-3">
                       {searchResult.price} × {searchResult.quantity} unit = {formatCurrency(searchResult.price * searchResult.quantity)}
                     </p>
                   </CardContent>
@@ -833,18 +839,18 @@ export default function FindOrder() {
 
               {/* Addons */}
               {searchResult.addon?.length > 0 && (
-                <Card className="rounded-3xl border border-[#E5E7EB]">
+                <Card className="rounded-3xl border border-[#E5E7EB] dark:border-gray-700 dark:bg-gray-800">
                   <CardContent className="p-6">
-                    <h3 className="font-bold text-[#111827] mb-4">Fasilitas Tambahan</h3>
+                    <h3 className="font-bold text-[#111827] dark:text-white mb-4">Fasilitas Tambahan</h3>
                     <div className="space-y-2">
                       {searchResult.addon.map((item, idx) => (
                         <div
                           key={idx}
-                          className="flex justify-between items-center p-3 bg-blue-50/50 rounded-2xl border border-blue-100/50"
+                          className="flex justify-between items-center p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-2xl border border-blue-100/50 dark:border-blue-900"
                         >
                           <div className="flex items-center gap-2">
                             <Plus className="h-4 w-4 text-[#295BFF]" />
-                            <span className="text-sm font-medium text-[#111827]">{item.addon_name}</span>
+                            <span className="text-sm font-medium text-[#111827] dark:text-white">{item.addon_name}</span>
                           </div>
                           <span className="text-sm font-bold text-[#295BFF]">{formatCurrency(item.addon_price)}</span>
                         </div>
@@ -868,7 +874,7 @@ export default function FindOrder() {
                 <Button
                   onClick={handlePrint}
                   variant="outline"
-                  className="flex-1 h-14 rounded-2xl border-[#E5E7EB] font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF]"
+                  className="flex-1 h-14 rounded-2xl border-[#E5E7EB] dark:border-gray-600 font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF] dark:hover:text-[#295BFF] dark:text-gray-700 dark:hover:bg-gray-800"
                 >
                   <Printer className="mr-2 h-5 w-5" />
                   Cetak Invoice
@@ -880,16 +886,16 @@ export default function FindOrder() {
 
         {/* Help section */}
         <section className="container mx-auto px-4 pb-16 max-w-5xl">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#E5E7EB] to-transparent mb-12" />
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 md:p-10 border border-blue-300 transition-all duration-300 hover:shadow-md">
+          <div className="h-px bg-gradient-to-r from-transparent via-[#E5E7EB] to-transparent mb-12 dark:via-gray-700" />
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-3xl p-8 md:p-10 border border-blue-300 dark:border-blue-800 transition-all duration-300 hover:shadow-md">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-                <div className="w-16 h-16 bg-white rounded-3xl shadow-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-3xl shadow-lg flex items-center justify-center flex-shrink-0">
                   <Headset className="h-8 w-8 text-[#295BFF]" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-bold text-[#111827]">Butuh bantuan?</h3>
-                  <p className="text-[#6B7280] max-w-md">
+                  <h3 className="text-2xl font-bold text-[#111827] dark:text-white">Butuh bantuan?</h3>
+                  <p className="text-[#6B7280] dark:text-gray-400 max-w-md">
                     Tim kami siap membantu proses pemesanan dan perjalanan Anda.
                   </p>
                 </div>
@@ -906,7 +912,7 @@ export default function FindOrder() {
                 <Button
                   variant="outline"
                   onClick={() => navigate('/contact')}
-                  className="h-14 px-8 rounded-2xl border-[#E5E7EB] font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF]"
+                  className="h-14 px-8 rounded-2xl border-[#E5E7EB] dark:border-gray-600 font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF] dark:hover:text-[#295BFF] dark:text-gray-700 dark:hover:bg-gray-800"
                 >
                   Hubungi Kami
                 </Button>
@@ -917,10 +923,10 @@ export default function FindOrder() {
 
         {/* Payment dialog */}
         <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
-          <DialogContent className="sm:max-w-md rounded-3xl">
+          <DialogContent className="sm:max-w-md rounded-3xl dark:bg-gray-800">
             <DialogHeader>
-              <DialogTitle>Pilih Metode Pembayaran</DialogTitle>
-              <DialogDescription>Silakan pilih metode pembayaran untuk melunasi sisa tagihan.</DialogDescription>
+              <DialogTitle className="dark:text-white">Pilih Metode Pembayaran</DialogTitle>
+              <DialogDescription className="dark:text-gray-400">Silakan pilih metode pembayaran untuk melunasi sisa tagihan.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               {isPaymentLoading ? (
@@ -937,8 +943,8 @@ export default function FindOrder() {
                         className={cn(
                           'flex items-center p-4 border rounded-2xl cursor-pointer transition-all duration-300',
                           selectedPaymentMethod?.bank_account_id === method.bank_account_id
-                            ? 'border-[#295BFF] bg-blue-50/50 ring-1 ring-[#295BFF]'
-                            : 'hover:bg-slate-50 border-[#E5E7EB]',
+                            ? 'border-[#295BFF] bg-blue-50/50 dark:bg-blue-900/20 ring-1 ring-[#295BFF]'
+                            : 'hover:bg-slate-50 dark:hover:bg-gray-700 border-[#E5E7EB] dark:border-gray-700',
                           isProcessingPayment && 'opacity-50 pointer-events-none'
                         )}
                       >
@@ -955,15 +961,15 @@ export default function FindOrder() {
                         ) : null}
                         <div
                           className={cn(
-                            'h-8 w-12 bg-slate-100 rounded mr-4 flex items-center justify-center text-slate-400',
+                            'h-8 w-12 bg-slate-100 dark:bg-gray-700 rounded mr-4 flex items-center justify-center text-slate-400 dark:text-gray-400',
                             (method.icon || method.bank_logo) && 'hidden'
                           )}
                         >
                           <CreditCard className="h-5 w-5" />
                         </div>
                         <div>
-                          <div className="font-medium text-[#111827]">{method.bank_name}</div>
-                          <div className="text-sm text-[#6B7280]">
+                          <div className="font-medium text-[#111827] dark:text-white">{method.bank_name}</div>
+                          <div className="text-sm text-[#6B7280] dark:text-gray-400">
                             {method.bank_account_number
                               ? `No. Rek: ${method.bank_account_number}`
                               : method.payment_type}
@@ -972,7 +978,7 @@ export default function FindOrder() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                  <div className="mt-4 pt-4 border-t border-[#E5E7EB] dark:border-gray-700">
                     <Button
                       className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#295BFF] to-indigo-500 hover:from-blue-600 hover:to-indigo-600 font-semibold"
                       onClick={handleProcessPayment}
@@ -990,7 +996,7 @@ export default function FindOrder() {
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-[#6B7280]">Tidak ada metode pembayaran tersedia</div>
+                <div className="text-center py-8 text-[#6B7280] dark:text-gray-400">Tidak ada metode pembayaran tersedia</div>
               )}
             </div>
           </DialogContent>

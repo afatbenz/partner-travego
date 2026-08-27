@@ -26,9 +26,9 @@ import { http } from '@/lib/http';
 import { useToast } from '@/hooks/use-toast';
 
 const inputClass =
-  'h-14 rounded-2xl border border-[#E5E7EB] bg-slate-50 focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-[#295BFF] transition-all duration-300';
+  'h-14 rounded-2xl border border-[#E5E7EB] dark:border-gray-600 bg-slate-50 dark:bg-gray-900 focus-visible:ring-4 focus-visible:ring-blue-100 dark:focus-visible:ring-blue-900 focus-visible:border-[#295BFF] transition-all duration-300 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500';
 
-const labelClass = 'text-sm font-medium text-[#0F172A]';
+const labelClass = 'text-sm font-medium text-[#0F172A] dark:text-gray-200';
 
 function SupportIllustration() {
   return (
@@ -219,7 +219,7 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-gray-900 overflow-x-hidden">
       {/* Hero */}
       <section className="relative w-full min-h-[280px] md:min-h-[360px] overflow-hidden bg-gradient-to-br from-[#0F172A] via-[#1e3a5f] to-[#295BFF]">
         <div
@@ -275,11 +275,21 @@ export const Contact: React.FC = () => {
         <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] mb-[-1px]">
           <svg
             viewBox="0 0 1440 120"
-            className="relative block w-full h-[60px] md:h-[100px] lg:h-[120px]"
+            className="relative block w-full h-[60px] md:h-[100px] lg:h-[120px] dark:hidden"
             preserveAspectRatio="none"
           >
             <path
               fill="#F8FAFC"
+              d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"
+            />
+          </svg>
+          <svg
+            viewBox="0 0 1440 120"
+            className="relative block w-full h-[60px] md:h-[100px] lg:h-[120px] hidden dark:block"
+            preserveAspectRatio="none"
+          >
+            <path
+              fill="#1f2937"
               d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"
             />
           </svg>
@@ -297,17 +307,17 @@ export const Contact: React.FC = () => {
                 return (
                   <div
                     key={index}
-                    className="bg-white rounded-3xl border border-[#E5E7EB] p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                    className="bg-white dark:bg-gray-800 rounded-3xl border border-[#E5E7EB] dark:border-gray-700 p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-[#295BFF]/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 bg-[#295BFF]/10 dark:bg-[#295BFF]/20 rounded-2xl flex items-center justify-center flex-shrink-0">
                         <Icon className="h-5 w-5 text-[#295BFF]" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-[#0F172A] mb-1.5">{info.title}</h3>
+                        <h3 className="font-semibold text-[#0F172A] dark:text-white mb-1.5">{info.title}</h3>
                         <div className="space-y-0.5">
                           {info.details.map((detail, idx) => (
-                            <p key={idx} className="text-sm text-[#6B7280] leading-relaxed">
+                            <p key={idx} className="text-sm text-[#6B7280] dark:text-gray-400 leading-relaxed">
                               {detail}
                             </p>
                           ))}
@@ -320,8 +330,8 @@ export const Contact: React.FC = () => {
             </div>
 
             {/* Quick actions */}
-            <div className="bg-white rounded-3xl border border-[#E5E7EB] p-5 shadow-sm space-y-3">
-              <h3 className="font-semibold text-[#0F172A] text-sm uppercase tracking-wide">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl border border-[#E5E7EB] dark:border-gray-700 p-5 shadow-sm space-y-3">
+              <h3 className="font-semibold text-[#0F172A] dark:text-white text-sm uppercase tracking-wide">
                 Aksi Cepat
               </h3>
               <Button
@@ -336,7 +346,7 @@ export const Contact: React.FC = () => {
                 type="button"
                 variant="outline"
                 onClick={() => (window.location.href = getCallCenterUrl())}
-                className="w-full h-14 justify-start rounded-2xl border-[#E5E7EB] font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF] hover:shadow-md hover:shadow-blue-500/10"
+                className="w-full h-14 justify-start rounded-2xl border-[#E5E7EB] dark:border-gray-600 font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF] dark:hover:text-[#295BFF] dark:text-gray-700 dark:hover:bg-gray-700"
               >
                 <Phone className="mr-3 h-5 w-5" />
                 Call Center: {formatPhoneNumber(contactData?.company_whatsapp || contactData?.company_phone || '1500888')}
@@ -347,14 +357,14 @@ export const Contact: React.FC = () => {
           {/* Form + Map */}
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom duration-700 delay-100">
             {/* Contact form */}
-            <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-[0_8px_40px_rgba(0,0,0,0.06)] p-6 md:p-10 transition-all duration-300 hover:shadow-[0_12px_50px_rgba(0,0,0,0.08)]">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl border border-[#E5E7EB] dark:border-gray-700 shadow-[0_8px_40px_rgba(0,0,0,0.06)] p-6 md:p-10 transition-all duration-300 hover:shadow-[0_12px_50px_rgba(0,0,0,0.08)]">
               <div className="flex items-start gap-4 mb-8">
-                <div className="w-14 h-14 bg-[#295BFF]/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <div className="w-14 h-14 bg-[#295BFF]/10 dark:bg-[#295BFF]/20 rounded-2xl flex items-center justify-center flex-shrink-0">
                   <Send className="h-6 w-6 text-[#295BFF]" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-[#0F172A]">Kirim Pesan</h2>
-                  <p className="text-sm text-[#6B7280] mt-1">
+                  <h2 className="text-2xl font-bold text-[#0F172A] dark:text-white">Kirim Pesan</h2>
+                  <p className="text-sm text-[#6B7280] dark:text-gray-400 mt-1">
                     Isi form di bawah ini dan kami akan merespon dalam 1x24 jam
                   </p>
                 </div>
@@ -440,7 +450,7 @@ export const Contact: React.FC = () => {
                     placeholder="Tulis pesan Anda di sini..."
                     value={formData.message}
                     onChange={handleInputChange}
-                    className="min-h-[140px] rounded-2xl border border-[#E5E7EB] bg-slate-50 focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-[#295BFF] resize-none transition-all duration-300"
+                    className="min-h-[140px] rounded-2xl border border-[#E5E7EB] dark:border-gray-600 bg-slate-50 dark:bg-gray-900 focus-visible:ring-4 focus-visible:ring-blue-100 dark:focus-visible:ring-blue-900 focus-visible:border-[#295BFF] resize-none transition-all duration-300 dark:text-white"
                   />
                 </div>
 
@@ -457,7 +467,7 @@ export const Contact: React.FC = () => {
                     type="button"
                     variant="outline"
                     onClick={handleReset}
-                    className="h-14 px-8 rounded-2xl border-[#E5E7EB] font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF]"
+                    className="h-14 px-8 rounded-2xl border-[#E5E7EB] dark:border-gray-600 font-semibold transition-all duration-300 hover:-translate-y-1 hover:border-[#295BFF] hover:text-[#295BFF] dark:hover:text-[#295BFF] dark:text-gray-700 dark:hover:bg-gray-700"
                   >
                     <RotateCcw className="mr-2 h-4 w-4" />
                     Reset Form
@@ -467,26 +477,26 @@ export const Contact: React.FC = () => {
             </div>
 
             {/* Map */}
-            <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-[0_8px_40px_rgba(0,0,0,0.06)] overflow-hidden transition-all duration-300 hover:shadow-[0_12px_50px_rgba(0,0,0,0.08)]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 md:p-8 border-b border-[#E5E7EB]">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl border border-[#E5E7EB] dark:border-gray-700 shadow-[0_8px_40px_rgba(0,0,0,0.06)] overflow-hidden transition-all duration-300 hover:shadow-[0_12px_50px_rgba(0,0,0,0.08)]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 md:p-8 border-b border-[#E5E7EB] dark:border-gray-700">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#295BFF]/10 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-[#295BFF]/10 dark:bg-[#295BFF]/20 rounded-xl flex items-center justify-center">
                     <MapPin className="h-5 w-5 text-[#295BFF]" />
                   </div>
-                  <h3 className="text-xl font-bold text-[#0F172A]">Lokasi Kantor</h3>
+                  <h3 className="text-xl font-bold text-[#0F172A] dark:text-white">Lokasi Kantor</h3>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => window.open(getMapsExternalUrl(), '_blank')}
-                  className="h-11 rounded-2xl border-[#E5E7EB] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:border-[#295BFF] hover:text-[#295BFF]"
+                  className="h-11 rounded-2xl border-[#E5E7EB] dark:border-gray-600 font-medium transition-all duration-300 hover:-translate-y-0.5 hover:border-[#295BFF] hover:text-[#295BFF] dark:hover:text-[#295BFF] dark:text-gray-700 dark:hover:bg-gray-700"
                 >
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Buka di Google Maps
                 </Button>
               </div>
 
-              <div className="relative aspect-[16/9] md:aspect-[21/9] bg-gradient-to-br from-slate-100 to-blue-50">
+              <div className="relative aspect-[16/9] md:aspect-[21/9] bg-gradient-to-br from-slate-100 to-blue-50 dark:from-gray-800 dark:to-gray-900">
                 <iframe
                   title="Google Maps - Lokasi Kantor"
                   src={getMapsUrl()}
@@ -498,14 +508,14 @@ export const Contact: React.FC = () => {
                   referrerPolicy="no-referrer-when-downgrade"
                   className="w-full h-full"
                 />
-                <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-white/95 backdrop-blur-md rounded-2xl border border-[#E5E7EB] p-4 shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl border border-[#E5E7EB] dark:border-gray-700 p-4 shadow-xl transition-all duration-300 hover:-translate-y-1">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 bg-[#295BFF] rounded-xl flex items-center justify-center flex-shrink-0">
                       <MapPin className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#0F172A] text-sm">{contactData?.company_address_label || 'Kantor Pusat'}</p>
-                      <p className="text-xs text-[#6B7280] mt-0.5">
+                      <p className="font-semibold text-[#0F172A] dark:text-white text-sm">{contactData?.company_address_label || 'Kantor Pusat'}</p>
+                      <p className="text-xs text-[#6B7280] dark:text-gray-400 mt-0.5">
                         {contactData?.company_address || 'Jl. Sudirman Kav. 45, Jakarta Pusat 10210'}
                       </p>
                     </div>
@@ -519,15 +529,15 @@ export const Contact: React.FC = () => {
 
       {/* Bottom CTA */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 max-w-7xl">
-        <div className="bg-gradient-to-r from-[#295BFF]/10 via-blue-50 to-indigo-50 rounded-3xl p-8 md:p-10 border border-blue-100/80 shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="bg-gradient-to-r from-[#295BFF]/10 via-blue-50 to-indigo-50 dark:from-[#295BFF]/10 dark:via-blue-900/20 dark:to-indigo-900/20 rounded-3xl p-8 md:p-10 border border-blue-100/80 dark:border-blue-900 shadow-sm transition-all duration-300 hover:shadow-md">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-              <div className="w-16 h-16 bg-white rounded-3xl shadow-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-3xl shadow-lg flex items-center justify-center flex-shrink-0">
                 <Headset className="h-8 w-8 text-[#295BFF]" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-[#0F172A]">Butuh respon cepat?</h3>
-                <p className="text-[#6B7280] max-w-md text-sm md:text-base">
+                <h3 className="text-2xl font-bold text-[#0F172A] dark:text-white">Butuh respon cepat?</h3>
+                <p className="text-[#6B7280] dark:text-gray-400 max-w-md text-sm md:text-base">
                   Chat langsung dengan tim kami via WhatsApp untuk konsultasi dan bantuan
                   booking.
                 </p>
