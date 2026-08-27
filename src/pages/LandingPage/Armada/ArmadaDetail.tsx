@@ -27,7 +27,6 @@ import {
   MessageCircle,
   ShieldCheck,
   Clock,
-  Sparkles,
   Inbox
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -1257,7 +1256,6 @@ export const ArmadaDetail: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* Kolom kiri: info panel */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
-            <Sparkles className="absolute -top-3 -right-3 h-6 w-6 text-yellow-300" />
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="h-6 w-6 text-blue-600" />
               <h3 className="text-2xl font-bold text-gray-900">Pendapat Anda, pengalaman mereka.</h3>
@@ -1319,7 +1317,7 @@ export const ArmadaDetail: React.FC = () => {
                 />
               </div>
               {/* Star rating */}
-              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white">
+              <div className="flex items-center px-0 py-0">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((r) => (
                     <button
@@ -1370,43 +1368,47 @@ export const ArmadaDetail: React.FC = () => {
               </p>
             </div>
 
-            {/* Daftar ulasan */}
-            {fleet.reviews && fleet.reviews.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                {fleet.reviews.map((reviewItem: any, index: number) => {
-                  const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-                  const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
-
-                  return (
-                    <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h4 className="font-bold text-gray-900">{reviewItem.customer_name}</h4>
-                          <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
-                        </div>
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`h-4 w-4 ${star <= reviewItem.star ? 'text-orange-500 fill-orange-500' : 'text-gray-300'}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-gray-700 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
-                <Inbox className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">Belum ada ulasan untuk armada ini.</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Daftar ulasan pelanggan — full-width section di bawah grid */}
+      <div className="max-w-7xl mx-auto mt-8">
+        {fleet.reviews && fleet.reviews.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {fleet.reviews.map((reviewItem: any, index: number) => {
+              const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+              const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
+
+              return (
+                <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h4 className="font-bold text-gray-900">{reviewItem.customer_name}</h4>
+                      <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
+                    </div>
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-4 w-4 ${star <= reviewItem.star ? 'text-orange-500 fill-orange-500' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-gray-700 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
+            <Inbox className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">Belum ada ulasan untuk armada ini.</p>
+          </div>
+        )}
+      </div>
+
       {/* Mobile floating bottom bar — tampil {price} / hari, buka floating pricing card */}
       <div className="lg:hidden">
         {/* Backdrop saat sheet terbuka */}
