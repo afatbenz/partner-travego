@@ -1252,7 +1252,7 @@ export const ArmadaDetail: React.FC = () => {
 
       {/* Ulasan — two-column grid */}
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[35%_65%] gap-6 items-start">
           {/* Kolom kiri: info panel */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
             <div className="flex items-center gap-2 mb-2">
@@ -1372,7 +1372,7 @@ export const ArmadaDetail: React.FC = () => {
       </div>
 
       {/* Daftar ulasan pelanggan — full-width section di bawah grid */}
-      <div className="max-w-7xl mx-auto mt-8">
+      <div className="max-w-7xl mx-auto mt-8 mb-5">
         {fleet.reviews && fleet.reviews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {fleet.reviews.map((reviewItem: any, index: number) => {
