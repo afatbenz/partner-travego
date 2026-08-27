@@ -1288,7 +1288,7 @@ export const ArmadaDetail: React.FC = () => {
 
 
       {/* Ulasan — two-column grid */}
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-5 md:px-0">
         <div className="grid grid-cols-1 lg:grid-cols-[35%_65%] gap-6 items-start">
           {/* Kolom kiri: info panel — sembunyikan di mobile */}
           <div className="hidden lg:block bg-blue-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
@@ -1329,10 +1329,12 @@ export const ArmadaDetail: React.FC = () => {
 
           {/* Kolom kanan: form ulasan & daftar ulasan */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MessageCircle className="h-6 w-6 text-blue-600" />
-              <h3 className="text-2xl font-bold text-gray-900">Tulis Ulasan Armada</h3>
-              <span className="text-sm text-gray-500 ml-auto">Bagikan pengalaman Anda menggunakan layanan kami.</span>
+            <div className="flex flex-col gap-2 mb-2 md:flex-row md:items-center">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-6 w-6 text-blue-600" />
+                <h3 className="text-2xl font-bold text-gray-900">Tulis Ulasan Armada</h3>
+              </div>
+              <span className="text-sm text-gray-500 md:ml-auto">Bagikan pengalaman Anda menggunakan layanan kami.</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
@@ -1447,7 +1449,7 @@ export const ArmadaDetail: React.FC = () => {
               <div className="mt-4 text-center">
                 <button
                   onClick={() => setShowAllReviewsModal(true)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-blue-500 hover:bg-blue-50 text-blue-500 text-sm font-semibold transition-colors"
                 >
                   Lihat Semua Ulasan ({reviewsTotal})
                 </button>
