@@ -764,11 +764,23 @@ export const ArmadaDetail: React.FC = () => {
 
       if (payload?.status === 'success') {
         const newReview = payload?.data;
-        setFleet(prev => prev ? {
-          ...prev,
-          reviews: [newReview, ...(prev.reviews ?? [])],
-        } : prev);
-        setAllReviews(prev => newReview ? [newReview, ...prev] : prev);
+        setFleet(prev => {
+          if (!prev) return prev;
+          const oldTotal = (prev.meta?.total_ulasan ?? 0);
+          const oldRating = (prev.meta?.rating ?? 0);
+          const newTotal = oldTotal + 1;
+          const newRating = oldTotal > 0 ? ((oldRating * oldTotal) + selectedRating) / newTotal : selectedRating;
+          return {
+            ...prev,
+            reviews: [newReview, ...(prev.reviews ?? [])],
+            meta: {
+              ...prev.meta,
+              rating: newRating,
+              total_ulasan: newTotal,
+            },
+          };
+        });
+        setAllReviews(prev => newReview ? [newReview, ...(prev ?? [])] : prev);
         setReviewsTotal(prev => prev + 1);
         setOrderIdInput('');
         setReviewText('');
