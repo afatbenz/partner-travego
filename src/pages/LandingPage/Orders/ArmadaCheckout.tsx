@@ -231,7 +231,7 @@ const SectionCard = ({ title, step, children }: { title: string; step: number; c
     transition={{ duration: 0.4 }}
     className="bg-white border border-[#E2E8F0] rounded-2xl shadow-sm overflow-hidden"
   >
-    <div className="p-6 md:p-8">
+    <div className="p-3 md:p-8">
       <h2 className="text-lg font-semibold text-[#0F172A] mb-6 flex items-center">
         <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#4F46E5]/10 text-[#4F46E5] text-sm mr-3 font-bold">
           {step}
@@ -758,7 +758,7 @@ export const ArmadaCheckout: React.FC = () => {
             {/* Floating Schedule Info (Moved below stepper, inside main form area for better mobile flow) */}
             <motion.div 
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/60 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-4 shadow-sm"
+              className="hidden lg:grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/60 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-4 shadow-sm"
             >
               <div className="flex items-center space-x-4 p-3 bg-white rounded-xl border border-[#E2E8F0] shadow-sm">
                 <div className="w-10 h-10 rounded-full bg-[#4F46E5]/10 flex items-center justify-center shrink-0">
