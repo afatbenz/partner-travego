@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, MapPin, User, ShoppingBag } from 'lucide-react';
+import { Menu, X, Bus, Home, Car, MapPin as LocIcon, Phone, User, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
@@ -32,13 +32,10 @@ export const Navbar: React.FC = () => {
   }, [location]);
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Armada', href: '/armada' },
-    { name: 'Lacak Pesanan', href: '/find-order' },
-    // { name: 'Promo', href: '/promo-discount' },
-    // { name: 'Layanan', href: '/services' },
-    // { name: 'Tim', href: '/team' },
-    { name: 'Kontak', href: '/contact' },
+    { name: 'Home', href: '/', icon: Home },
+    { name: 'Armada', href: '/armada', icon: Car },
+    { name: 'Lacak Pesanan', href: '/find-order', icon: LocIcon },
+    { name: 'Kontak', href: '/contact', icon: Phone },
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -46,7 +43,7 @@ export const Navbar: React.FC = () => {
   const navClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 print:hidden ${
     isHomePage
       ? isScrolled
-        ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-lg py-2'
+        ? 'bg-white dark:bg-gray-900 backdrop-blur-md shadow-lg py-2'
         : 'bg-transparent py-4'
       : 'bg-white dark:bg-gray-900 shadow-md py-2'
   }`;
@@ -63,7 +60,7 @@ export const Navbar: React.FC = () => {
               <img src={brandLogo} alt="Logo" className="h-10 w-auto object-contain" />
             ) : (
               <>
-                <MapPin className={`h-8 w-8 ${isHomePage && !isScrolled ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
+                <Bus className={`h-8 w-8 ${isHomePage && !isScrolled ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
                 <span className={`text-2xl font-bold ${textClasses}`}>
                   {getContentIn('general-config', 'brand-name') || 'Calista Prima'}
                 </span>
@@ -78,7 +75,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`px-3 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  className={`px-3 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${
                     isActive(item.href)
                       ? isHomePage && !isScrolled
                         ? 'bg-white/20 text-white'
@@ -88,6 +85,7 @@ export const Navbar: React.FC = () => {
                         : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
+                  <item.icon className="h-4 w-4" />
                   {item.name}
                 </Link>
               ))}
@@ -162,7 +160,7 @@ export const Navbar: React.FC = () => {
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
-                  {item.name}
+                  <item.icon className="h-4 w-4 mr-2" />{item.name}
                 </Link>
               ))}
               <div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
