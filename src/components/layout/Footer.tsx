@@ -71,7 +71,7 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Layanan */}
-          <div>
+          {/* <div>
             <h3 className="text-lg font-semibold mb-6">Layanan</h3>
             <ul className="space-y-4">
               {['Armada', 'Sewa Kendaraan', 'Layanan Perusahaan'].map((item) => (
@@ -81,10 +81,10 @@ export const Footer: React.FC = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           {/* Perusahaan */}
-          <div>
+          {/* <div>
             <h3 className="text-lg font-semibold mb-6">Perusahaan</h3>
             <ul className="space-y-4">
               {['Tentang Kami', 'Lacak Pesanan'].map((item) => (
@@ -94,7 +94,7 @@ export const Footer: React.FC = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           {/* Kontak */}
           <div>

@@ -79,7 +79,7 @@ export const FloatingContactBar: React.FC<FloatingContactBarProps> = ({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-0 inset-x-0 z-40 flex items-center gap-3 bg-blue-500 text-white px-5 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(37,99,235,0.45)]"
+          className="fixed bottom-0 inset-x-0 z-40 flex items-center gap-3 bg-blue-600 text-white px-5 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))]"
         >
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">

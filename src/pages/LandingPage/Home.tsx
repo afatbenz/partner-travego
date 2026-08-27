@@ -238,7 +238,7 @@ export const Home: React.FC = () => {
       {/* Floating Search Box */}
 
       {/* Armada Kami Section */}
-      <section className="py-24 bg-white dark:bg-gray-950 overflow-hidden">
+      <section className="py-12 md:py-24 bg-white dark:bg-gray-950 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 animate-in fade-in slide-in-from-bottom duration-1000">
             <div className="space-y-4 max-w-2xl">
@@ -264,10 +264,24 @@ export const Home: React.FC = () => {
                 <p className="text-gray-500 font-bold">Menyiapkan Armada...</p>
               </div>
             ) : fleets.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
-                {fleets.filter((f) => f.image).slice(0, 4).map((fleet) => (
-                  <ArmadaMobileCard key={fleet.id} armada={fleet} />
-                ))}
+              <div>
+                <div className="grid grid-cols-2 gap-3">
+                  {fleets.filter((f) => f.image).slice(0, 4).map((fleet) => (
+                    <ArmadaMobileCard key={fleet.id} armada={fleet} />
+                  ))}
+                </div>
+                {fleets.length > 4 && (
+                  <div className="flex justify-center mt-8">
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl px-10 h-12 font-semibold border-blue-200 hover:bg-blue-50 text-blue-600 transition-all hover:scale-105 text-sm"
+                      onClick={() => navigate('/armada')}
+                    >
+                      Lihat Semua Armada
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-12">
@@ -312,7 +326,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="py-24 bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <section className="py-12 md:py-24 bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="text-center mb-10 md:mb-20 space-y-4 animate-in fade-in slide-in-from-bottom duration-1000">
             <span className="text-blue-600 font-bold tracking-widest uppercase text-sm">Keunggulan Kami</span>
@@ -326,7 +340,7 @@ export const Home: React.FC = () => {
             {whyChooseUs.map((item, index) => (
               <div key={index} className="relative group p-5 md:p-8 bg-white dark:bg-gray-900 rounded-xl md:rounded-[2rem] shadow-sm hover:shadow-2xl transition-all hover:-translate-y-4 border border-blue-100/50 dark:border-gray-800 animate-in fade-in slide-in-from-bottom duration-1000" style={{ animationDelay: `${index * 150}ms` }}>
                 <div className="flex flex-row items-center gap-4 md:flex-col md:items-start md:gap-0 mb-2 md:mb-0">
-                  <div className="w-8 h-8 text-xs md:w-20 md:h-20 md:mb-8 bg-blue-600 text-white rounded-3xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-500 shadow-xl shadow-blue-600/30 shrink-0">
+                  <div className="w-8 h-8 text-xs md:w-20 md:h-20 md:mb-8 bg-blue-600 text-white rounded-3xl flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-500 md:shadow-xl md:shadow-blue-600/30 shrink-0">
                     <item.icon className="h-4 w-4 md:h-10 md:w-10" />
                   </div>
                   <h3 className="text-xl font-bold md:text-2xl md:mb-4 text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">

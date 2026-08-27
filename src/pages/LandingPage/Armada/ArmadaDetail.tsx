@@ -1189,98 +1189,6 @@ export const ArmadaDetail: React.FC = () => {
                       </div>
                   </div>
 
-                  <div className='mt-8 rounded-lg border border-gray-100 p-6'>
-                    <h3 className="text-lg font-bold text-gray-900">Ulasan</h3>
-                    <p className="text-sm text-gray-500 mb-5">Lihat ulasan dari pelanggan ({fleet.meta.rating}/{fleet.reviews.length} ulasan)</p>
-
-                    {/* Write Review Form (public path) */}
-                    <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm mb-6">
-                      <h4 className="text-base font-semibold text-gray-900 mb-4">Tulis Ulasan Armada</h4>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Order ID</label>
-                          <input
-                            type="text"
-                            value={orderIdInput}
-                            onChange={(e) => setOrderIdInput(e.target.value)}
-                            placeholder="Masukkan Order ID Anda"
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                          <div className="flex space-x-1">
-                            {[1, 2, 3, 4, 5].map((r) => (
-                              <button
-                                key={r}
-                                type="button"
-                                onClick={() => setSelectedRating(r)}
-                                className="p-1 rounded focus:outline-none"
-                              >
-                                <Star
-                                  className={`h-6 w-6 ${r <= selectedRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-                                />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Ulasan</label>
-                          <textarea
-                            value={reviewText}
-                            onChange={(e) => setReviewText(e.target.value)}
-                            rows={3}
-                            placeholder="Bagikan pengalaman Anda..."
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <Button
-                          className="w-full"
-                          onClick={handleSubmitReview}
-                          disabled={isSubmitting || !orderIdInput.trim() || selectedRating === 0 || !reviewText.trim()}
-                        >
-                          {isSubmitting ? 'Mengirim...' : 'Kirim Ulasan'}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {fleet.reviews && fleet.reviews.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                        {fleet.reviews.map((reviewItem: any, index: number) => {
-                          const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-                          const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
-                          
-                          return (
-                            <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
-                              <div className="flex justify-between items-start mb-4">
-                                <div>
-                                  <h4 className="font-bold text-gray-900">{reviewItem.customer_name}</h4>
-                                  <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
-                                </div>
-                                <div className="flex">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star
-                                      key={star}
-                                      className={`h-4 w-4 ${
-                                        star <= reviewItem.star
-                                          ? 'text-orange-500 fill-orange-500'
-                                          : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-                              <p className="text-gray-700 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
-                        <p className="text-gray-500">Belum ada ulasan untuk armada ini.</p>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                   <div className='lg:col-span-1'>
@@ -1318,6 +1226,105 @@ export const ArmadaDetail: React.FC = () => {
         </div>
       </section>
 
+
+      {/* Ulasan — full-width section di bawah detail armada */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="mt-8">
+                      <div className='mt-8 rounded-lg border border-gray-100 p-6'>
+                        <h3 className="text-lg font-bold text-gray-900">Ulasan</h3>
+                        <p className="text-sm text-gray-500 mb-5">Lihat ulasan dari pelanggan ({fleet.meta.rating}/{fleet.reviews.length} ulasan)</p>
+
+                        {/* Write Review Form (public path) */}
+                        <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm mb-6">
+                          <h4 className="text-base font-semibold text-gray-900 mb-4">Tulis Ulasan Armada</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Order ID</label>
+                              <input
+                                type="text"
+                                value={orderIdInput}
+                                onChange={(e) => setOrderIdInput(e.target.value)}
+                                placeholder="Masukkan Order ID Anda"
+                                className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                              <div className="flex space-x-1">
+                                {[1, 2, 3, 4, 5].map((r) => (
+                                  <button
+                                    key={r}
+                                    type="button"
+                                    onClick={() => setSelectedRating(r)}
+                                    className="p-1 rounded focus:outline-none"
+                                  >
+                                    <Star
+                                      className={`h-6 w-6 ${r <= selectedRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                                    />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Ulasan</label>
+                              <textarea
+                                value={reviewText}
+                                onChange={(e) => setReviewText(e.target.value)}
+                                rows={3}
+                                placeholder="Bagikan pengalaman Anda..."
+                                className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                            <Button
+                              className="w-full"
+                              onClick={handleSubmitReview}
+                              disabled={isSubmitting || !orderIdInput.trim() || selectedRating === 0 || !reviewText.trim()}
+                            >
+                              {isSubmitting ? 'Mengirim...' : 'Kirim Ulasan'}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {fleet.reviews && fleet.reviews.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                            {fleet.reviews.map((reviewItem: any, index: number) => {
+                              const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                              const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
+                          
+                              return (
+                                <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
+                                  <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                      <h4 className="font-bold text-gray-900">{reviewItem.customer_name}</h4>
+                                      <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
+                                    </div>
+                                    <div className="flex">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`h-4 w-4 ${
+                                            star <= reviewItem.star
+                                              ? 'text-orange-500 fill-orange-500'
+                                              : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <p className="text-gray-700 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
+                            <p className="text-gray-500">Belum ada ulasan untuk armada ini.</p>
+                          </div>
+                        )}
+                      </div>
+        </div>
+      </div>
+
       {/* Mobile floating bottom bar — tampil {price} / hari, buka floating pricing card */}
       <div className="lg:hidden">
         {/* Backdrop saat sheet terbuka */}
@@ -1332,7 +1339,7 @@ export const ArmadaDetail: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsPricingSheetOpen(true)}
-          className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-3 bg-blue-500 text-white px-5 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(37,99,235,0.45)]"
+          className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-3 bg-blue-600 text-white px-5 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))]"
         >
           <div className="text-left">
             <div className="text-[10px] font-semibold uppercase tracking-widest text-blue-100">Mulai dari</div>
