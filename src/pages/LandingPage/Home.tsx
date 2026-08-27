@@ -393,7 +393,7 @@ export const Home: React.FC = () => {
         </div>
       </section> */}
 
-      <GoogleReviewsFeed embedId="25708983" maxHeight={420} />
+      <GoogleReviewsFeed embedId="25708983" maxHeight={420} className="px-20" />
       <CTASection />
     </div>
   );
