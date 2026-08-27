@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Star, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -97,7 +97,6 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983', className })
   const [error, setError] = useState('');
 
   const trackRef = useRef<HTMLDivElement | null>(null);
-  const pageRef = useRef(0);
   const [currentPage, setCurrentPage] = useState(0);
 
   const load = useCallback(async () => {
@@ -123,6 +122,7 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983', className })
   const reviews = (feed?.reviews ?? []).filter(
     r => (r.review_text || r.review_text_raw || '').trim() !== ''
   );
+  const pages = Math.ceil(reviews.length / 4);
   const bio = feed?.bio;
 
   // Page dots + auto-advance (1 card every 3s, loop).
@@ -170,32 +170,14 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983', className })
     );
   }
 
-  const overall = normalizeRating(bio.overall_star_rating);
-  const totalLabel = bio.rating_count || reviews.length.toString();
-  const allFeedReviews = feed.reviews ?? [];
-  const breakdown = [5, 4, 3, 2, 1].map(stars => ({
-    stars,
-    count: allFeedReviews.filter(r => Math.round(normalizeRating(r.rating)) === stars).length,
-  }));
-  const breakdownTotal = allFeedReviews.length || 1;
-  const pages = Math.max(1, Math.ceil(reviews.length / 4));
-
-  const ratingLabel =
-    overall >= 4.5 ? 'Sangat Baik'
-      : overall >= 4 ? 'Baik'
-        : overall >= 3 ? 'Cukup Baik' : 'Perlu Ditingkatkan';
-
-  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    bio.name || bio.place_id || ''
-  )}`;
 
   return (
     <section className={cn('w-full max-w-full bg-blue-50/50 dark:bg-slate-950', className)}>
       <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 md:py-20">
         {/* ===== Header ===== */}
         <div className="flex flex-col items-center text-center mb-10 md:mb-14">
-          <h2 className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Ulasan <span className="text-blue-600 dark:text-blue-400">Google Maps</span>
+          <h2 className="text-xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Cerita Mereka <span className="text-blue-600 dark:text-blue-400">Bersama Kami</span>
           </h2>
           <div className="mt-3 h-1 w-16 rounded-full bg-blue-600 dark:bg-blue-400" />
           <p className="mt-4 max-w-2xl text-base md:text-lg text-slate-500 dark:text-slate-400">
