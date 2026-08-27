@@ -632,6 +632,9 @@ export const ArmadaDetail: React.FC = () => {
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [reviewsTotal, setReviewsTotal] = useState<number>(0);
 
   const [fleet, setFleet] = useState<FleetDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1380,33 +1383,45 @@ export const ArmadaDetail: React.FC = () => {
 
       {/* Daftar ulasan pelanggan — full-width section di bawah grid */}
       <div className="max-w-7xl mx-auto mt-8 mb-5">
-        {fleet.reviews && fleet.reviews.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {fleet.reviews.map((reviewItem: any, index: number) => {
-              const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-              const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
+        {(allReviews.length > 0 || (fleet?.reviews?.length ?? 0) > 0) ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(allReviews.length > 0 ? allReviews : (fleet?.reviews ?? [])).slice(0, showAllReviews ? undefined : 3).map((reviewItem: any, index: number) => {
+                const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
 
-              return (
-                <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h4 className="font-bold text-gray-900">{reviewItem.customer_name}</h4>
-                      <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
+                return (
+                  <div key={index} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="font-bold text-gray-900">{reviewItem.customer_name}</h4>
+                        <p className="text-xs text-gray-500 mt-1">{formattedDate}</p>
+                      </div>
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-4 w-4 ${star <= reviewItem.star ? 'text-orange-500 fill-orange-500' : 'text-gray-300'}`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`h-4 w-4 ${star <= reviewItem.star ? 'text-orange-500 fill-orange-500' : 'text-gray-300'}`}
-                        />
-                      ))}
-                    </div>
+                    <p className="text-gray-700 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
                   </div>
-                  <p className="text-gray-700 text-sm leading-relaxed flex-grow">"{reviewItem.review}"</p>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            {(allReviews.length > 3 || ((fleet?.reviews?.length ?? 0) > 3 && allReviews.length === 0)) && !showAllReviews && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => setShowAllReviews(true)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
+                >
+                  Lihat Semua Ulasan ({reviewsTotal || (fleet?.reviews?.length ?? 0)})
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
             <Inbox className="h-10 w-10 text-gray-300 mx-auto mb-3" />
