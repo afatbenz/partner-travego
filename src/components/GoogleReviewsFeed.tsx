@@ -29,7 +29,6 @@ type AccentFeed = {
 
 type Props = {
   embedId?: string;
-  maxHeight?: number;
   className?: string;
 };
 
