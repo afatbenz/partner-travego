@@ -111,6 +111,7 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983' }) => {
 
   return (
     <div className="space-y-6 w-full max-w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
       {/* Ringkasan rating */}
       <Card>
         <CardContent className="p-6">
@@ -179,7 +180,14 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983' }) => {
             <Card>
               <CardContent className="p-4">
                 <div className="space-y-2">
-                  {/* Foto profile dihilangkan: cukup nama + star + komentar */}
+                  {/* Foto profile tampil jika tersedia */}
+                  {r.reviewer_photo_link && (
+                    <img
+                      src={r.reviewer_photo_link}
+                      alt={r.reviewer_name || 'reviewer'}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  )}
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-semibold text-slate-900 dark:text-white">
                       {r.reviewer_name || 'Anonymous'}
@@ -194,6 +202,7 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983' }) => {
             </Card>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
