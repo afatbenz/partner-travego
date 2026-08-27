@@ -4,6 +4,7 @@ import { ArmadaCard } from '@/components/cards/ArmadaCard';
 import { ArmadaMobileCard } from '@/components/cards/ArmadaMobileCard';
 import { Button } from '@/components/ui/button';
 import { CTASection } from '@/components/common/CTASection';
+import GoogleReviewsFeed from '@/components/GoogleReviewsFeed';
 // import { TourPackageList } from '@/components/common/TourPackageList';
 // import { useTourPackages } from '@/hooks/useTourPackages';
 import { useNavigate } from 'react-router-dom';
@@ -392,6 +393,7 @@ export const Home: React.FC = () => {
         </div>
       </section> */}
 
+      <GoogleReviewsFeed embedId="25708983" maxHeight={420} />
       <CTASection />
     </div>
   );
