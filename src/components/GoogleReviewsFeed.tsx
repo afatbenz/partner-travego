@@ -107,7 +107,9 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983' }) => {
     );
   }
 
-  const reviews = feed.reviews ?? [];
+  const reviews = (feed.reviews ?? []).filter(r =>
+    (r.review_text || r.review_text_raw || '').trim() !== ''
+  );
 
   return (
     <div className="space-y-6 w-full max-w-full">
@@ -149,7 +151,7 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983' }) => {
       {/* Carousel: 3 kartu per layar, auto-scroll tiap 3 detik */}
       <div
         ref={containerRef}
-        className="overflow-x-auto"
+        className="overflow-x-auto mt-4"
         style={{
           display: 'flex',
           gap: '1rem',
