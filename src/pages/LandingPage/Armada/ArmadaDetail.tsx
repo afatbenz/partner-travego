@@ -731,20 +731,17 @@ export const ArmadaDetail: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/service/review/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order_id: orderIdInput.trim(),
-          fleet_id: id,
-          star: selectedRating,
-          review: reviewText.trim(),
-        }),
+      const res = await http.post<{ status: string; data?: any; message?: string }>('/api/service/review/submit', {
+        order_id: orderIdInput.trim(),
+        fleet_id: id,
+        star: selectedRating,
+        review: reviewText.trim(),
       });
-      const json = await res.json();
 
-      if (res.ok && json.status === 'success') {
-        const newReview = json.data;
+      const payload = res.data;
+
+      if (payload?.status === 'success') {
+        const newReview = payload?.data;
         setFleet(prev => prev ? {
           ...prev,
           reviews: [newReview, ...prev.reviews],
@@ -754,7 +751,7 @@ export const ArmadaDetail: React.FC = () => {
         setSelectedRating(0);
         Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Terima kasih! Ulasan Anda telah diterima.' });
       } else {
-        const msg = json.message || 'Gagal mengirim ulasan.';
+        const msg = payload?.message || 'Gagal mengirim ulasan.';
         if (msg === 'ORDER_NOT_FOUND') {
           Swal.fire({ icon: 'error', title: 'Order ID Tidak Ditemukan', text: 'Order ID tidak ditemukan dalam sistem kami.' });
         } else {
@@ -1161,22 +1158,15 @@ export const ArmadaDetail: React.FC = () => {
                             <ClipboardList className="h-5 w-5 text-blue-600" />
                             Spesifikasi
                           </h3>
-                          <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6 md:shadow-sm">
+                          <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6">
                             {/* Gambar minibus di sisi kiri card */}
                             <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                              <div className="flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden h-28 sm:h-auto sm:aspect-video w-full sm:w-32 flex">
-                                <img
-                                  src={fleet.meta.thumbnail}
-                                  alt={`${fleet.meta.fleet_name} - ${fleet.meta.body}`}
-                                  className="w-full sm:w-32 h-full object-cover"
-                                />
-                              </div>
                               <div className="flex-1 min-w-0">
                                 <ul className="divide-y divide-gray-100 dark:divide-gray-700">
                                   {specItems.map((item) => {
                                     const Icon = item.icon;
                                     return (
-                                      <li key={item.label} className="flex items-center justify-between py-2.5 text-sm">
+                                      <li key={item.label} className="flex items-center justify-between py-2.5 text-md">
                                         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                                           <Icon className="h-4 w-4 text-blue-500 flex-shrink-0" />
                                           <span className="font-medium">{item.label}</span>
@@ -1196,13 +1186,17 @@ export const ArmadaDetail: React.FC = () => {
                             <ListChecks className="h-5 w-5 text-green-600" />
                             Fasilitas
                           </h3>
-                          <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6 md:shadow-sm">
+                          <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6">
                             <ul className="space-y-2">
                               {(fleet.facilities ?? []).map((feature, index) => (
-                                <li key={index} className="flex items-start text-sm text-gray-700">
-                                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                  {feature}
-                                </li>
+                                <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                      <li key={index} className="flex items-start text-md text-gray-700">
+                                        <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                                        {feature}
+                                      </li>
+                                    </div>
+                                  </ul>
                               ))}
                             </ul>
                           </div>
@@ -1307,7 +1301,7 @@ export const ArmadaDetail: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
               {/* Order ID input */}
               <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white">
-                <span className="text-gray-400 mr-2 font-bold">#</span>
+                <span className="text-gray-400 text-sm mr-2 font-bold">ID</span>
                 <input
                   type="text"
                   value={orderIdInput}
@@ -1327,7 +1321,7 @@ export const ArmadaDetail: React.FC = () => {
                       className="p-0.5 focus:outline-none"
                     >
                       <Star
-                        className={`h-5 w-5 ${r <= selectedRating ? 'text-blue-600 fill-blue-600' : 'text-gray-300'}`}
+                        className={`h-7 w-7 ${r <= selectedRating ? 'text-orange-500 fill-orange-500 hover:text-orange-500 hover:fill-orange-500' : 'text-orange-400 hover:fill-orange-400'}`}
                       />
                     </button>
                   ))}
@@ -1339,7 +1333,7 @@ export const ArmadaDetail: React.FC = () => {
             <div className="border border-gray-300 rounded-lg px-3 py-2 bg-white">
               <div className="flex items-center gap-1 mb-1">
                 <MessageCircle className="h-4 w-4 text-gray-400" />
-                <label className="text-sm text-gray-600 font-medium">Ulasan</label>
+                <label className="text-sm text-gray-600 font-medium">Sampaikan penilaian anda di sini:</label>
               </div>
               <textarea
                 value={reviewText}
