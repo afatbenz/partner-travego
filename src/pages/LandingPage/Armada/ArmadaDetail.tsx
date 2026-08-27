@@ -633,7 +633,7 @@ export const ArmadaDetail: React.FC = () => {
   const [reviewText, setReviewText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [allReviews, setAllReviews] = useState<any[]>([]);
-  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [showAllReviewsModal, setShowAllReviewsModal] = useState(false);
   const [reviewsTotal, setReviewsTotal] = useState<number>(0);
 
   const [fleet, setFleet] = useState<FleetDetailData | null>(null);
@@ -685,6 +685,24 @@ export const ArmadaDetail: React.FC = () => {
 
     fetchFleetDetail();
   }, [id]);
+
+  // Fetch all reviews from new backend endpoint
+  useEffect(() => {
+    const fleetId = fleet?.meta?.fleet_id;
+    if (!fleetId) return;
+    http.get<any>(`/api/service/reviews/all/${fleetId}`)
+      .then(res => {
+        const payload = res.data || {};
+        const data = payload?.data ?? payload ?? [];
+        const total = payload?.total_ulasan ?? data.length;
+        setAllReviews(Array.isArray(data) ? data : []);
+        setReviewsTotal(total);
+      })
+      .catch(() => {
+        // ignore
+      });
+  }, [fleet?.meta?.fleet_id]);
+
 
   const onCarouselSelect = useCallback(() => {
     if (!carouselApi) return;
@@ -750,6 +768,8 @@ export const ArmadaDetail: React.FC = () => {
           ...prev,
           reviews: [newReview, ...prev.reviews],
         } : prev);
+        setAllReviews(prev => newReview ? [newReview, ...prev] : prev);
+        setReviewsTotal(prev => prev + 1);
         setOrderIdInput('');
         setReviewText('');
         setSelectedRating(0);
@@ -1258,8 +1278,8 @@ export const ArmadaDetail: React.FC = () => {
       {/* Ulasan — two-column grid */}
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-[35%_65%] gap-6 items-start">
-          {/* Kolom kiri: info panel */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
+          {/* Kolom kiri: info panel — sembunyikan di mobile */}
+          <div className="hidden lg:block bg-blue-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
             <p className="mb-4 text-gray-700">
               Ulasan Anda membantu kami meningkatkan kualitas layanan dan memberikan pengalaman terbaik bagi setiap pelanggan.
             </p>
@@ -1383,10 +1403,10 @@ export const ArmadaDetail: React.FC = () => {
 
       {/* Daftar ulasan pelanggan — full-width section di bawah grid */}
       <div className="max-w-7xl mx-auto mt-8 mb-5">
-        {(allReviews.length > 0 || (fleet?.reviews?.length ?? 0) > 0) ? (
+        {allReviews.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(allReviews.length > 0 ? allReviews : (fleet?.reviews ?? [])).slice(0, showAllReviews ? undefined : 3).map((reviewItem: any, index: number) => {
+              {allReviews.slice(0, showAllReviewsModal ? undefined : 3).map((reviewItem: any, index: number) => {
                 const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
                 const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
 
@@ -1411,13 +1431,13 @@ export const ArmadaDetail: React.FC = () => {
                 );
               })}
             </div>
-            {(allReviews.length > 3 || ((fleet?.reviews?.length ?? 0) > 3 && allReviews.length === 0)) && !showAllReviews && (
+            {allReviews.length > 3 && (
               <div className="mt-4 text-center">
                 <button
-                  onClick={() => setShowAllReviews(true)}
+                  onClick={() => setShowAllReviewsModal(true)}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
                 >
-                  Lihat Semua Ulasan ({reviewsTotal || (fleet?.reviews?.length ?? 0)})
+                  Lihat Semua Ulasan ({reviewsTotal})
                 </button>
               </div>
             )}
@@ -1429,6 +1449,61 @@ export const ArmadaDetail: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modal semua ulasan */}
+      {showAllReviewsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAllReviewsModal(false); }}
+        >
+          <div className="bg-white rounded-2xl w-full max-w-full md:max-w-[50%] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Star className="h-4 w-4 text-blue-600 fill-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Semua Ulasan</h2>
+                  <p className="text-xs text-gray-500">{reviewsTotal} ulasan</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAllReviewsModal(false)}
+                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                aria-label="Tutup"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 px-6 py-4">
+              <div className="flex flex-col gap-4">
+                {allReviews.map((reviewItem: any, index: number) => {
+                  const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                  const formattedDate = new Date(reviewItem.created_at).toLocaleDateString('id-ID', dateOptions).replace('pukul', '');
+                  return (
+                    <div key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 text-sm">{reviewItem.customer_name}</h4>
+                          <p className="text-xs text-gray-400 mt-0.5">{formattedDate}</p>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[1,2,3,4,5].map((star) => (
+                            <Star key={star} className={`h-3.5 w-3.5 ${star <= reviewItem.star ? 'text-orange-400 fill-orange-400' : 'text-gray-300'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-xs leading-relaxed">"{reviewItem.review}"</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile floating bottom bar — tampil {price} / hari, buka floating pricing card */}
       <div className="lg:hidden">
