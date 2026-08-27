@@ -270,16 +270,16 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983', className })
                     <div className="mb-2">
                       <Stars rating={normalizeRating(r.rating)} size={4} />
                     </div>
-                    {(r.images?.length || r.image_urls?.length || r.reviewer_images_link?.length) ? (
-                      <div className="mb-2 flex flex-wrap gap-2">
-                        {Array.from(new Set([...(r.images || []), ...(r.image_urls || [])].filter(Boolean))).slice(0, 4).map((src, i) => (
-                          <img key={i} src={src} alt={`foto review ${i + 1}`} className="h-16 w-16 rounded-xl object-cover border border-slate-100 dark:border-slate-700" />
-                        ))}
-                      </div>
-                    ) : null}
                     <p className="flex-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                       {(r.review_text || r.review_text_raw || '').trim()}
                     </p>
+                    {(r.images?.length || r.image_urls?.length) ? (
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        {Array.from(new Set([...(r.images || []), ...(r.image_urls || [])].filter(Boolean))).slice(0, 4).map((src, i) => (
+                          <img key={i} src={src} alt={`foto review ${i + 1}`} className="h-20 w-20 rounded-xl object-cover border border-slate-100 dark:border-slate-700" />
+                        ))}
+                      </div>
+                    ) : null}
                     <div className="mt-4 flex items-center gap-1 text-slate-400 dark:text-slate-500">
                       <GoogleLogo className="h-4 w-4" />
                       <span className="text-[11px]">Google Review</span>
