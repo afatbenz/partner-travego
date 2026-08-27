@@ -753,7 +753,7 @@ export const ArmadaDetail: React.FC = () => {
       } else {
         const msg = payload?.message || 'Gagal mengirim ulasan.';
         if (msg === 'ORDER_NOT_FOUND') {
-          Swal.fire({ icon: 'error', title: 'Order ID Tidak Ditemukan', text: 'Order ID tidak ditemukan dalam sistem kami.' });
+          Swal.fire({ icon: 'error', title: 'Order ID Tidak Ditemukan', text: 'Order ID untuk armada ini tidak ditemukan dalam sistem kami. Mohon periksa kembali.' });
         } else {
           Swal.fire({ icon: 'error', title: 'Gagal', text: msg });
         }
@@ -761,7 +761,7 @@ export const ArmadaDetail: React.FC = () => {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Terjadi kesalahan jaringan. Coba lagi.';
       if (msg === 'ORDER_NOT_FOUND') {
-        Swal.fire({ icon: 'error', title: 'Order ID Tidak Ditemukan', text: 'Order ID tidak ditemukan dalam sistem kami.' });
+        Swal.fire({ icon: 'error', title: 'Order ID Tidak Ditemukan', text: 'Order ID untuk armada ini tidak ditemukan dalam sistem kami. Mohon periksa kembali.' });
       } else {
         Swal.fire({ icon: 'error', title: 'Gagal', text: msg });
       }
