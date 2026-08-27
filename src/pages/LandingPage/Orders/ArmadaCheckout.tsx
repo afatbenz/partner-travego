@@ -593,7 +593,7 @@ export const ArmadaCheckout: React.FC = () => {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
 
@@ -693,7 +693,9 @@ export const ArmadaCheckout: React.FC = () => {
     formData.pickupLocation.trim() &&
     formData.pickupDate &&
     formData.pickupTime &&
-    formData.returnDate
+    formData.returnDate &&
+    formData.returnTime &&
+    formData.armadaCount > 0
   );
   const pickupPriorityCities = data.pickup_points?.map(p => ({ id: String(p.city_id), name: p.city_name })) || [];
   const isPickupOutsideCoverage = !!formData.pickupCity && !pickupPriorityCities.some((city) => city.id === String(formData.pickupCity));
@@ -1045,8 +1047,8 @@ export const ArmadaCheckout: React.FC = () => {
             </form>
           </div>
 
-          {/* Sticky Summary Area */}
-          <div className="w-full lg:w-[400px] order-1 lg:order-2">
+          {/* Sticky Summary Area — desktop only */}
+          <div className="hidden lg:block w-full lg:w-[400px] order-1 lg:order-2">
             <div className="sticky top-24">
               <Card className="bg-white border border-[#E2E8F0] rounded-2xl shadow-sm overflow-hidden">
                 <CardContent className="p-6">
@@ -1133,11 +1135,11 @@ export const ArmadaCheckout: React.FC = () => {
                       type="submit" 
                       onClick={handleSubmit}
                       className="w-full h-14 bg-gradient-to-r from-[#4F46E5] to-[#6366F1] hover:from-[#4338CA] hover:to-[#4F46E5] text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 group text-base"
-                      disabled={isSubmitting || !isAvailable || checkingAvailability}
+                      disabled={isSubmitting || !isAvailable || checkingAvailability || !isFormValid}
                     >
                       <span className="flex items-center justify-center w-full">
-                        {isSubmitting ? 'Memproses Pesanan...' : checkingAvailability ? 'Mengecek Ketersediaan...' : !isAvailable ? 'Armada Tidak Tersedia' : 'Lanjutkan Pemesanan'}
-                        {!isSubmitting && !checkingAvailability && isAvailable && <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+                        {isSubmitting ? 'Memproses Pesanan...' : checkingAvailability ? 'Mengecek Ketersediaan...' : !isAvailable ? 'Armada Tidak Tersedia' : !isFormValid ? 'Lengkapi Data Pemesanan' : 'Lanjutkan Pemesanan'}
+                        {!isSubmitting && !checkingAvailability && isAvailable && isFormValid && <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />}
                       </span>
                     </Button>
                     
@@ -1160,6 +1162,166 @@ export const ArmadaCheckout: React.FC = () => {
             </div>
           </div>
 
+        </div>
+      </div>
+
+      {/* Mobile: floating bottom bar + bottom sheet Ringkasan */}
+      <div className="lg:hidden">
+        {/* Backdrop */}
+        {showSummaryModal && (
+          <div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => setShowSummaryModal(false)}
+          />
+        )}
+
+        {/* Bottom bar — fixed, shows total */}
+        <button
+          type="button"
+          onClick={() => setShowSummaryModal(true)}
+          className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-3 bg-[#4F46E5] text-white px-5 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))]"
+        >
+          <div className="text-left">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-indigo-200">Total Pembayaran</div>
+            <div className="text-xl font-bold leading-tight">
+              Rp {totalPrice.toLocaleString('id-ID')}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-2.5 text-sm font-semibold">
+            <ChevronUp className="h-4 w-4" />
+            Lihat Ringkasan
+          </div>
+        </button>
+
+        {/* Bottom sheet — full Ringkasan Pemesanan */}
+        <div
+          className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-[2.5rem] shadow-[0_-20px_60px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-out max-h-[85vh] flex flex-col ${
+            showSummaryModal ? 'translate-y-0' : 'translate-y-full'
+          }`}
+        >
+          {/* Sheet header */}
+          <div className="shrink-0 flex items-center justify-between px-6 pt-4 pb-2">
+            <div className="flex items-center gap-2">
+              <div className="h-1 w-8 bg-[#4F46E5] rounded-full" />
+              <span className="text-sm font-bold text-gray-900">Ringkasan Pemesanan</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSummaryModal(false)}
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+              aria-label="Tutup"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Sheet content — scrollable */}
+          <div className="overflow-y-auto px-4 sm:px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-4">
+
+            {/* Armada Info */}
+            <div className="flex items-start space-x-4">
+              <img src={data.thumbnail} alt={data.fleet_name} className="w-20 h-20 object-cover rounded-xl border border-[#E2E8F0] shadow-sm" />
+              <div className="flex-1">
+                <h4 className="font-bold text-[#0F172A] leading-tight mb-1">{data.fleet_name}</h4>
+                {data.rent_type_label && (
+                  <span className="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#4F46E5]/10 text-[#4F46E5] rounded-md">
+                    {data.rent_type_label}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Timeline */}
+            <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#E2E8F0]">
+              <div className="relative pl-6 space-y-4">
+                <div className="absolute left-2.5 top-2 bottom-2 w-px bg-slate-200"></div>
+                <div className="relative">
+                  <div className="absolute -left-6 w-3 h-3 rounded-full bg-[#4F46E5] border-2 border-white shadow-sm top-1"></div>
+                  <p className="text-xs font-medium text-[#0F172A]">Penjemputan</p>
+                  <p className="text-xs text-[#64748B] mt-0.5">{formatDate(formData.pickupDate)} {formData.pickupTime ? `• ${formData.pickupTime}` : ''}</p>
+                </div>
+                <div className="relative">
+                  <div className="absolute -left-6 w-3 h-3 rounded-full bg-slate-300 border-2 border-white shadow-sm top-1"></div>
+                  <p className="text-xs font-medium text-[#0F172A]">Kembali</p>
+                  <p className="text-xs text-[#64748B] mt-0.5">{formatDate(formData.returnDate)} {formData.returnTime ? `• ${formData.returnTime}` : ''}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Facilities */}
+            {data.facilities && data.facilities.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-[#0F172A] mb-2">Fasilitas Termasuk:</p>
+                <div className="flex flex-wrap gap-2">
+                  {data.facilities.map((item, idx) => (
+                    <span key={idx} className="flex items-center text-[11px] font-medium text-[#64748B] bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                      <Check className="w-3 h-3 text-green-500 mr-1" /> {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Price Calculation */}
+            <div className="space-y-3 pt-2 border-t border-dashed border-[#E2E8F0]">
+              <div className="flex justify-between text-sm">
+                <span className="text-[#64748B]">Sewa ({formData.armadaCount} Unit)</span>
+                <span className="font-semibold text-[#0F172A]">Rp {(basePrice * formData.armadaCount).toLocaleString('id-ID')}</span>
+              </div>
+
+              {selectedAddons.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <span className="text-xs font-bold text-[#0F172A]">Layanan Tambahan:</span>
+                  {selectedAddons.map(addon => (
+                    <div key={addon.uuid} className="flex justify-between text-xs pl-2 border-l-2 border-[#4F46E5]/20">
+                      <span className="text-[#64748B] truncate max-w-[180px]">{addon.addon_name} x{formData.armadaCount}</span>
+                      <span className="font-medium text-[#0F172A]">Rp {(addon.addon_price * formData.armadaCount).toLocaleString('id-ID')}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Total */}
+            <div className="pt-3 border-t border-[#E2E8F0] flex justify-between items-center">
+              <div>
+                <span className="block text-sm text-[#64748B] font-medium">Total Pembayaran</span>
+                <span className="text-xs text-[#64748B]">Termasuk pajak</span>
+              </div>
+              <span className="text-xl font-semibold text-[#4F46E5]">
+                Rp {totalPrice.toLocaleString('id-ID')}
+              </span>
+            </div>
+
+            {/* Submit CTA */}
+            <div className="pt-2 space-y-3">
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                className="w-full h-14 bg-gradient-to-r from-[#4F46E5] to-[#6366F1] hover:from-[#4338CA] hover:to-[#4F46E5] text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 group text-base"
+                disabled={isSubmitting || !isAvailable || checkingAvailability || !isFormValid}
+              >
+                <span className="flex items-center justify-center w-full">
+                  {isSubmitting ? 'Memproses Pesanan...' : checkingAvailability ? 'Mengecek Ketersediaan...' : !isAvailable ? 'Armada Tidak Tersedia' : !isFormValid ? 'Lengkapi Data Pemesanan' : 'Lanjutkan Pemesanan'}
+                  {!isSubmitting && !checkingAvailability && isAvailable && isFormValid && <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+                </span>
+              </Button>
+
+              {/* Trust indicators */}
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center text-xs text-[#64748B]">
+                  <ShieldCheck className="w-4 h-4 mr-2 text-emerald-500 shrink-0" /> Pembayaran Aman & Terenkripsi
+                </div>
+                <div className="flex items-center text-xs text-[#64748B]">
+                  <MessageCircle className="w-4 h-4 mr-2 text-blue-500 shrink-0" /> Gratis Konsultasi Perjalanan
+                </div>
+                <div className="flex items-center text-xs text-[#64748B]">
+                  <ThumbsUp className="w-4 h-4 mr-2 text-[#4F46E5] shrink-0" /> Armada Terawat & Driver Profesional
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>

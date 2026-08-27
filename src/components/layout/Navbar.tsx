@@ -154,13 +154,14 @@ export const Navbar: React.FC = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`px-4 py-3 rounded-xl text-base font-semibold transition-all duration-200 ${
+                  className={`px-4 py-3 rounded-xl text-base font-semibold transition-all duration-200 flex items-center ${
                     isActive(item.href)
                       ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <item.icon className="h-4 w-4 mr-2" />{item.name}
+                  <item.icon className="h-5 w-5 mr-3 shrink-0" />
+                  {item.name}
                 </Link>
               ))}
               <div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
