@@ -758,8 +758,13 @@ export const ArmadaDetail: React.FC = () => {
           Swal.fire({ icon: 'error', title: 'Gagal', text: msg });
         }
       }
-    } catch {
-      Swal.fire({ icon: 'error', title: 'Network Error', text: 'Terjadi kesalahan jaringan. Coba lagi.' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Terjadi kesalahan jaringan. Coba lagi.';
+      if (msg === 'ORDER_NOT_FOUND') {
+        Swal.fire({ icon: 'error', title: 'Order ID Tidak Ditemukan', text: 'Order ID tidak ditemukan dalam sistem kami.' });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal', text: msg });
+      }
     } finally {
       setIsSubmitting(false);
     }
