@@ -309,8 +309,8 @@ const Armada = () => {
           </div>
         ) : (
           <>
-            {/* Mobile: selalu stack ArmadaMobileCard (grid default, tanpa toggle jenis grid) */}
-            <div className="flex flex-col gap-4 md:hidden">
+            {/* Mobile: grid 2 columns for ArmadaMobileCard */}
+            <div className="grid grid-cols-2 gap-3 md:hidden">
               {paginatedArmada.filter((a) => a.image).length > 0 ? (
                 paginatedArmada.filter((a) => a.image).map((armada) => (
                   <ArmadaMobileCard key={armada.id} armada={armada} />
@@ -325,7 +325,7 @@ const Armada = () => {
             {/* Desktop: grid / list sesuai toggle */}
             <div className="hidden md:block">
               {viewMode === 'list' ? (
-                <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-2 gap-3">
                   {paginatedArmada.filter((a) => a.image).length > 0 ? (
                     paginatedArmada.filter((a) => a.image).map((armada) => (
                       <ArmadaMobileCard key={armada.id} armada={armada} large />

@@ -256,7 +256,7 @@ export const Home: React.FC = () => {
             </div>
           </div>
           
-          {/* Mobile View - Vertical List */}
+          {/* Mobile View - 2-column grid */}
           <div className="block md:hidden">
             {loadingFleets ? (
               <div className="text-center py-20">
@@ -264,20 +264,10 @@ export const Home: React.FC = () => {
                 <p className="text-gray-500 font-bold">Menyiapkan Armada...</p>
               </div>
             ) : fleets.length > 0 ? (
-              <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {fleets.filter((f) => f.image).slice(0, 4).map((fleet) => (
                   <ArmadaMobileCard key={fleet.id} armada={fleet} />
                 ))}
-                {fleets.filter((f) => f.image).length > 4 && (
-                  <Button
-                    variant="outline"
-                    className="w-full rounded-2xl px-8 h-11 font-semibold border-gray-200 hover:bg-blue-50 text-blue-600 transition-all hover:scale-[1.02] mt-1"
-                    onClick={() => navigate('/armada')}
-                  >
-                    Lihat Semua Armada
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
               </div>
             ) : (
               <div className="text-center py-12">

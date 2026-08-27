@@ -32,36 +32,36 @@ export const ArmadaMobileCard: React.FC<ArmadaMobileCardProps> = ({ armada, larg
   const priceUnit = priceParts.length > 1 ? `/${priceParts.slice(1).join('/')}` : '';
 
   return (
-    <Card className="group flex overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm rounded-2xl">
-      {/* Image - left (2x saat large) */}
-      <div className={`relative shrink-0 aspect-square overflow-hidden ${large ? 'w-56 sm:w-72' : 'w-28 sm:w-36'}`}>
+    <Card className="group flex flex-col overflow-hidden bg-white dark:bg-gray-900 border-none shadow-sm rounded-2xl hover:shadow-lg transition-shadow">
+      {/* Image - top */}
+      <div className={`relative w-full overflow-hidden ${large ? 'aspect-[4/3]' : 'aspect-[5/4]'}`}>
         <img
           src={armada.image}
           alt={armada.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
       </div>
 
-      {/* Content - right */}
+      {/* Content - below image */}
       <div className="flex-1 min-w-0 p-3.5 sm:p-4 flex flex-col">
         {/* Name + category */}
         <div className="mb-1.5">
-          <h3 className={`font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug ${large ? 'text-xl' : 'text-sm'}`}>
+          <h3 className={`font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug ${large ? 'text-lg' : 'text-sm'}`}>
             {armada.name}
           </h3>
-          <p className={`text-blue-600 dark:text-blue-400 font-bold tracking-widest uppercase mt-0.5 ${large ? 'text-xs' : 'text-[10px]'}`}>
+          <p className={`text-blue-600 dark:text-blue-400 font-bold tracking-widest uppercase mt-0.5 ${large ? 'text-[10px]' : 'text-[10px]'}`}>
             {armada.type}
           </p>
         </div>
 
         {/* Rating */}
         <div className="flex items-center mb-1.5">
-          <Star className={`text-yellow-500 fill-current mr-1 ${large ? 'h-4 w-4' : 'h-3 w-3'}`} />
-          <span className={`font-semibold text-gray-700 dark:text-gray-300 ${large ? 'text-sm' : 'text-xs'}`}>
+          <Star className={`text-yellow-500 fill-current mr-1 ${large ? 'h-3.5 w-3.5' : 'h-3 w-3'}`} />
+          <span className={`font-semibold text-gray-700 dark:text-gray-300 ${large ? 'text-xs' : 'text-[11px]'}`}>
             {armada.rating}
           </span>
-          <span className={`text-gray-400 ml-1 ${large ? 'text-sm' : 'text-xs'}`}>
-            ({armada.reviews || 0} review)
+          <span className={`text-gray-400 ml-1 ${large ? 'text-xs' : 'text-[10px]'}`}>
+            ({armada.reviews || 0})
           </span>
         </div>
 
@@ -69,34 +69,34 @@ export const ArmadaMobileCard: React.FC<ArmadaMobileCardProps> = ({ armada, larg
         <div className="flex flex-col gap-1 mb-2">
           {armada.capacity ? (
           <div className="flex items-center text-gray-500 dark:text-gray-400">
-            <Users className={`text-blue-600 mr-1.5 shrink-0 ${large ? 'h-4 w-4' : 'h-3.5 w-3.5'}`} />
-            <span className={`font-medium truncate ${large ? 'text-sm' : 'text-[11px]'}`}>{armada.capacity}</span>
+            <Users className={`text-blue-600 mr-1.5 shrink-0 ${large ? 'h-3.5 w-3.5' : 'h-3 w-3'}`} />
+            <span className={`font-medium truncate ${large ? 'text-xs' : 'text-[11px]'}`}>{armada.capacity}</span>
           </div>
           ) : null}
           <div className="flex items-center text-gray-500 dark:text-gray-400">
-            <MapPin className={`text-blue-600 mr-1.5 shrink-0 ${large ? 'h-4 w-4' : 'h-3.5 w-3.5'}`} />
-            <span className={`font-medium truncate ${large ? 'text-sm' : 'text-[11px]'}`}>{displayLocation}</span>
+            <MapPin className={`text-blue-600 mr-1.5 shrink-0 ${large ? 'h-3.5 w-3.5' : 'h-3 w-3'}`} />
+            <span className={`font-medium truncate ${large ? 'text-xs' : 'text-[11px]'}`}>{displayLocation}</span>
           </div>
         </div>
 
         {/* Price */}
         <div className="mt-auto pt-2 border-t border-gray-100 dark:border-gray-800">
-          <p className={`font-bold text-gray-400 uppercase tracking-wider mb-0.5 ${large ? 'text-[11px]' : 'text-[9px]'}`}>Price</p>
+          <p className={`font-bold text-gray-400 uppercase tracking-wider mb-0.5 ${large ? 'text-[10px]' : 'text-[9px]'}`}>Price</p>
           <div className="flex items-baseline gap-1">
-            <span className={`font-bold text-blue-600 dark:text-blue-400 truncate ${large ? 'text-xl' : 'text-sm'}`}>
+            <span className={`font-bold text-blue-600 dark:text-blue-400 truncate ${large ? 'text-lg' : 'text-sm'}`}>
               {priceAmount}
             </span>
-            <span className={`font-normal text-gray-500 truncate ${large ? 'text-xs' : 'text-[10px]'}`}>{priceUnit}</span>
+            <span className={`font-normal text-gray-500 truncate ${large ? 'text-[10px]' : 'text-[9px]'}`}>{priceUnit}</span>
           </div>
         </div>
 
-        {/* CTA - below price */}
+        {/* CTA - full width below */}
         <Button
           onClick={handleDetailClick}
-          className={`mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1 ${large ? 'h-11 text-sm' : 'h-9 text-xs'}`}
+          className={`mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1 ${large ? 'h-10 text-xs' : 'h-9 text-xs'}`}
         >
           Lihat
-          <ArrowRight className={`${large ? 'h-4 w-4' : 'h-3.5 w-3.5'}`} />
+          <ArrowRight className={`${large ? 'h-3.5 w-3.5' : 'h-3 w-3'}`} />
         </Button>
       </div>
     </Card>

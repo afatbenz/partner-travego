@@ -23,6 +23,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { format } from 'date-fns';
+import Swal from 'sweetalert2';
 import { id as idLocale } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -618,6 +619,12 @@ export const ArmadaDetail: React.FC = () => {
   const [showAllPricing, setShowAllPricing] = useState(false);
   const [isPricingSheetOpen, setIsPricingSheetOpen] = useState(false);
 
+  // Review Form State
+  const [orderIdInput, setOrderIdInput] = useState('');
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [fleet, setFleet] = useState<FleetDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -699,6 +706,59 @@ export const ArmadaDetail: React.FC = () => {
   const handleImageChange = (index: number) => {
     setSelectedImageIndex(index);
     carouselApi?.scrollTo(index);
+  };
+
+  const handleSubmitReview = async () => {
+    if (!orderIdInput.trim()) {
+      Swal.fire({ icon: 'warning', title: 'Order ID Required', text: 'Mohon masukkan Order ID Anda.' });
+      return;
+    }
+    if (!selectedRating) {
+      Swal.fire({ icon: 'warning', title: 'Rating Required', text: 'Mohon pilih rating bintang.' });
+      return;
+    }
+    if (!reviewText.trim()) {
+      Swal.fire({ icon: 'warning', title: 'Ulasan Required', text: 'Mohon tulis ulasan Anda.' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/service/review/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: orderIdInput.trim(),
+          fleet_id: id,
+          star: selectedRating,
+          review: reviewText.trim(),
+        }),
+      });
+      const json = await res.json();
+
+      if (res.ok && json.status === 'success') {
+        const newReview = json.data;
+        setFleet(prev => prev ? {
+          ...prev,
+          reviews: [newReview, ...prev.reviews],
+        } : prev);
+        setOrderIdInput('');
+        setReviewText('');
+        setSelectedRating(0);
+        Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Terima kasih! Ulasan Anda telah diterima.' });
+      } else {
+        const msg = json.message || 'Gagal mengirim ulasan.';
+        if (msg === 'ORDER_NOT_FOUND') {
+          Swal.fire({ icon: 'error', title: 'Order ID Tidak Ditemukan', text: 'Order ID tidak ditemukan dalam sistem kami.' });
+        } else {
+          Swal.fire({ icon: 'error', title: 'Gagal', text: msg });
+        }
+      }
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Network Error', text: 'Terjadi kesalahan jaringan. Coba lagi.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCitySelect = (cityName: string, serviceTypes: string[], cityId: number | string) => {
@@ -1132,6 +1192,58 @@ export const ArmadaDetail: React.FC = () => {
                   <div className='mt-8 rounded-lg border border-gray-100 p-6'>
                     <h3 className="text-lg font-bold text-gray-900">Ulasan</h3>
                     <p className="text-sm text-gray-500 mb-5">Lihat ulasan dari pelanggan ({fleet.meta.rating}/{fleet.reviews.length} ulasan)</p>
+
+                    {/* Write Review Form (public path) */}
+                    <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm mb-6">
+                      <h4 className="text-base font-semibold text-gray-900 mb-4">Tulis Ulasan Armada</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Order ID</label>
+                          <input
+                            type="text"
+                            value={orderIdInput}
+                            onChange={(e) => setOrderIdInput(e.target.value)}
+                            placeholder="Masukkan Order ID Anda"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                          <div className="flex space-x-1">
+                            {[1, 2, 3, 4, 5].map((r) => (
+                              <button
+                                key={r}
+                                type="button"
+                                onClick={() => setSelectedRating(r)}
+                                className="p-1 rounded focus:outline-none"
+                              >
+                                <Star
+                                  className={`h-6 w-6 ${r <= selectedRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Ulasan</label>
+                          <textarea
+                            value={reviewText}
+                            onChange={(e) => setReviewText(e.target.value)}
+                            rows={3}
+                            placeholder="Bagikan pengalaman Anda..."
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <Button
+                          className="w-full"
+                          onClick={handleSubmitReview}
+                          disabled={isSubmitting || !orderIdInput.trim() || selectedRating === 0 || !reviewText.trim()}
+                        >
+                          {isSubmitting ? 'Mengirim...' : 'Kirim Ulasan'}
+                        </Button>
+                      </div>
+                    </div>
+
                     {fleet.reviews && fleet.reviews.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                         {fleet.reviews.map((reviewItem: any, index: number) => {
@@ -1191,6 +1303,7 @@ export const ArmadaDetail: React.FC = () => {
                         </div>
                       </div>
                     )}
+
                     </div>
                   </div>
 
