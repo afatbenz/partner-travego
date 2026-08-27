@@ -1165,11 +1165,11 @@ export const ArmadaDetail: React.FC = () => {
                           <div className="bg-white rounded-lg border-none md:border md:border-gray-100 p-0 md:p-6 md:shadow-sm">
                             {/* Gambar minibus di sisi kiri card */}
                             <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                              <div className="flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden">
+                              <div className="flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden h-28 sm:h-auto sm:aspect-video w-full sm:w-32 flex">
                                 <img
                                   src={fleet.meta.thumbnail}
                                   alt={`${fleet.meta.fleet_name} - ${fleet.meta.body}`}
-                                  className="w-full sm:w-32 h-28 object-cover"
+                                  className="w-full sm:w-32 h-full object-cover"
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -1256,7 +1256,7 @@ export const ArmadaDetail: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* Kolom kiri: info panel */}
-          <div className="bg-yellow-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
             <Sparkles className="absolute -top-3 -right-3 h-6 w-6 text-yellow-300" />
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="h-6 w-6 text-blue-600" />
@@ -1295,13 +1295,7 @@ export const ArmadaDetail: React.FC = () => {
                 </div>
               </li>
             </ul>
-            <div className="absolute bottom-0 right-0 -mb-6 -mr-6 opacity-60">
-              <svg width="80" height="40" viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="20" cy="25" r="8" fill="#93c5fd"/>
-                <circle cx="40" cy="15" r="5" fill="#93c5fd"/>
-                <circle cx="60" cy="30" r="6" fill="#93c5fd"/>
-              </svg>
-            </div>
+
           </div>
 
           {/* Kolom kanan: form ulasan & daftar ulasan */}
@@ -1321,7 +1315,7 @@ export const ArmadaDetail: React.FC = () => {
                   value={orderIdInput}
                   onChange={(e) => setOrderIdInput(e.target.value)}
                   placeholder="Order ID"
-                  className="w-full border-0 p-0 text-sm focus:outline-none"
+                  className="w-full border-0 p-0 text-sm text-gray-900 bg-transparent focus:outline-none placeholder:text-gray-400"
                 />
               </div>
               {/* Star rating */}
@@ -1354,13 +1348,13 @@ export const ArmadaDetail: React.FC = () => {
                 onChange={(e) => setReviewText(e.target.value)}
                 rows={3}
                 placeholder="Bagikan pengalaman Anda..."
-                className="w-full resize-none border-0 p-0 text-sm focus:outline-none"
+                className="w-full resize-none border-0 p-0 text-sm text-gray-900 bg-transparent focus:outline-none placeholder:text-gray-400"
               />
             </div>
 
             {/* Submit button */}
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md"
               onClick={handleSubmitReview}
               disabled={isSubmitting || !orderIdInput.trim() || selectedRating === 0 || !reviewText.trim()}
             >
