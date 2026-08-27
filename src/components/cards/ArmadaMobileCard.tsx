@@ -82,7 +82,7 @@ export const ArmadaMobileCard: React.FC<ArmadaMobileCardProps> = ({ armada, larg
           onClick={handleDetailClick}
           className={`mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1 ${large ? 'h-10 text-xs' : 'h-9 text-xs'}`}
         >
-          Lihat
+          Lihat Detail
           <ArrowRight className={`${large ? 'h-3.5 w-3.5' : 'h-3 w-3'}`} />
         </Button>
       </div>

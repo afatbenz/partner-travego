@@ -953,8 +953,6 @@ export const ArmadaDetail: React.FC = () => {
   const fuelLabel = fleet.meta.fuel_type_label ?? fleet.meta.fuel_type;
 
   const specItems = [
-    { icon: Cog, label: 'Mesin', value: fleet.meta.engine },
-    { icon: Car, label: 'Body', value: fleet.meta.body },
     { icon: Users, label: 'Kapasitas', value: `${fleet.meta.capacities} Penumpang` },
     { icon: Car, label: 'Tipe', value: fleetTypeLabel },
     ...(fleet.meta.transmission
