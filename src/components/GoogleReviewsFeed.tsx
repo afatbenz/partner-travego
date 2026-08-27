@@ -203,62 +203,6 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983', className })
           </p>
         </div>
 
-        {/* ===== Rating summary card (3 kolom) ===== */}
-        <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl mb-10">
-          <CardContent className="p-6 md:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-center">
-              {/* Kolom kiri: angka besar */}
-              <div className="flex flex-col items-center md:items-start gap-2">
-                <div className="flex items-end gap-1">
-                  <span className="text-6xl md:text-7xl font-extrabold text-slate-900 dark:text-white leading-none">
-                    {bio.overall_star_rating || '—'}
-                  </span>
-                  <span className="text-2xl text-slate-400 mb-1">/5</span>
-                </div>
-                <Stars rating={overall} size={5} className="mt-1" />
-                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{ratingLabel}</span>
-                <span className="text-sm text-slate-500 dark:text-slate-400">
-                  Berdasarkan {totalLabel} ulasan Google
-                </span>
-              </div>
-
-              {/* Kolom tengah: breakdown bar */}
-              <div className="space-y-2">
-                {breakdown.map(({ stars, count }) => {
-                  const pct = Math.round((count / breakdownTotal) * 100);
-                  return (
-                    <div key={stars} className="flex items-center gap-3">
-                      <span className="w-8 text-right text-sm font-medium text-slate-600 dark:text-slate-300">
-                        {stars}★
-                      </span>
-                      <div className="h-2 flex-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-yellow-400 transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="w-8 text-sm text-slate-500 dark:text-slate-400">{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Kolom kanan: logo + CTA */}
-              <div className="flex flex-col items-center md:items-end gap-4">
-                <GoogleLogo className="h-12 w-12" />
-                <a
-                  href={mapUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-600 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800"
-                >
-                  Lihat semua ulasan di Google
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* ===== Review carousel ===== */}
         <div className="relative">
@@ -327,13 +271,10 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983', className })
                       <Stars rating={normalizeRating(r.rating)} size={4} />
                     </div>
                     {(r.images?.length || r.image_urls?.length || r.reviewer_images_link?.length) ? (
-                      <div className="mb-2 flex flex-wrap gap-1.5">
-                        {[...(r.images || []), ...(r.image_urls || []), ...(r.reviewer_images_link || [])]
-                          .filter(Boolean)
-                          .slice(0, 4)
-                          .map((src, i) => (
-                            <img key={i} src={src} alt={`foto review ${i + 1}`} className="h-10 w-10 rounded object-cover" />
-                          ))}
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        {Array.from(new Set([...(r.images || []), ...(r.image_urls || [])].filter(Boolean))).slice(0, 4).map((src, i) => (
+                          <img key={i} src={src} alt={`foto review ${i + 1}`} className="h-16 w-16 rounded-xl object-cover border border-slate-100 dark:border-slate-700" />
+                        ))}
                       </div>
                     ) : null}
                     <p className="flex-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
