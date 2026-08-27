@@ -164,7 +164,7 @@ export const Navbar: React.FC = () => {
                   {item.name}
                 </Link>
               ))}
-              <div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
+              {/* <div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
                 <div className="flex flex-col space-y-3">
                   {user ? (
                     <>
@@ -194,7 +194,7 @@ export const Navbar: React.FC = () => {
                     </Button>
                   </Link>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         )}

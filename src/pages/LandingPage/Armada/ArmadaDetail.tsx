@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   ListChecks,
   ClipboardList,
-  Cog,
   Fuel,
   Gauge,
   Calendar as CalendarIcon,
