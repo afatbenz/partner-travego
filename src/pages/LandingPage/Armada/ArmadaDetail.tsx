@@ -436,7 +436,7 @@ const PricingCard: React.FC<{
 
   return (
     <>
-      <div className="bg-white rounded-[2.5rem] shadow-lg p-10 mb-6 border border-gray-100 transition-all duration-300">
+      <div className="md:bg-white rounded-[1rem] md:rounded-[2.5rem] md:shadow-lg p-5 mt-5 md:mt-0 md:p-10 mb-6 md:border border-gray-100 transition-all duration-300">
         <div className="mb-6">
           <div className="text-sm text-gray-500 mb-1">Mulai dari</div>
           <div className="text-3xl font-bold text-blue-600">{formattedPrice}</div>
@@ -1208,12 +1208,12 @@ export const ArmadaDetail: React.FC = () => {
                                   {specItems.map((item) => {
                                     const Icon = item.icon;
                                     return (
-                                      <li key={item.label} className="flex items-center justify-between py-2.5 text-md">
+                                      <li key={item.label} className="flex items-center justify-between py-2.5 text-sm md:text-md">
                                         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                                           <Icon className="h-4 w-4 text-blue-500 flex-shrink-0" />
                                           <span className="font-medium">{item.label}</span>
                                         </div>
-                                        <span className="text-gray-900 dark:text-white text-right font-semibold">{item.value}</span>
+                                        <span className="text-gray-900 dark:text-white text-right font-semibold text-sm">{item.value}</span>
                                       </li>
                                     );
                                   })}

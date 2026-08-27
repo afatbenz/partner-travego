@@ -310,7 +310,7 @@ export const Home: React.FC = () => {
             )}
           </div>
           {/* Centered "Lihat Semua Armada" for desktop — show when more than 6 fleets */}
-          {fleets.length > 6 && !loadingFleets && (
+          {/* {fleets.length > 6 && !loadingFleets && (
             <div className="flex justify-center mt-12">
               <Button
                 variant="outline"
@@ -321,7 +321,7 @@ export const Home: React.FC = () => {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
-          )}
+          )} */}
         </div>
       </section>
 
