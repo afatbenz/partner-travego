@@ -629,6 +629,7 @@ export const ArmadaDetail: React.FC = () => {
   // Review Form State
   const [orderIdInput, setOrderIdInput] = useState('');
   const [selectedRating, setSelectedRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -749,6 +750,7 @@ export const ArmadaDetail: React.FC = () => {
         setOrderIdInput('');
         setReviewText('');
         setSelectedRating(0);
+        setHoverRating(0);
         Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Terima kasih! Ulasan Anda telah diterima.' });
       } else {
         const msg = payload?.message || 'Gagal mengirim ulasan.';
@@ -1255,11 +1257,6 @@ export const ArmadaDetail: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-[35%_65%] gap-6 items-start">
           {/* Kolom kiri: info panel */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 relative overflow-hidden">
-            <div className="flex items-center gap-2 mb-2">
-              <MessageCircle className="h-6 w-6 text-blue-600" />
-              <h3 className="text-2xl font-bold text-gray-900">Pendapat Anda, pengalaman mereka.</h3>
-            </div>
-            <div className="border-t border-blue-200 mt-2 mb-4" />
             <p className="mb-4 text-gray-700">
               Ulasan Anda membantu kami meningkatkan kualitas layanan dan memberikan pengalaman terbaik bagi setiap pelanggan.
             </p>
@@ -1318,18 +1315,28 @@ export const ArmadaDetail: React.FC = () => {
               {/* Star rating */}
               <div className="flex items-center px-0 py-0">
                 <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setSelectedRating(r)}
-                      className="p-0.5 focus:outline-none"
-                    >
-                      <Star
-                        className={`h-7 w-7 ${r <= selectedRating ? 'text-orange-500 fill-orange-500 hover:text-orange-500 hover:fill-orange-500' : 'text-orange-400 hover:fill-orange-400'}`}
-                      />
-                    </button>
-                  ))}
+                  {[1, 2, 3, 4, 5].map((r) => {
+                    const activeRating = hoverRating > 0 ? hoverRating : selectedRating;
+                    const isActive = r <= activeRating;
+                    return (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setSelectedRating(r)}
+                        onMouseEnter={() => setHoverRating(r)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="p-0.5 focus:outline-none"
+                      >
+                        <Star
+                          className={`h-8 w-8 transition-colors ${
+                            isActive
+                              ? 'text-orange-500 fill-orange-500'
+                              : 'text-gray-300 fill-transparent'
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -1345,7 +1352,7 @@ export const ArmadaDetail: React.FC = () => {
                 onChange={(e) => setReviewText(e.target.value)}
                 rows={3}
                 placeholder="Bagikan pengalaman Anda..."
-                className="w-full resize-none border-0 p-0 text-sm text-gray-900 bg-transparent focus:outline-none placeholder:text-gray-400"
+                className="w-full resize-none border-0 p-4 text-sm text-gray-900 bg-transparent focus:outline-none placeholder:text-gray-400"
               />
             </div>
 
