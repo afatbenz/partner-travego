@@ -278,7 +278,7 @@ const GoogleReviewsFeed: React.FC<Props> = ({ embedId = '25708983', className })
                       if (!photos.length) return null;
                       return (
                         <div className="mb-2 flex flex-wrap gap-2">
-                          {photos.slice(0, 4).map((src, i) => (
+                          {Array.from(new Set(photos.filter(Boolean))).slice(0, 4).map((src, i) => (
                             <img key={i} src={src} alt={`foto review ${i + 1}`} className="h-20 w-20 rounded-xl object-cover border border-slate-100 dark:border-slate-700" />
                           ))}
                         </div>
