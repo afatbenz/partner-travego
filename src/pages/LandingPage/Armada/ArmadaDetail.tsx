@@ -1017,7 +1017,7 @@ export const ArmadaDetail: React.FC = () => {
             </div>
 
             <div className="max-w-3xl mx-auto md:mx-0">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+              <h1 className="text-2xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 {fleet.meta.fleet_name}
               </h1>
 
@@ -1416,7 +1416,7 @@ export const ArmadaDetail: React.FC = () => {
       </div>
 
       {/* Daftar ulasan pelanggan — full-width section di bawah grid */}
-      <div className="max-w-7xl mx-auto mt-8 mb-5">
+      <div className="max-w-7xl mx-auto mt-8 mb-5 px-5 md:px-0">
         {allReviews.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
