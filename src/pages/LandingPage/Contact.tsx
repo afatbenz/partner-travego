@@ -30,32 +30,52 @@ const inputClass =
 
 const labelClass = 'text-sm font-medium text-[#0F172A] dark:text-gray-200';
 
+// Animasi ringkas: daftar layanan tampil bergantian (fade in/out) alih-alih
+// list statis — mengurangi tinggi ilustrasi agar muat di hero maksimal 30vh.
+const CONTACT_ROTATE_CSS = `
+@keyframes contact-rotate {
+  0%, 28% { opacity: 1; transform: translateY(0); }
+  33%, 95% { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 0; transform: translateY(6px); }
+}
+.contact-rotate-item { animation: contact-rotate 9s infinite; opacity: 0; }
+.contact-rotate-item:nth-child(1) { animation-delay: 0s; }
+.contact-rotate-item:nth-child(2) { animation-delay: 3s; }
+.contact-rotate-item:nth-child(3) { animation-delay: 6s; }
+@media (prefers-reduced-motion: reduce) {
+  .contact-rotate-item { animation: none; opacity: 1; transform: none; }
+  .contact-rotate-item:not(:first-child) { display: none; }
+}
+`;
+
 function SupportIllustration() {
   return (
     <div className="relative animate-float">
+      <style>{CONTACT_ROTATE_CSS}</style>
       <div className="absolute -inset-8 bg-[#295BFF]/25 rounded-full blur-[60px]" />
-      <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl w-[280px] md:w-[340px]">
-        <div className="flex items-center justify-between mb-5">
+      <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 shadow-2xl w-[280px] md:w-[340px]">
+        <div className="flex items-center justify-between mb-4">
           <span className="text-white/70 text-xs font-medium">Customer Support</span>
           <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-400/30">
             Online
           </span>
         </div>
-        <div className="bg-white/95 rounded-2xl p-5 shadow-lg space-y-4">
+        <div className="bg-white/95 rounded-2xl p-4 shadow-lg space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#295BFF] to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <Headset className="h-6 w-6 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-[#295BFF] to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <Headset className="h-5 w-5 text-white" />
             </div>
             <div>
               <p className="text-[10px] text-[#6B7280] uppercase tracking-wide">Tim Support</p>
               <p className="text-sm font-bold text-[#0F172A]">Calista Prima Wisata</p>
             </div>
           </div>
-          <div className="space-y-2">
-            {['Konsultasi perjalanan', 'Booking armada', 'Paket wisata'].map((item) => (
+          {/* Layanan tampil bergantian — satu baris, hemat tinggi */}
+          <div className="relative h-9">
+            {['Konsultasi Perjalanan', 'Booking Armada', 'Paket Wisata'].map((item) => (
               <div
                 key={item}
-                className="flex items-center gap-2 px-3 py-2 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB]/60"
+                className="contact-rotate-item absolute inset-0 flex items-center gap-2 px-3 py-2 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB]/60"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-[#295BFF]" />
                 <span className="text-xs text-[#374151]">{item}</span>
@@ -220,8 +240,8 @@ export const Contact: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-gray-900 overflow-x-hidden">
-      {/* Hero */}
-      <section className="relative w-full min-h-[280px] md:min-h-[360px] overflow-hidden bg-gradient-to-br from-[#0F172A] via-[#1e3a5f] to-[#295BFF]">
+      {/* Hero — maksimum 45vh (+15vh dari sebelumnya 30vh) */}
+      <section className="relative w-full max-h-[45vh] overflow-hidden bg-gradient-to-br from-[#0F172A] via-[#1e3a5f] to-[#295BFF]">
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
@@ -232,21 +252,20 @@ export const Contact: React.FC = () => {
         />
         <div className="absolute top-0 -left-20 w-72 h-72 bg-[#295BFF]/30 rounded-full blur-[100px] animate-pulse" />
         <div className="absolute bottom-10 right-10 w-56 h-56 bg-indigo-400/20 rounded-full blur-[80px]" />
-        <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-blue-300/10 rounded-full blur-[60px]" />
 
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-28 md:pb-36">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-8 items-center max-w-7xl mx-auto">
-            <div className="space-y-5 animate-in fade-in slide-in-from-left duration-700">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full">
-                <Headset className="h-4 w-4 text-[#93B4FF]" />
-                <span className="text-white/90 text-sm font-medium">Kami Siap Membantu</span>
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 md:pb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center max-w-7xl mx-auto">
+            <div className="space-y-3 animate-in fade-in slide-in-from-left duration-700">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full">
+                <Headset className="h-3.5 w-3.5 text-[#93B4FF]" />
+                <span className="text-white/90 text-xs font-medium">Kami Siap Membantu</span>
               </div>
 
-              <div className="space-y-3">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+              <div className="space-y-2">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">
                   Hubungi Kami
                 </h1>
-                <p className="text-white/70 text-base md:text-lg max-w-lg leading-relaxed">
+                <p className="text-white/70 text-sm md:text-base max-w-lg leading-relaxed">
                   Kami siap membantu perencanaan perjalanan, booking armada, dan konsultasi
                   kebutuhan wisata Anda.
                 </p>
@@ -256,10 +275,10 @@ export const Contact: React.FC = () => {
                 {heroPills.map((text) => (
                   <div
                     key={text}
-                    className="flex items-center gap-2 px-3 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl transition-all duration-300 hover:bg-white/10"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl transition-all duration-300 hover:bg-white/10"
                   >
                     <Check className="h-3.5 w-3.5 text-[#93B4FF]" />
-                    <span className="text-white/85 text-xs md:text-sm">{text}</span>
+                    <span className="text-white/85 text-xs">{text}</span>
                   </div>
                 ))}
               </div>

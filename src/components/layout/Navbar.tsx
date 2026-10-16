@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bus, Home, Car, MapPin as LocIcon, Phone, User, ShoppingBag } from 'lucide-react';
+import { Menu, X, Bus, Home, Car, MapPin as LocIcon, Phone, User, ShoppingBag, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useGeneralContent } from '@/contexts/GeneralContentContext';
@@ -34,6 +34,7 @@ export const Navbar: React.FC = () => {
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Armada', href: '/armada', icon: Car },
+    { name: 'Promo', href: '/promo-discount', icon: Gift },
     { name: 'Lacak Pesanan', href: '/find-order', icon: LocIcon },
     { name: 'Kontak', href: '/contact', icon: Phone },
   ];

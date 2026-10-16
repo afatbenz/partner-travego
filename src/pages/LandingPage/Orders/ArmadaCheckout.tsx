@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useCheckout } from '@/contexts/CheckoutContext';
 import { useToast } from '@/hooks/use-toast';
-import { 
+import {
   ArrowLeft, Calendar, Car, Plus, Minus, X, Check, ChevronsUpDown,
-  Info, ShieldCheck, MessageCircle, ThumbsUp, ArrowRight, ChevronDown, ChevronUp
+  Info, ShieldCheck, MessageCircle, ThumbsUp, ArrowRight, ChevronDown, ChevronUp, Ticket, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getApplicablePromotions, type ApplicablePromotionItem } from '@/lib/promo';
 import {
   Command,
   CommandEmpty,
@@ -266,6 +267,12 @@ export const ArmadaCheckout: React.FC = () => {
   const [expandedDays, setExpandedDays] = useState<number[]>([1]);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
 
+  // Promo code (redeem total tagihan)
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<ApplicablePromotionItem | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [checkingPromo, setCheckingPromo] = useState(false);
+
   // Calculate default dates
   let defaultReturnDate = endDate || '';
   if (!defaultReturnDate && startDate && pricing) {
@@ -499,6 +506,111 @@ export const ArmadaCheckout: React.FC = () => {
     });
   };
 
+  // Subtotal saat ini (sama dengan rumus backend: qty * (harga + addon)).
+  const currentSubtotal = () =>
+    ((fleetSummary?.price || 0) + selectedAddons.reduce((sum, a) => sum + a.addon_price, 0)) * formData.armadaCount;
+
+  // Kumpulkan kota tujuan untuk validasi promo — tiru backend: rent_type 1/3
+  // memaksa tujuan = kota penjemputan; selain itu pakai kota itinerary (fallback penjemputan).
+  const getDestinationCityIds = (): string[] => {
+    const rentType = fleetSummary?.rent_type;
+    if (rentType === 1 || rentType === 3) {
+      return formData.pickupCity ? [String(formData.pickupCity)] : [];
+    }
+    const seen = new Set<string>();
+    const ids: string[] = [];
+    formData.itinerary.forEach((day) =>
+      day.events.forEach((event) => {
+        const cid = String(event.city_id ?? '').trim();
+        if (cid && !seen.has(cid)) {
+          seen.add(cid);
+          ids.push(cid);
+        }
+      })
+    );
+    if (ids.length === 0 && formData.pickupCity) {
+      ids.push(String(formData.pickupCity));
+    }
+    return ids;
+  };
+
+  const handleVerifyPromo = async () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) {
+      setAppliedPromo(null);
+      setPromoError(null);
+      return;
+    }
+    if (!fleetSummary || !id) return;
+
+    setCheckingPromo(true);
+    setPromoError(null);
+    try {
+      const items = await getApplicablePromotions({
+        fleet_id: id,
+        rent_type: fleetSummary.rent_type,
+        subtotal: currentSubtotal(),
+        destination_city_ids: getDestinationCityIds(),
+      });
+      const match = items.find((item) => (item.voucher_code || '').trim().toUpperCase() === code);
+      if (match) {
+        setAppliedPromo(match);
+        setPromoError(null);
+        toast({
+          title: 'Kode promo diterapkan',
+          description: `${match.title} — potongan ${match.discount_label}.`,
+        });
+      } else {
+        setAppliedPromo(null);
+        setPromoError('Kode promo tidak berlaku untuk pesanan ini.');
+      }
+    } catch (err) {
+      console.error('Failed to verify promo', err);
+      setAppliedPromo(null);
+      setPromoError('Gagal memverifikasi kode promo. Silakan coba lagi.');
+    } finally {
+      setCheckingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
+    setPromoError(null);
+  };
+
+  // Saat subtotal berubah (qty/addon) dan ada promo terpasang, hitung ulang agar
+  // estimasi diskon tetap akurat; bila promo tak lagi layak, lepas.
+  useEffect(() => {
+    if (!appliedPromo || !fleetSummary || !id) return;
+    let cancelled = false;
+    const revalidate = async () => {
+      try {
+        const items = await getApplicablePromotions({
+          fleet_id: id,
+          rent_type: fleetSummary.rent_type,
+          subtotal: currentSubtotal(),
+          destination_city_ids: getDestinationCityIds(),
+        });
+        if (cancelled) return;
+        const code = (appliedPromo.voucher_code || '').trim().toUpperCase();
+        const match = items.find((item) => (item.voucher_code || '').trim().toUpperCase() === code);
+        setAppliedPromo(match || null);
+        if (!match) {
+          setPromoError('Kode promo tidak lagi berlaku untuk pesanan ini.');
+        }
+      } catch (err) {
+        if (!cancelled) console.error('Failed to revalidate promo', err);
+      }
+    };
+    const timeoutId = setTimeout(revalidate, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAddons, formData.armadaCount, formData.pickupCity, formData.itinerary]);
+
   useEffect(() => {
     const fetchCustomerAvailability = async () => {
       if (formData.email && formData.phone) {
@@ -622,7 +734,8 @@ export const ArmadaCheckout: React.FC = () => {
         ),
         qty: formData.armadaCount,
         notes: formData.notes,
-        addons: selectedAddons.map(a => a.addon_id || a.uuid)
+        addons: selectedAddons.map(a => a.addon_id || a.uuid),
+        promotion_code: appliedPromo?.voucher_code || undefined
       };
 
       const response = await http.post<any>('/api/order/fleet/create', payload);
@@ -682,6 +795,8 @@ export const ArmadaCheckout: React.FC = () => {
   const basePrice = fleetSummary.price;
   const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.addon_price, 0);
   const totalPrice = (basePrice + addonsTotal) * formData.armadaCount;
+  const promoDiscount = appliedPromo ? appliedPromo.estimated_discount : 0;
+  const finalTotal = appliedPromo ? appliedPromo.estimated_total : totalPrice;
   const data = fleetSummary;
 
   // Validation: enable submit only when all required fields are filled
@@ -1044,6 +1159,56 @@ export const ArmadaCheckout: React.FC = () => {
                 </div>
               </SectionCard>
 
+              {/* 7. Kode Promo */}
+              <SectionCard title="Kode Promo" step={7}>
+                <div>
+                  <label className="block text-sm font-medium text-[#0F172A] mb-2">Punya kode promo?</label>
+                  {appliedPromo ? (
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-emerald-200 bg-emerald-50">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Ticket className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-mono font-bold text-sm text-emerald-800 truncate">{appliedPromo.voucher_code}</p>
+                          <p className="text-xs text-emerald-700 truncate">Potongan {appliedPromo.discount_label}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemovePromo}
+                        className="text-xs font-semibold text-red-600 hover:text-red-700 shrink-0"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-stretch gap-2">
+                      <Input
+                        name="promoCode"
+                        value={promoCode}
+                        onChange={(e) => {
+                          setPromoCode(e.target.value);
+                          if (promoError) setPromoError(null);
+                        }}
+                        placeholder="Masukkan kode promo"
+                        className="rounded-xl border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] font-mono uppercase"
+                        autoComplete="off"
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleVerifyPromo}
+                        disabled={checkingPromo || !promoCode.trim()}
+                        className="shrink-0 bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-xl px-5"
+                      >
+                        {checkingPromo ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verifikasi'}
+                      </Button>
+                    </div>
+                  )}
+                  {promoError && (
+                    <p className="text-xs text-red-600 mt-2">{promoError}</p>
+                  )}
+                </div>
+              </SectionCard>
+
             </form>
           </div>
 
@@ -1117,7 +1282,17 @@ export const ArmadaCheckout: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  
+
+                  {/* Diskon Promo */}
+                  {appliedPromo && promoDiscount > 0 && (
+                    <div className="flex justify-between text-sm pt-2">
+                      <span className="text-[#64748B] inline-flex items-center">
+                        <Ticket className="w-3.5 h-3.5 mr-1.5 text-emerald-600" /> Diskon ({appliedPromo.voucher_code})
+                      </span>
+                      <span className="font-semibold text-emerald-600">- Rp {promoDiscount.toLocaleString('id-ID')}</span>
+                    </div>
+                  )}
+
                   {/* Total */}
                   <div className="mt-4 pt-4 border-t border-[#E2E8F0] flex justify-between items-center">
                     <div>
@@ -1125,7 +1300,7 @@ export const ArmadaCheckout: React.FC = () => {
                       <span className="text-xs text-[#64748B]">Termasuk pajak</span>
                     </div>
                     <span className="text-xl font-semibold text-[#4F46E5]">
-                      Rp {totalPrice.toLocaleString('id-ID')}
+                      Rp {finalTotal.toLocaleString('id-ID')}
                     </span>
                   </div>
 
@@ -1184,7 +1359,7 @@ export const ArmadaCheckout: React.FC = () => {
           <div className="text-left">
             <div className="text-[10px] font-semibold uppercase tracking-widest text-indigo-200">Total Pembayaran</div>
             <div className="text-xl font-bold leading-tight">
-              Rp {totalPrice.toLocaleString('id-ID')}
+              Rp {finalTotal.toLocaleString('id-ID')}
             </div>
           </div>
           <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-4 py-2.5 text-sm font-semibold">
@@ -1282,6 +1457,16 @@ export const ArmadaCheckout: React.FC = () => {
               )}
             </div>
 
+            {/* Diskon Promo */}
+            {appliedPromo && promoDiscount > 0 && (
+              <div className="flex justify-between text-sm pt-2">
+                <span className="text-[#64748B] inline-flex items-center">
+                  <Ticket className="w-3.5 h-3.5 mr-1.5 text-emerald-600" /> Diskon ({appliedPromo.voucher_code})
+                </span>
+                <span className="font-semibold text-emerald-600">- Rp {promoDiscount.toLocaleString('id-ID')}</span>
+              </div>
+            )}
+
             {/* Total */}
             <div className="pt-3 border-t border-[#E2E8F0] flex justify-between items-center">
               <div>
@@ -1289,7 +1474,7 @@ export const ArmadaCheckout: React.FC = () => {
                 <span className="text-xs text-[#64748B]">Termasuk pajak</span>
               </div>
               <span className="text-xl font-semibold text-[#4F46E5]">
-                Rp {totalPrice.toLocaleString('id-ID')}
+                Rp {finalTotal.toLocaleString('id-ID')}
               </span>
             </div>
 

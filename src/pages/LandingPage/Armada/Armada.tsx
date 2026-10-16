@@ -183,7 +183,7 @@ const Armada = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-black pb-20 lg:pb-0">
       {/* Header Section with Cinematic Background */}
-      <section className="relative min-h-[60vh] flex items-center pt-20 overflow-hidden">
+      <section className="relative min-h-[60vh] flex items-center pt-12 overflow-hidden">
         {/* Background Image with Overlay */}
         <div 
           className="absolute inset-0 z-0"

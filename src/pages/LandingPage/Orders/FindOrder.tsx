@@ -500,7 +500,7 @@ export default function FindOrder() {
           <div className="absolute bottom-10 right-10 w-56 h-56 bg-indigo-400/20 rounded-full blur-[80px]" />
           <div className="absolute top-1/2 right-1/3 w-40 h-40 bg-blue-300/10 rounded-full blur-[60px]" />
 
-          <div className="relative z-10 container mx-auto px-4 pt-24 pb-32 md:pb-40">
+          <div className="relative z-10 container mx-auto px-4 pt-20 pb-20 md:pb-24">
             <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-6">
               <div className="w-full lg:w-1/2 space-y-5 animate-in fade-in slide-in-from-left duration-700">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full">

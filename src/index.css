@@ -85,3 +85,32 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Konten HTML syarat & ketentuan promo (dirender via dangerouslySetInnerHTML).
+   Mendukung <div>, <p>, <ol>, <ul>, <li> dari editor rich-text. */
+.promo-terms div {
+  margin: 0 0 0.5rem;
+}
+.promo-terms div:last-child {
+  margin-bottom: 0;
+}
+.promo-terms p {
+  margin: 0 0 0.5rem;
+}
+.promo-terms ol {
+  margin: 0.25rem 0 0.75rem;
+  padding-left: 1.5rem;
+  list-style: decimal;
+}
+.promo-terms ul {
+  margin: 0.25rem 0 0.75rem;
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+.promo-terms li {
+  margin: 0.15rem 0;
+}
+.promo-terms a {
+  color: #4f46e5;
+  text-decoration: underline;
+}

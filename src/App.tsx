@@ -43,6 +43,7 @@ import { Welcome } from '@/pages/LandingPage/Utilities/Welcome';
 import FindOrder from '@/pages/LandingPage/Orders/FindOrder';
 import { EditProfile } from '@/pages/LandingPage/Profile/EditProfile';
 import { PromoDiscount } from '@/pages/LandingPage/Utilities/PromoDiscount';
+import { PromoDetail } from '@/pages/LandingPage/Utilities/PromoDetail';
 import { Referral } from '@/pages/LandingPage/Utilities/Referral';
 import { Reviews } from '@/pages/LandingPage/Utilities/Reviews';
 import { CustomOrder } from '@/pages/LandingPage/Utilities/CustomOrder';
@@ -206,6 +207,11 @@ function App() {
           <Route path="/promo-discount" element={
             <PublicLayout>
               <PromoDiscount />
+            </PublicLayout>
+          } />
+          <Route path="/promo-discount/:promotion_id" element={
+            <PublicLayout>
+              <PromoDetail />
             </PublicLayout>
           } />
           <Route path="/referral" element={
