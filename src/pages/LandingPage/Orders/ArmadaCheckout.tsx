@@ -266,6 +266,9 @@ export const ArmadaCheckout: React.FC = () => {
   const [totalAvailable, setTotalAvailable] = useState<number>(0);
   const [expandedDays, setExpandedDays] = useState<number[]>([1]);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
+  // Wizard: langkah aktif (0-based) sesuai stepper — hanya langkah aktif yang dirender.
+  const [currentStep, setCurrentStep] = useState(0);
+  const [stepTouched, setStepTouched] = useState(false);
 
   // Promo code (redeem total tagihan)
   const [promoCode, setPromoCode] = useState('');
@@ -645,7 +648,7 @@ export const ArmadaCheckout: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'phone') {
       let phoneVal = value.replace(/\D/g, ''); // hanya angka
       if (phoneVal.startsWith('0')) {
@@ -722,7 +725,7 @@ export const ArmadaCheckout: React.FC = () => {
         city_id: formData.city_id,
         order_type: 1,
         start_date: `${formData.pickupDate} ${formData.pickupTime}`,
-        end_date: `${formData.returnDate} ${formData.pickupTime}`,
+        end_date: `${formData.returnDate} ${formData.returnTime}`,
         pickup_city_id: formData.pickupCity,
         pickup_location: formData.pickupLocation,
         destinations: formData.itinerary.flatMap(day => 
@@ -815,7 +818,39 @@ export const ArmadaCheckout: React.FC = () => {
   const pickupPriorityCities = data.pickup_points?.map(p => ({ id: String(p.city_id), name: p.city_name })) || [];
   const isPickupOutsideCoverage = !!formData.pickupCity && !pickupPriorityCities.some((city) => city.id === String(formData.pickupCity));
 
-  const steps = ['Detail Pemesan', 'Rencana Perjalanan', 'Detail Armada', 'Konfirmasi'];
+  // Validasi per langkah wizard — dipakai untuk mengaktifkan tombol Lanjut.
+  const isTimeValid = (t: string) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(t);
+  const isStepValid = (step: number): boolean => {
+    switch (step) {
+      case 0: // Detail Pemesanan: jadwal + kontak
+        return !!(
+          formData.pickupDate &&
+          isTimeValid(formData.pickupTime) &&
+          formData.returnDate &&
+          isTimeValid(formData.returnTime) &&
+          formData.fullName.trim() &&
+          formData.email.trim() &&
+          formData.phone.trim() &&
+          formData.address.trim() &&
+          formData.city_id
+        );
+      case 1: // Rencana Perjalanan: lokasi penjemputan + itinerary
+        return !!(
+          formData.pickupCity &&
+          formData.pickupLocation.trim() &&
+          formData.itinerary.length > 0 &&
+          formData.itinerary.every((d) =>
+            d.events.every((e) => e.location.trim() && String(e.city_id ?? '').trim())
+          )
+        );
+      case 2: // Detail Armada
+        return formData.armadaCount > 0;
+      default: // Konfirmasi
+        return isFormValid;
+    }
+  };
+
+  const steps = ['Detail Pemesanan', 'Rencana Perjalanan', 'Detail Armada', 'Konfirmasi'];
 
   return (
     <div className="min-h-screen dark:bg-gray-900 pb-20">
@@ -843,22 +878,34 @@ export const ArmadaCheckout: React.FC = () => {
           <div className="flex items-center min-w-max">
             {steps.map((step, idx) => (
               <React.Fragment key={idx}>
-                <div className="flex items-center group">
+                <button
+                  type="button"
+                  onClick={() => idx < currentStep && setCurrentStep(idx)}
+                  disabled={idx > currentStep}
+                  className={cn(
+                    "flex items-center group text-left",
+                    idx < currentStep ? "cursor-pointer" : idx === currentStep ? "cursor-default" : "cursor-default"
+                  )}
+                >
                   <div className={cn(
                     "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-colors",
-                    idx === 0 ? "bg-[#4F46E5] text-white shadow-md shadow-[#4F46E5]/20" : "bg-white text-[#64748B] border border-[#E2E8F0]"
+                    idx === currentStep
+                      ? "bg-[#4F46E5] text-white shadow-md shadow-[#4F46E5]/20"
+                      : idx < currentStep
+                        ? "bg-[#4F46E5]/10 text-[#4F46E5] border border-[#4F46E5]/30"
+                        : "bg-white text-[#64748B] border border-[#E2E8F0]"
                   )}>
                     {idx + 1}
                   </div>
                   <span className={cn(
                     "ml-3 text-sm font-medium transition-colors",
-                    idx === 0 ? "text-[#4F46E5]" : "text-[#64748B]"
+                    idx === currentStep ? "text-[#4F46E5]" : idx < currentStep ? "text-[#4F46E5]/80" : "text-[#64748B]"
                   )}>
                     {step}
                   </span>
-                </div>
+                </button>
                 {idx < steps.length - 1 && (
-                  <div className="w-8 md:w-16 h-px bg-[#E2E8F0] mx-4"></div>
+                  <div className={cn("w-8 md:w-16 h-px mx-4", idx < currentStep ? "bg-[#4F46E5]/40" : "bg-[#E2E8F0]")}></div>
                 )}
               </React.Fragment>
             ))}
@@ -898,9 +945,87 @@ export const ArmadaCheckout: React.FC = () => {
             </motion.div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* 1. Nama dan Kontak */}
-              <SectionCard title="Nama dan Kontak Pemesan" step={1}>
+
+              {/* STEP 0 — Detail Pemesanan: Jadwal (tanggal+jam) + Kontak Pemesan */}
+              {currentStep === 0 && (
+              <>
+              {/* 1. Jadwal Penjemputan & Kembali */}
+              <SectionCard title="Jadwal Penjemputan & Jadwal Kembali" step={1}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                    <div className="flex items-center text-sm font-bold text-[#4F46E5] mb-2"><Calendar className="w-4 h-4 mr-2"/> Penjemputan</div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-[#64748B]">Tanggal (Otomatis)</label>
+                      <Input
+                        type="date"
+                        name="pickupDate"
+                        value={formData.pickupDate}
+                        onChange={handleInputChange}
+                        className="bg-white text-[#64748B] border-[#E2E8F0] cursor-not-allowed rounded-xl [color-scheme:light] dark:[color-scheme:dark]"
+                        readOnly
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-[#0F172A]">Jam Penjemputan *</label>
+                      <Input
+                        type="time"
+                        name="pickupTime"
+                        value={formData.pickupTime}
+                        onChange={handleInputChange}
+                        className="rounded-xl bg-white border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all [color-scheme:light] dark:[color-scheme:dark]"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                    <div className="flex items-center text-sm font-bold text-[#4F46E5] mb-2"><Calendar className="w-4 h-4 mr-2"/> Kembali</div>
+                    <div className="space-y-1.5">
+                      <label className={cn("text-xs font-medium", endDate ? "text-[#64748B]" : "text-[#0F172A]")}>
+                        Tanggal {endDate ? '(Otomatis)' : '*'}
+                      </label>
+                      {endDate ? (
+                        <Input
+                          type="date"
+                          name="returnDate"
+                          value={formData.returnDate}
+                          onChange={handleInputChange}
+                          className="bg-white text-[#64748B] border-[#E2E8F0] cursor-not-allowed rounded-xl [color-scheme:light] dark:[color-scheme:dark]"
+                          readOnly
+                        />
+                      ) : (
+                        <Input
+                          type="date"
+                          name="returnDate"
+                          value={formData.returnDate}
+                          onChange={handleInputChange}
+                          min={formData.pickupDate}
+                          className="rounded-xl bg-white border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all [color-scheme:light] dark:[color-scheme:dark]"
+                          required
+                        />
+                      )}
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-[#0F172A]">Jam Kembali *</label>
+                      <Input
+                        type="time"
+                        name="returnTime"
+                        value={formData.returnTime}
+                        onChange={handleInputChange}
+                        className="rounded-xl bg-white border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all [color-scheme:light] dark:[color-scheme:dark]"
+                        required={!endDate || fleetSummary?.duration > 1}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-start text-xs text-[#64748B] bg-blue-50 p-3 rounded-lg border border-blue-100">
+                  <Info className="w-4 h-4 mr-2 flex-shrink-0 text-blue-500 mt-0.5" />
+                  <p>Jam kembali maksimal adalah waktu yang sama dengan jam penjemputan di hari terakhir masa sewa. Keterlambatan dapat dikenakan biaya tambahan.</p>
+                </div>
+              </SectionCard>
+
+              {/* 2. Nama dan Kontak */}
+              <SectionCard title="Nama dan Kontak Pemesan" step={2}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-[#0F172A]">Nama Lengkap *</label>
@@ -928,9 +1053,14 @@ export const ArmadaCheckout: React.FC = () => {
                   </div>
                 </div>
               </SectionCard>
+              </>
+              )}
 
-              {/* 2. Lokasi Penjemputan */}
-              <SectionCard title="Lokasi Penjemputan" step={2}>
+              {/* STEP 1 — Rencana Perjalanan: Lokasi Penjemputan + Rencana Perjalanan */}
+              {currentStep === 1 && (
+              <>
+              {/* 3. Lokasi Penjemputan */}
+              <SectionCard title="Lokasi Penjemputan" step={1}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-[#0F172A]">Kota Penjemputan *</label>
@@ -951,72 +1081,11 @@ export const ArmadaCheckout: React.FC = () => {
                     <label className="text-sm font-medium text-[#0F172A]">Detail Lokasi *</label>
                     <Input name="pickupLocation" value={formData.pickupLocation} onChange={handleInputChange} placeholder="Contoh: Hotel Grand Indonesia, Bandara Soekarno Hatta" required className="rounded-xl border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all" />
                   </div>
-                  <div className="space-y-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <div className="flex items-center text-sm font-bold text-[#4F46E5] mb-2"><Calendar className="w-4 h-4 mr-2"/> Penjemputan</div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-[#64748B]">Tanggal (Otomatis)</label>
-                      <div className="relative">
-                        <Input 
-                          type="date" 
-                          name="pickupDate" 
-                          value={formData.pickupDate} 
-                          onChange={handleInputChange} 
-                          className="bg-white text-[#64748B] border-[#E2E8F0] cursor-not-allowed rounded-xl [color-scheme:light] dark:[color-scheme:dark]" 
-                          readOnly 
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-[#0F172A]">Jam Penjemputan *</label>
-                      <Input type="time" name="pickupTime" value={formData.pickupTime} onChange={handleInputChange} className="rounded-xl bg-white border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all [color-scheme:light] dark:[color-scheme:dark]" required />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <div className="flex items-center text-sm font-bold text-[#4F46E5] mb-2"><Calendar className="w-4 h-4 mr-2"/> Kembali</div>
-                    <div className="space-y-1.5">
-                      <label className={cn("text-xs font-medium", endDate ? "text-[#64748B]" : "text-[#0F172A]")}>
-                        Tanggal {endDate ? '(Otomatis)' : '*'}
-                      </label>
-                      {endDate ? (
-                        <div className="relative">
-                          <Input 
-                            type="date" 
-                            name="returnDate" 
-                            value={formData.returnDate} 
-                            onChange={handleInputChange} 
-                            className="bg-white text-[#64748B] border-[#E2E8F0] cursor-not-allowed rounded-xl [color-scheme:light] dark:[color-scheme:dark]" 
-                            readOnly 
-                          />
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <Input 
-                            type="date" 
-                            name="returnDate" 
-                            value={formData.returnDate} 
-                            onChange={handleInputChange} 
-                            min={formData.pickupDate}
-                            className="rounded-xl bg-white border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all cursor-text [color-scheme:light] dark:[color-scheme:dark]" 
-                            required 
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-[#0F172A]">Jam Kembali *</label>
-                      <Input type="time" name="returnTime" value={formData.returnTime} onChange={handleInputChange} className="rounded-xl bg-white border-[#E2E8F0] focus:border-[#4F46E5] focus:ring-[#4F46E5] transition-all [color-scheme:light] dark:[color-scheme:dark]" required={!endDate || fleetSummary?.duration > 1} />
-                    </div>
-                  </div>
-                </div>
-                 <div className="mt-4 flex items-start text-xs text-[#64748B] bg-blue-50 p-3 rounded-lg border border-blue-100">
-                  <Info className="w-4 h-4 mr-2 flex-shrink-0 text-blue-500 mt-0.5" />
-                  <p>Jam kembali maksimal adalah waktu yang sama dengan jam penjemputan di hari terakhir masa sewa. Keterlambatan dapat dikenakan biaya tambahan.</p>
                 </div>
               </SectionCard>
 
               {/* 4. Rencana Perjalanan */}
-              <SectionCard title="Rencana Perjalanan" step={4}>
+              <SectionCard title="Rencana Perjalanan" step={2}>
                 <div className="space-y-4">
                   {formData.itinerary.map((day, dayIndex) => {
                     const isExpanded = expandedDays.includes(day.day);
@@ -1076,9 +1145,13 @@ export const ArmadaCheckout: React.FC = () => {
                   })}
                 </div>
               </SectionCard>
+              </>
+              )}
 
-              {/* 5. Detail Armada & Addon */}
-              <SectionCard title="Detail Armada & Tambahan" step={5}>
+              {/* STEP 2 — Detail Armada & Tambahan */}
+              {currentStep === 2 && (
+              <>
+              <SectionCard title="Detail Armada & Tambahan" step={1}>
                 <div className="mb-8 p-6 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl flex flex-col items-center">
                   <label className="text-sm font-semibold text-[#0F172A] mb-4 flex items-center">
                     <Car className="w-5 h-5 mr-2 text-[#4F46E5]" />
@@ -1140,9 +1213,13 @@ export const ArmadaCheckout: React.FC = () => {
                   </div>
                 )}
               </SectionCard>
+              </>
+              )}
 
-              {/* 6. Catatan Pesanan */}
-              <SectionCard title="Catatan Pesanan" step={6}>
+              {/* STEP 3 — Konfirmasi: Catatan + Kode Promo */}
+              {currentStep === 3 && (
+              <>
+              <SectionCard title="Catatan Pesanan" step={1}>
                 <div>
                   <label className="block text-sm font-medium text-[#0F172A] mb-2">Pesan Tambahan (Opsional)</label>
                   <Textarea 
@@ -1160,7 +1237,7 @@ export const ArmadaCheckout: React.FC = () => {
               </SectionCard>
 
               {/* 7. Kode Promo */}
-              <SectionCard title="Kode Promo" step={7}>
+              <SectionCard title="Kode Promo" step={2}>
                 <div>
                   <label className="block text-sm font-medium text-[#0F172A] mb-2">Punya kode promo?</label>
                   {appliedPromo ? (
@@ -1208,6 +1285,48 @@ export const ArmadaCheckout: React.FC = () => {
                   )}
                 </div>
               </SectionCard>
+              </>
+              )}
+
+              {/* Wizard nav */}
+              <div className="flex items-center justify-between gap-3 pt-2">
+                {currentStep > 0 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => { setStepTouched(false); setCurrentStep((s) => Math.max(0, s - 1)); }}
+                    className="rounded-xl border-[#E2E8F0] text-[#0F172A] hover:bg-gray-50"
+                  >
+                    Kembali
+                  </Button>
+                ) : (
+                  <span />
+                )}
+
+                {currentStep < steps.length - 1 ? (
+                  <Button
+                    type="button"
+                    onClick={() => { setStepTouched(true); if (isStepValid(currentStep)) { setStepTouched(false); setCurrentStep((s) => Math.min(steps.length - 1, s + 1)); } }}
+                    disabled={!isStepValid(currentStep)}
+                    className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-xl px-6"
+                  >
+                    Lanjut <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !isAvailable || checkingAvailability || !isFormValid}
+                    className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-xl px-6"
+                  >
+                    {isSubmitting ? 'Memproses...' : 'Buat Pesanan'}
+                  </Button>
+                )}
+              </div>
+
+              {stepTouched && !isStepValid(currentStep) && (
+                <p className="text-xs text-amber-600 -mt-2">Lengkapi kolom wajib pada langkah ini untuk melanjutkan.</p>
+              )}
 
             </form>
           </div>
