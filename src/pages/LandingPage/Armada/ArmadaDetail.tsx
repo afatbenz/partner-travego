@@ -34,6 +34,7 @@ import { id as idLocale } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ImagePopup } from '@/components/common/ImagePopup';
+import { ShareButtons } from '@/components/common/ShareButtons';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
@@ -1170,6 +1171,11 @@ export const ArmadaDetail: React.FC = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Share media sosial — di bawah thumbnail / galeri */}
+                  <div className="mt-4 flex justify-center lg:justify-start">
+                    <ShareButtons title={fleet.meta.fleet_name} />
+                  </div>
 
                   <div className='mt-8 bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700 p-6 shadow-sm'>
                     <div className="flex items-center gap-3 mb-5">

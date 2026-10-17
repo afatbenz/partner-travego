@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { ShareButtons } from '@/components/common/ShareButtons';
 import { getPromotion, type PromotionListItem } from '@/lib/promo';
 
 const formatDate = (dateString: string) => {
@@ -197,6 +198,12 @@ export const PromoDetail: React.FC = () => {
                   <PeriodBadge status={promo.period_status} />
                 </div>
               </div>
+
+              {/* Share media sosial — di bawah thumbnail */}
+              <div className="px-6 py-3 bg-[#F8FAFC] border-y border-[#E2E8F0]">
+                <ShareButtons title={`Promo ${promo.title}`} />
+              </div>
+
               <CardContent className="p-6">
                 <h2 className="text-2xl font-bold text-[#0F172A] dark:text-white mb-2">{promo.title}</h2>
                 <p className="text-lg font-semibold text-[#4F46E5] mb-4">{promo.discount_label}</p>

@@ -1,6 +1,6 @@
 // Generate sitemap.xml + robots.txt ke dist/ setelah react-snap.
 // Jalankan TERAKHIR dalam pipeline build (react-snap rewrite dist/).
-// Fleet URLs diambil dari API service-travego (dinamis). Gagal fetch → fallback static, build tetap sukses.
+// Fleet & promo URLs diambil dari API service-travego (dinamis). Gagal fetch → fallback static, build tetap sukses.
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -61,6 +61,35 @@ async function fetchFleetIds() {
   return results;
 }
 
+// Promo publik tanpa paginasi; detail promo tetap bisa diakses untuk yang
+// ongoing/upcoming — yang expired tidak dimasukkan (konten sudah tidak relevan).
+async function fetchPromotionIds() {
+  const headers = {
+    'api-key': API_KEY,
+    'Origin': SITE_URL,
+    'Accept': 'application/json',
+  };
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE_URL}/api/promotions/public/list`, { headers });
+  } catch (err) {
+    throw new Error(`network error: ${err.message}`);
+  }
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  const json = await res.json();
+  const items = json?.data ?? [];
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .filter((p) => p?.promotion_id && p?.period_status !== 'expired')
+    .map((p) => p.promotion_id);
+}
+
 function buildSitemapXml(urls) {
   const today = new Date().toISOString().split('T')[0];
   const urlEntries = urls
@@ -93,6 +122,7 @@ function buildRobotsTxt() {
 
 async function main() {
   let fleetIds = [];
+  let promoIds = [];
 
   try {
     fleetIds = await fetchFleetIds();
@@ -101,7 +131,18 @@ async function main() {
     console.warn(`[sitemap] Gagal ambil fleet dari API (${err.message}). Fallback ke URL statis saja.`);
   }
 
-  const urls = [...STATIC_URLS, ...fleetIds.map((id) => `/detail/armada/${id}`)];
+  try {
+    promoIds = await fetchPromotionIds();
+    console.log(`[sitemap] promo URLs dari API: ${promoIds.length} promo`);
+  } catch (err) {
+    console.warn(`[sitemap] Gagal ambil promo dari API (${err.message}). Hanya URL statis promo yang dipakai.`);
+  }
+
+  const urls = [
+    ...STATIC_URLS,
+    ...fleetIds.map((id) => `/detail/armada/${id}`),
+    ...promoIds.map((id) => `/promo-discount/${id}`),
+  ];
 
   mkdirSync(distDir, { recursive: true });
   writeFileSync(path.join(distDir, 'sitemap.xml'), buildSitemapXml(urls), 'utf8');
