@@ -1,6 +1,15 @@
-// Generate sitemap.xml + robots.txt ke dist/ setelah react-snap.
+// Generate sitemap.xml + robots.txt + halaman prerender OG ke dist/ setelah react-snap.
 // Jalankan TERAKHIR dalam pipeline build (react-snap rewrite dist/).
-// Fleet & promo URLs diambil dari API service-travego (dinamis). Gagal fetch → fallback static, build tetap sukses.
+//
+// Fleet & promo URLs diambil dari API service-travego (dinamis). Gagal fetch →
+// fallback static, build tetap sukses.
+//
+// Prerender OG: crawler media sosial (FB/WA/Twitter) membaca og:tags dari HTML
+// mentah dan tidak menjalankan JavaScript, sehingga usePageMeta tidak pernah
+// terlihat dan yang tampil selalu meta default index.html. Untuk tiap detail
+// armada/promo ditulis dist/<path>/index.html = shell SPA (salinan dist/index.html)
+// dengan og:/twitter:/title/canonical diganti sesuai konten — nginx menyajikannya
+// lewat try_files, tanpa konfigurasi tambahan; manusia tetap dapat SPA normal.
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -22,7 +31,98 @@ const STATIC_URLS = (() => {
   return routes.filter((r) => !r.includes('/sewa-bis'));
 })();
 
-async function fetchFleetIds() {
+// Path relatif dari API (assets/…) → absolut, agar og:image bisa di-fetch crawler.
+// Pola sama dengan resolveMediaUrl di komponen PartnerUI.
+function resolveMediaUrl(p) {
+  if (!p) return '';
+  if (p.startsWith('http://') || p.startsWith('https://')) return p;
+  return `${API_BASE_URL}/${p.replace(/^\//, '')}`;
+}
+
+function stripHtml(html) {
+  return String(html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function truncate(text, max = 160) {
+  const chars = Array.from(text);
+  return chars.length > max ? `${chars.slice(0, max).join('')}…` : text;
+}
+
+function escAttr(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// Ganti content= pada <meta property="og:…" / name="…"> apa pun urutan atributnya.
+function setMetaContent(html, attr, key, value) {
+  const re = new RegExp(`<meta\\s+[^>]*${attr}="${key.replace(/[:]/g, '\\:')}"[^>]*>`);
+  const m = html.match(re);
+  if (!m) return { html, found: false };
+  let tag = m[0];
+  const esc = escAttr(value);
+  if (/content="[^"]*"/.test(tag)) {
+    tag = tag.replace(/content="[^"]*"/, `content="${esc}"`);
+  } else {
+    tag = tag.replace(/\/?>$/, ` content="${esc}" />`);
+  }
+  return { html: html.replace(re, tag), found: true };
+}
+
+// Build halaman OG: shell SPA + meta diganti sesuai konten halaman.
+// Isi #root dikosongkan: react-snap menyimpan DOM homepage di dist/index.html —
+// bila disalin utuh, pengunjung detail page melihat kedipan homepage sebelum
+// React mount (createRoot mengganti isi kontainer).
+function renderOgPage(template, { title, description, imageUrl, pagePath }) {
+  const url = `${SITE_URL}${pagePath}`;
+  let html = template;
+
+  html = html.replace(
+    /(<div id="root"[^>]*>)([\s\S]*)(<\/div>\s*<script)/,
+    '$1$3'
+  );
+
+  html = html.replace(/<title>[^<]*<\/title>/, `<title>${escAttr(title)}</title>`);
+  ({ html } = setMetaContent(html, 'name', 'description', description));
+  ({ html } = setMetaContent(html, 'property', 'og:title', title));
+  ({ html } = setMetaContent(html, 'property', 'og:description', description));
+  ({ html } = setMetaContent(html, 'property', 'og:url', url));
+  ({ html } = setMetaContent(html, 'property', 'og:image', imageUrl));
+  ({ html } = setMetaContent(html, 'name', 'twitter:card', 'summary_large_image'));
+  ({ html } = setMetaContent(html, 'name', 'twitter:title', title));
+
+  // twitter:image tidak ada di index.html default — sisipkan bila belum ada.
+  const twImage = html.match(/<meta\s+[^>]*name="twitter:image"[^>]*>/);
+  if (twImage) {
+    html = html.replace(twImage[0], twImage[0].replace(/content="[^"]*"/, `content="${escAttr(imageUrl)}"`));
+  } else {
+    html = html.replace(
+      /(<meta\s+[^>]*name="twitter:description"[^>]*>)/,
+      `$1\n    <meta name="twitter:image" content="${escAttr(imageUrl)}" />`
+    );
+  }
+
+  // Canonical mengikuti halaman, bukan homepage.
+  html = html.replace(
+    /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/,
+    `<link rel="canonical" href="${escAttr(url)}" />`
+  );
+
+  return html;
+}
+
+function writeOgPage(relPath, content) {
+  const outDir = path.join(distDir, relPath.replace(/^\//, ''));
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(path.join(outDir, 'index.html'), content, 'utf8');
+}
+
+async function fetchFleets() {
   const results = [];
   const headers = {
     'api-key': API_KEY,
@@ -50,7 +150,14 @@ async function fetchFleetIds() {
     if (!Array.isArray(items) || items.length === 0) break;
 
     for (const f of items) {
-      if (f?.fleet_id) results.push(f.fleet_id);
+      if (f?.fleet_id) {
+        results.push({
+          fleet_id: f.fleet_id,
+          fleet_name: f.fleet_name || '',
+          description: f.description || '',
+          thumbnail: f.thumbnail || '',
+        });
+      }
     }
 
     total = json?.pagination?.total ?? json?.total ?? items.length;
@@ -63,7 +170,7 @@ async function fetchFleetIds() {
 
 // Promo publik tanpa paginasi; detail promo tetap bisa diakses untuk yang
 // ongoing/upcoming — yang expired tidak dimasukkan (konten sudah tidak relevan).
-async function fetchPromotionIds() {
+async function fetchPromos() {
   const headers = {
     'api-key': API_KEY,
     'Origin': SITE_URL,
@@ -87,7 +194,12 @@ async function fetchPromotionIds() {
 
   return items
     .filter((p) => p?.promotion_id && p?.period_status !== 'expired')
-    .map((p) => p.promotion_id);
+    .map((p) => ({
+      promotion_id: p.promotion_id,
+      title: p.title || '',
+      summary: p.summary || '',
+      thumbnail_url: p.thumbnail_url || '',
+    }));
 }
 
 function buildSitemapXml(urls) {
@@ -121,27 +233,72 @@ function buildRobotsTxt() {
 }
 
 async function main() {
-  let fleetIds = [];
-  let promoIds = [];
+  let fleets = [];
+  let promos = [];
 
   try {
-    fleetIds = await fetchFleetIds();
-    console.log(`[sitemap] fleet URLs dari API: ${fleetIds.length} armada`);
+    fleets = await fetchFleets();
+    console.log(`[sitemap] fleet URLs dari API: ${fleets.length} armada`);
   } catch (err) {
     console.warn(`[sitemap] Gagal ambil fleet dari API (${err.message}). Fallback ke URL statis saja.`);
   }
 
   try {
-    promoIds = await fetchPromotionIds();
-    console.log(`[sitemap] promo URLs dari API: ${promoIds.length} promo`);
+    promos = await fetchPromos();
+    console.log(`[sitemap] promo URLs dari API: ${promos.length} promo`);
   } catch (err) {
     console.warn(`[sitemap] Gagal ambil promo dari API (${err.message}). Hanya URL statis promo yang dipakai.`);
   }
 
+  // --- Prerender OG pages (shell SPA + meta per konten) ---
+  let template = '';
+  try {
+    template = readFileSync(path.join(distDir, 'index.html'), 'utf8');
+  } catch (err) {
+    console.warn(`[sitemap] Tidak bisa baca dist/index.html (${err.message}), prerender OG dilewati.`);
+  }
+
+  if (template) {
+    const fallbackImage = `${SITE_URL}/favicon.svg`;
+    let written = 0;
+
+    for (const f of fleets) {
+      const title = `Calista Prima | Armada ${f.fleet_name}`.trim();
+      const description =
+        truncate(stripHtml(f.description)) ||
+        `Sewa ${f.fleet_name} di Calista Prima — melayani Tangerang & Jakarta.`;
+      const pagePath = `/detail/armada/${f.fleet_id}`;
+      writeOgPage(pagePath, renderOgPage(template, {
+        title,
+        description,
+        imageUrl: resolveMediaUrl(f.thumbnail) || fallbackImage,
+        pagePath,
+      }));
+      written += 1;
+    }
+
+    for (const p of promos) {
+      const title = `Calista Prima | Promo ${p.title}`.trim();
+      const description =
+        truncate(stripHtml(p.summary)) ||
+        'Promo spesial dari Calista Prima — kunjungi halaman promo untuk detail dan syarat berlaku.';
+      const pagePath = `/promo-discount/${p.promotion_id}`;
+      writeOgPage(pagePath, renderOgPage(template, {
+        title,
+        description,
+        imageUrl: resolveMediaUrl(p.thumbnail_url) || fallbackImage,
+        pagePath,
+      }));
+      written += 1;
+    }
+
+    console.log(`[sitemap] prerender OG: ${written} halaman detail (armada + promo)`);
+  }
+
   const urls = [
     ...STATIC_URLS,
-    ...fleetIds.map((id) => `/detail/armada/${id}`),
-    ...promoIds.map((id) => `/promo-discount/${id}`),
+    ...fleets.map((f) => `/detail/armada/${f.fleet_id}`),
+    ...promos.map((p) => `/promo-discount/${p.promotion_id}`),
   ];
 
   mkdirSync(distDir, { recursive: true });
