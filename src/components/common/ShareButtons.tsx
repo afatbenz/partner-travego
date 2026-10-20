@@ -36,7 +36,13 @@ export const ShareButtons: React.FC<ShareButtonsProps> = ({ title, url, classNam
   const { toast } = useToast();
   const shareUrl = url ?? (typeof window !== 'undefined' ? window.location.href : '');
   const encodedUrl = encodeURIComponent(shareUrl);
-  const encodedText = encodeURIComponent(`${title} ${shareUrl}`);
+  // Pesan WhatsApp multi-baris — lebih rapi & profesional daripada "judul url" mentah.
+  const waMessage = [
+    `Calista Prima | ${title}`,
+    'Sewa Elf, Hiace dan Bus Wilayah Kota Tangerang, Jakarta, dan Sekitarnya',
+    shareUrl,
+  ].join('\n');
+  const encodedText = encodeURIComponent(waMessage);
 
   const openShare = (href: string) => {
     window.open(href, '_blank', 'noopener,noreferrer');
