@@ -11,6 +11,9 @@ type ShareButtonsProps = {
   className?: string;
 };
 
+/** Nomor WhatsApp Calista Prima — samakan dengan yang tampil di footer / CTASection. */
+const COMPANY_WA_NUMBER = '6285289029944';
+
 /* Ikon brand media sosial — lucide-react tidak menyediakan logo brand,
    jadi pakai path SVG murni (viewBox 24, fill currentColor). */
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -41,6 +44,7 @@ export const ShareButtons: React.FC<ShareButtonsProps> = ({ title, url, classNam
     `Calista Prima | ${title}`,
     'Sewa Elf, Hiace dan Bus Wilayah Kota Tangerang, Jakarta, dan Sekitarnya',
     shareUrl,
+    `Hubungi kami: https://wa.me/${COMPANY_WA_NUMBER}`,
   ].join('\n');
   const encodedText = encodeURIComponent(waMessage);
 
