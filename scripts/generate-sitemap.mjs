@@ -11,12 +11,33 @@
 // dengan og:/twitter:/title/canonical diganti sesuai konten — nginx menyajikannya
 // lewat try_files, tanpa konfigurasi tambahan; manusia tetap dapat SPA normal.
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.join(__dirname, '..', 'dist');
+
+// Load .env root PartnerUI bila ada (Node < 20.6 / tanpa dotenv) — Vite memuat
+// .env untuk build frontend, tapi script Node ini berjalan proses terpisah dan
+// butuh VITE_API_BASE_URL + VITE_API_KEY untuk fetch fleet saat prerender OG.
+// Env nyata (Docker ARG / shell) tetap menang; duplikat key di .env: baris
+// terakhir menang (Dockerfile meng-append override di akhir file).
+function loadDotEnv() {
+  const envPath = path.join(__dirname, '..', '.env');
+  if (!existsSync(envPath)) return;
+  const fromShell = new Set(Object.keys(process.env));
+  const fromFile = {};
+  for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (!m) continue;
+    fromFile[m[1]] = m[2].replace(/^["']|["']$/g, '');
+  }
+  for (const [key, value] of Object.entries(fromFile)) {
+    if (!fromShell.has(key)) process.env[key] = value;
+  }
+}
+loadDotEnv();
 
 const SITE_URL = process.env.SITE_URL || 'https://calistaprima.com';
 const API_BASE_URL = (process.env.VITE_API_BASE_URL || 'http://localhost:3100/').replace(/\/+$/, '');
@@ -263,7 +284,7 @@ async function main() {
     let written = 0;
 
     for (const f of fleets) {
-      const title = `Calista Prima | Armada ${f.fleet_name}`.trim();
+      const title = `Calista Prima | Sewa ${f.fleet_name} wilayah Tangerang dan Jakarta`.trim();
       const description =
         truncate(stripHtml(f.description)) ||
         `Sewa ${f.fleet_name} di Calista Prima — melayani Tangerang & Jakarta.`;

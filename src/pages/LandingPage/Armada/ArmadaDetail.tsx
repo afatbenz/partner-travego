@@ -889,7 +889,7 @@ export const ArmadaDetail: React.FC = () => {
   // usePageMeta harus dipanggil unconditionally (rules of hooks) — sebelum early returns.
   // Saat fleet belum loaded (loading/error), fallback ke nilai kosong.
   usePageMeta({
-    title: fleet ? `Calista Prima | Armada ${fleet.meta.fleet_name}` : 'Armada | Calista Prima',
+    title: fleet ? `Calista Prima | Sewa ${fleet.meta.fleet_name} wilayah Tangerang dan Jakarta` : 'Armada | Calista Prima',
     description: fleet
       ? (sanitizeFleetDescription(fleet.meta.description) || fleet.meta.fleet_name || '').replace(/<[^>]*>/g, '').slice(0, 160)
       : 'Detail armada Calista Prima — sewa bus, Hiace, dan Elf di Tangerang & Jakarta.',

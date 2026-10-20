@@ -46,7 +46,18 @@ RUN npm ci
 # Pastikan Chrome binary benar-benar terpasang (di atas postinstall otomatis)
 RUN npx puppeteer browsers install chrome
 
+# Env untuk generate-sitemap.mjs (prerender OG armada/promo).
+# Nilai default = .env di dalam image; di-override via --build-arg saat deploy.
+# Hanya tulis ke .env bila ARG diisi — ENV kosong menimpa .env di Vite dan merusak client build.
+ARG VITE_API_BASE_URL
+ARG VITE_API_KEY
+ARG SITE_URL
+
 COPY . .
+
+RUN if [ -n "$VITE_API_BASE_URL" ]; then echo "VITE_API_BASE_URL=$VITE_API_BASE_URL" >> .env; fi \
+ && if [ -n "$VITE_API_KEY" ]; then echo "VITE_API_KEY=$VITE_API_KEY" >> .env; fi \
+ && if [ -n "$SITE_URL" ]; then echo "SITE_URL=$SITE_URL" >> .env; fi
 
 RUN npm run build
 
