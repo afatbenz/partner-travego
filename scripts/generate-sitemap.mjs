@@ -116,6 +116,7 @@ function renderOgPage(template, { title, description, imageUrl, pagePath }) {
   ({ html } = setMetaContent(html, 'property', 'og:image', imageUrl));
   ({ html } = setMetaContent(html, 'name', 'twitter:card', 'summary_large_image'));
   ({ html } = setMetaContent(html, 'name', 'twitter:title', title));
+  ({ html } = setMetaContent(html, 'name', 'twitter:description', description));
 
   // twitter:image tidak ada di index.html default — sisipkan bila belum ada.
   const twImage = html.match(/<meta\s+[^>]*name="twitter:image"[^>]*>/);
