@@ -86,7 +86,6 @@ export const Navbar: React.FC = () => {
                         : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <item.icon className="h-4 w-4" />
                   {item.name}
                 </Link>
               ))}
