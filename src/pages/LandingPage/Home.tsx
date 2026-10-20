@@ -180,7 +180,7 @@ export const Home: React.FC = () => {
                 </div>
                 <div className="h-10 w-px bg-white/20" />
                 <div className="flex flex-col">
-                  <span className="text-xl md:text-3xl font-bold text-white">40+</span>
+                  <span className="text-xl md:text-3xl font-bold text-white">400+</span>
                   <span className="text-blue-200 text-xs md:text-sm">Pelanggan pertahun</span>
                 </div>
                 <div className="h-10 w-px bg-white/20" />
