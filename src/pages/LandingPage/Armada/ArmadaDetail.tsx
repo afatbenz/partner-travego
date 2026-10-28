@@ -86,7 +86,7 @@ interface FleetAddon {
 }
 
 interface FleetPricing {
-  price_id: number;
+  price_id: string | number;
   duration: number;
   rent_type: number;
   rent_type_label: string;
@@ -94,6 +94,8 @@ interface FleetPricing {
   disc_amount: number;
   disc_price: number;
   uom: string;
+  disabled?: boolean;
+  source?: string;
 }
 
 interface FleetImage {
@@ -401,6 +403,8 @@ const PricingCard: React.FC<{
   serviceType: string;
   setServiceType: (s: string) => void;
   availableServiceTypes: string[];
+  isPreference: boolean;
+  minimalDay: number;
 }> = ({
   formattedPrice,
   priceUom,
@@ -425,6 +429,8 @@ const PricingCard: React.FC<{
   serviceType,
   setServiceType,
   availableServiceTypes,
+  isPreference,
+  minimalDay,
 }) => {
   const pricingList = availablePricing || [];
 
@@ -546,35 +552,46 @@ const PricingCard: React.FC<{
           </div>
         ) : (
           <div className="mb-6 space-y-3 transition-all duration-300">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-2 gap-2">
               <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Pilihan Varian Durasi:</h4>
               <Button variant="ghost" size="sm" onClick={onResetSearch} className="text-blue-600 hover:text-blue-700 h-auto p-0 hover:bg-transparent text-sm dark:text-blue-400 dark:hover:text-blue-300">
                 Ubah Pencarian
               </Button>
             </div>
+
+            {isPreference && minimalDay > 0 && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs rounded-xl border border-blue-100 dark:border-blue-900">
+                Kota tujuan ini memiliki minimal pemesanan {minimalDay} hari. Varian yang tidak sesuai durasi masa sewa dinonaktifkan.
+              </div>
+            )}
             
             {(showAllPricing ? pricingList : pricingList.slice(0, 5)).map((pkg, idx) => {
               const isSelected = selectedPricing === pkg;
+              const isDisabled = pkg.disabled === true;
               return (
                 <div
                   key={idx}
                   className={cn(
-                    "flex justify-between items-center text-sm p-3 rounded-2xl cursor-pointer border transition-all hover:scale-105",
-                    isSelected
-                      ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 ring-1 ring-blue-500'
-                      : 'bg-gray-50 dark:bg-gray-800 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700'
+                    "flex justify-between items-center text-sm p-3 rounded-2xl border transition-all",
+                    isDisabled
+                      ? 'bg-gray-100 dark:bg-gray-800/50 border-transparent opacity-60 cursor-not-allowed'
+                      : isSelected
+                        ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 ring-1 ring-blue-500 cursor-pointer hover:scale-105'
+                        : 'bg-gray-50 dark:bg-gray-800 border-transparent cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700'
                   )}
-                  onClick={() => setSelectedPricing(pkg)}
+                  onClick={() => !isDisabled && setSelectedPricing(pkg)}
                 >
                   <div>
-                    <span className={cn("font-medium", isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300')}>
+                    <span className={cn("font-medium", isDisabled ? 'text-gray-500 dark:text-gray-400' : isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300')}>
                       {pkg.rent_type_label}
                     </span>
-                    <span className={cn("text-xs block", isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400')}>
-                      {pkg.duration > 0 ? `${pkg.duration} hari` : 'Per hari'} mulai dari
+                    <span className={cn("text-xs block", isDisabled ? 'text-gray-400 dark:text-gray-500' : isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400')}>
+                      {isDisabled
+                        ? `Tidak sesuai durasi ${pkg.duration > 0 ? `(${pkg.duration} hari)` : ''}`
+                        : pkg.duration > 0 ? `${pkg.duration} hari` : 'Per hari'} mulai dari
                     </span>
                   </div>
-                  <div className={cn("font-semibold", isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-blue-600 dark:text-blue-400')}>
+                  <div className={cn("font-semibold", isDisabled ? 'text-gray-400 dark:text-gray-500' : isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-blue-600 dark:text-blue-400')}>
                     Rp {pkg.price.toLocaleString('id-ID')}
                   </div>
                 </div>
@@ -652,6 +669,8 @@ export const ArmadaDetail: React.FC = () => {
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [availablePricing, setAvailablePricing] = useState<FleetPricing[] | null>(null);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+  const [isPreference, setIsPreference] = useState(false);
+  const [minimalDay, setMinimalDay] = useState(0);
 
   useEffect(() => {
     const fetchFleetDetail = async () => {
@@ -861,10 +880,20 @@ export const ArmadaDetail: React.FC = () => {
       if (response.data?.status === 'success' || response.status === 200) {
         const availabilityData = response.data?.data || response.data;
         const availability = availabilityData?.availability;
-        const prices = availabilityData?.prices || [];
+        const prices: FleetPricing[] = availabilityData?.prices || [];
+        const minimalDay = availabilityData?.minimal_day || 0;
+        const isPreference = availabilityData?.is_preference === true;
         
         setIsAvailable(availability === true);
         setAvailablePricing(prices);
+        setMinimalDay(minimalDay);
+        setIsPreference(isPreference);
+
+        // Preference city: auto-select varian yang sesuai durasi (tidak disabled)
+        if (isPreference && prices.length > 0) {
+          const firstEnabled = prices.find((p) => !p.disabled) || prices[0];
+          if (firstEnabled) setSelectedPricing(firstEnabled);
+        }
       } else {
         setIsAvailable(false);
         setAvailabilityError('Unit tidak tersedia di tanggal tersebut, ubah tanggal pencarian');
@@ -884,6 +913,8 @@ export const ArmadaDetail: React.FC = () => {
     setAvailabilityError(null);
     setSelectedPricing(null);
     setShowAllPricing(false);
+    setIsPreference(false);
+    setMinimalDay(0);
   };
 
   // usePageMeta harus dipanggil unconditionally (rules of hooks) — sebelum early returns.
@@ -988,6 +1019,8 @@ export const ArmadaDetail: React.FC = () => {
     serviceType,
     setServiceType,
     availableServiceTypes,
+    isPreference,
+    minimalDay,
   };
 
   return (

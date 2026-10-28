@@ -250,9 +250,19 @@ export const ArmadaCheckout: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { setCheckoutData } = useCheckout();
   const { toast } = useToast();
-  const { fleet_id, price_id, startDate, endDate, cityId, cityName, pricing } = location.state || {};
+  const { fleet_id, price_id, startDate, endDate, cityId, cityName, pricing, serviceType } = location.state || {};
   const selectedDestinationCityId = cityId ? cityId.toString() : '';
   const selectedDestinationCityName = cityName || '';
+
+  // Jenis layanan (rent type) yang dipilih user di halaman detail armada.
+  // Penting untuk harga preference city yang tidak menyimpan rent_type di harganya.
+  const serviceTypeId = (() => {
+    if (serviceType === 'city_tour') return 1;
+    if (serviceType === 'overland') return 2;
+    if (serviceType === 'drop_only') return 3;
+    const p = (pricing as any)?.rent_type;
+    return p ? Number(p) : undefined;
+  })();
   
   const [fleetSummary, setFleetSummary] = useState<FleetSummaryData | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
@@ -362,7 +372,8 @@ export const ArmadaCheckout: React.FC = () => {
           setActivePriceId(activePriceId);
           const response = await http.post<FleetSummaryResponse>('/api/order/fleet/summary', {
             fleet_id: activeFleetId,
-            price_id: activePriceId
+            price_id: activePriceId,
+            rent_type: serviceTypeId
           });
           if (response.data.status === 'success') {
             setFleetSummary(response.data.data);
@@ -724,6 +735,7 @@ export const ArmadaCheckout: React.FC = () => {
         address: formData.address,
         city_id: formData.city_id,
         order_type: 1,
+        rent_type: serviceTypeId,
         start_date: `${formData.pickupDate} ${formData.pickupTime}`,
         end_date: `${formData.returnDate} ${formData.returnTime}`,
         pickup_city_id: formData.pickupCity,
@@ -1317,7 +1329,7 @@ export const ArmadaCheckout: React.FC = () => {
                     type="button"
                     onClick={handleSubmit}
                     disabled={isSubmitting || !isAvailable || checkingAvailability || !isFormValid}
-                    className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-xl px-6"
+                    className="bg-[#4F46E5] hover:bg-[#4338CA] text-white rounded-xl px-6 lg:hidden"
                   >
                     {isSubmitting ? 'Memproses...' : 'Buat Pesanan'}
                   </Button>
@@ -1429,7 +1441,7 @@ export const ArmadaCheckout: React.FC = () => {
                       type="submit" 
                       onClick={handleSubmit}
                       className="w-full h-14 bg-gradient-to-r from-[#4F46E5] to-[#6366F1] hover:from-[#4338CA] hover:to-[#4F46E5] text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 group text-base"
-                      disabled={isSubmitting || !isAvailable || checkingAvailability || !isFormValid}
+                      disabled={isSubmitting || !isAvailable || checkingAvailability || !isFormValid || currentStep < steps.length - 1}
                     >
                       <span className="flex items-center justify-center w-full">
                         {isSubmitting ? 'Memproses Pesanan...' : checkingAvailability ? 'Mengecek Ketersediaan...' : !isAvailable ? 'Armada Tidak Tersedia' : !isFormValid ? 'Lengkapi Data Pemesanan' : 'Lanjutkan Pemesanan'}
@@ -1603,7 +1615,7 @@ export const ArmadaCheckout: React.FC = () => {
                 type="button"
                 onClick={handleSubmit}
                 className="w-full h-14 bg-gradient-to-r from-[#4F46E5] to-[#6366F1] hover:from-[#4338CA] hover:to-[#4F46E5] text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 group text-base"
-                disabled={isSubmitting || !isAvailable || checkingAvailability || !isFormValid}
+                disabled={isSubmitting || !isAvailable || checkingAvailability || !isFormValid || currentStep < steps.length - 1}
               >
                 <span className="flex items-center justify-center w-full">
                   {isSubmitting ? 'Memproses Pesanan...' : checkingAvailability ? 'Mengecek Ketersediaan...' : !isAvailable ? 'Armada Tidak Tersedia' : !isFormValid ? 'Lengkapi Data Pemesanan' : 'Lanjutkan Pemesanan'}
